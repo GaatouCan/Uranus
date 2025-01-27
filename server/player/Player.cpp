@@ -51,10 +51,6 @@ awaitable<void> UPlayer::OnLogin() {
 
     SEND_PACKAGE(this, W2C_LoginResponse, response)
 
-    const auto param = new FEP_PlayerLogin;
-    param->pid = GetFullID();
-
-    DISPATCH_EVENT(PLAYER_LOGIN, param)
     co_return;
 }
 
@@ -77,11 +73,28 @@ void UPlayer::OnLogout(const bool bForce, const std::string &otherAddress) {
 
         SEND_PACKAGE(this, W2C_ForceLogoutResponse, res)
     }
+}
 
-    const auto param = new FEP_PlayerLogout;
-    param->pid = GetFullID();
+void UPlayer::OnEnterScene(IAbstractScene *scene) {
+    IBasePlayer::OnEnterScene(scene);
 
-    DISPATCH_EVENT(PLAYER_LOGOUT, param);
+    if (GetLeaveSceneTime() == ATimePoint()) {
+        const auto param = new FEP_PlayerLogin;
+        param->pid = GetFullID();
+
+        DISPATCH_EVENT(PLAYER_LOGIN, param)
+    }
+}
+
+void UPlayer::OnLeaveScene(IAbstractScene *scene) {
+    if (!GetConnection()->IsConnected()) {
+        const auto param = new FEP_PlayerLogout;
+        param->pid = GetFullID();
+
+        DISPATCH_EVENT(PLAYER_LOGOUT, param);
+    }
+
+    IBasePlayer::OnLeaveScene(scene);
 }
 
 bool UPlayer::IsOnline() const {

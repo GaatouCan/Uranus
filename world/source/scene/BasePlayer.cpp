@@ -10,7 +10,6 @@ IBasePlayer::IBasePlayer(AConnectionPointer conn)
       mConn(std::move(conn)),
       mPlayerID(std::any_cast<FPlayerID>(mConn->GetContext())) {
 
-    mEnterTime = NowTimePoint();
 }
 
 IBasePlayer::~IBasePlayer() {
@@ -41,7 +40,7 @@ asio::io_context &IBasePlayer::GetIOContext() const {
 }
 
 UGameWorld * IBasePlayer::GetWorld() const {
-    return mConn->GetWorld();
+    return mOwnerScene ? mOwnerScene->GetWorld() : nullptr;
 }
 
 AThreadID IBasePlayer::GetThreadID() const {
@@ -92,8 +91,6 @@ void IBasePlayer::OnEnterScene(IAbstractScene *scene) {
 void IBasePlayer::OnLeaveScene(IAbstractScene *scene) {
     if (mOwnerScene == nullptr)
         return;
-
-    // TODO
 
     mLeaveTime = NowTimePoint();
     mOwnerScene = nullptr;

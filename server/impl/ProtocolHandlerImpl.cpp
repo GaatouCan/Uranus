@@ -15,7 +15,7 @@ UProtocolHandlerImpl::UProtocolHandlerImpl(UProtocolRoute *route)
 }
 
 void UProtocolHandlerImpl::Invoke(const AProtoFunctor &func, const std::shared_ptr<UConnection> &conn, IPackage *pkg) {
-    const auto mgr = GET_MANAGER(UPlayerManager)
+    const auto mgr = GET_MANAGER(UPlayerManager);
     if (mgr == nullptr) {
         spdlog::critical("{} - PlayerManager not found", __FUNCTION__);
         return;

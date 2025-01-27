@@ -15,7 +15,7 @@ class BASE_API IConnectionHandler {
 public:
     IConnectionHandler() = delete;
 
-    explicit IConnectionHandler(UConnection *conn) : mConn(conn) {}
+    explicit IConnectionHandler(UConnection *conn);
     virtual ~IConnectionHandler() = default;
 
     virtual void OnConnected() {}
@@ -24,6 +24,8 @@ public:
     virtual awaitable<void> OnWritePackage(IPackage *) { co_return; }
 
     virtual void OnClosed() {}
+
+    [[nodiscard]] class UGameWorld *GetWorld() const;
 
 protected:
     UConnection *mConn;

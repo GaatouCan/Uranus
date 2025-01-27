@@ -48,4 +48,4 @@ mgr *mgr::Instance() { \
     exit(-1); \
 }
 
-#define GET_MANAGER(mgr) GetWorld()->GetSystem<UManagerSystem>()->GetManager<mgr>();
+#define GET_MANAGER(mgr) GetWorld()->GetSystem<UManagerSystem>()->GetManager<mgr>()

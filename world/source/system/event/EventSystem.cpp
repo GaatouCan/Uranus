@@ -46,6 +46,8 @@ awaitable<void> UEventSystem::HandleEvent() {
             }
         }
 
+        spdlog::info("{} - Event Type: {}", __FUNCTION__, node.event);
+
         for (const auto &listener: mCurrentListener | std::views::values) {
             std::invoke(listener, node.param);
         }

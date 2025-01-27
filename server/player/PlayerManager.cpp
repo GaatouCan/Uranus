@@ -41,11 +41,11 @@ awaitable<std::shared_ptr<UPlayer> > UPlayerManager::OnPlayerLogin(const std::sh
 
         spdlog::info("{} - Player[{}] Over Login", __FUNCTION__, plr->GetFullID());
 
-        plr->TryLeaveScene();
-
         if (plr->IsOnline()) {
             plr->OnLogout(true, conn->RemoteAddress().to_string());
         }
+
+        plr->TryLeaveScene();
 
         plr->GetConnection()->ResetContext();
         plr->GetConnection()->Disconnect();
@@ -70,8 +70,8 @@ awaitable<std::shared_ptr<UPlayer> > UPlayerManager::OnPlayerLogin(const std::sh
 void UPlayerManager::OnPlayerLogout(const FPlayerID pid) {
     spdlog::info("{} - Player[{}] Logout", __FUNCTION__, pid.ToUInt64());
     if (const auto plr = RemovePlayer(pid.localID); plr != nullptr) {
-        plr->TryLeaveScene();
         plr->OnLogout();
+        plr->TryLeaveScene();
     }
 }
 

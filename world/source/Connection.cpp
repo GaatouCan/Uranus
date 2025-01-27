@@ -27,8 +27,7 @@ UConnection::~UConnection() {
 void UConnection::ConnectToClient() {
     mDeadline = NowTimePoint() + sExpireTime;
 
-    spdlog::debug("{} - Connection from {} run in thread: {}", __FUNCTION__, RemoteAddress().to_string(),
-                  utils::ThreadIdToInt(GetThreadID()));
+    spdlog::debug("{} - Connection from {} run in thread: {}", __FUNCTION__, RemoteAddress().to_string(), utils::ThreadIdToInt(GetThreadID()));
     if (mHandler != nullptr)
         mHandler->OnConnected();
 

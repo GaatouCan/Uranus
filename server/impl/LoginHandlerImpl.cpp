@@ -22,7 +22,7 @@ awaitable<std::shared_ptr<IBasePlayer>> ULoginHandlerImpl::OnPlayerLogin(const s
     //     exit(-1);
     // }
 
-    const auto mgr = GET_MANAGER(UPlayerManager)
+    const auto mgr = GET_MANAGER(UPlayerManager);
     if (mgr == nullptr) {
         spdlog::critical("{} - Player Manager is null", __FUNCTION__);
         co_return nullptr;
