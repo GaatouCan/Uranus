@@ -98,6 +98,10 @@ void UConfigManager::SetLoggerLoader(const ALoggerLoader loader) {
     mLoggerLoader = loader;
 }
 
+void UConfigManager::Abort() const {
+    assert(mLogicConfigLoader != nullptr && mLoggerLoader != nullptr);
+}
+
 bool UConfigManager::IsLoaded() const {
     return bLoaded;
 }

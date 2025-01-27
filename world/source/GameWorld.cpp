@@ -17,8 +17,8 @@
 #include "../include/system/plugin/PluginSystem.h"
 #include "../include/system/manager/ManagerSystem.h"
 
-#include <absl/random/random.h>
 #include <ranges>
+#include <random>
 
 
 UGameWorld::UGameWorld()
@@ -254,12 +254,16 @@ bool UGameWorld::LoadServerDLL(const std::string &path) {
         return false;
     }
 
-    spdlog::info("Loaded DLL {} Success.", path);
-
     mServer = creator(this);
     mServerDestroyer = destroyer;
 
     mServer->InitGameWorld();
+
+    mConfigManager->Abort();
+    mProtocolRoute->AbortHandler();
+    mLoginAuthenticator->AbortHandler();
+
+    spdlog::info("Loaded DLL {} Success.", path);
 
     return true;
 }
@@ -297,10 +301,12 @@ awaitable<void> UGameWorld::WaitForConnect() {
                 std::string key;
                 int count = 0;
 
-                static absl::BitGen sBitGen;
+                static std::random_device sRandomDevice;
+                static std::mt19937 sGenerator(sRandomDevice());
+                static std::uniform_int_distribution<> sDistribution(100, 999);
 
                 do {
-                    key = fmt::format("{}-{}-{}", addr.to_string(), utils::UnixTime(), absl::Uniform(sBitGen, 100, 999));
+                    key = fmt::format("{}-{}-{}", addr.to_string(), utils::UnixTime(), sDistribution(sGenerator));
                     count++;
                 } while (mConnectionMap.contains(key) && count < 3);
 

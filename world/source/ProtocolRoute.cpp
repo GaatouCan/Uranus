@@ -42,10 +42,10 @@ AProtoFunctor UProtocolRoute::FindProto(const int32_t proto) const {
 }
 
 void UProtocolRoute::OnReadPackage(const std::shared_ptr<UConnection> &conn, IPackage *pkg) const {
-    if (mHandler == nullptr) {
-        spdlog::critical("{} - handler not set.", __FUNCTION__);
-        return;
-    }
+    // if (mHandler == nullptr) {
+    //     spdlog::critical("{} - handler not set.", __FUNCTION__);
+    //     return;
+    // }
 
     if (!pkg->IsAvailable()) {
         spdlog::warn("{} - Package unavailable", __FUNCTION__);
@@ -56,6 +56,10 @@ void UProtocolRoute::OnReadPackage(const std::shared_ptr<UConnection> &conn, IPa
         mHandler->Invoke(func, conn, pkg);
     else
         spdlog::warn("{} - Package[{}] Protocol functor unavailable.", __FUNCTION__, pkg->GetPackageID());
+}
+
+void UProtocolRoute::AbortHandler() const {
+    assert(mHandler != nullptr);
 }
 
 // awaitable<void> UProtocolRoute::OnCrossPackage(IPackage *pkg) const {

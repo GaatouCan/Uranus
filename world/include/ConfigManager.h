@@ -43,6 +43,8 @@ public:
     void SetLogicConfigLoader(ALogicConfigLoader loader);
     void SetLoggerLoader(ALoggerLoader loader);
 
+    void Abort() const;
+
     template<LOGIC_CONFIG_TYPE T>
     void CreateLogicConfig(const std::vector<std::string> &pathList) {
         mLogicLoadMap[typeid(T)] = pathList;

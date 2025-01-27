@@ -2,7 +2,7 @@
 #include "../include/utils.h"
 
 #include <spdlog/fmt/fmt.h>
-#include <absl/random/random.h>
+#include <random>
 
 std::string FUniqueID::ToString() const {
     return fmt::format("{}-{}", time, random);
@@ -16,8 +16,12 @@ FUniqueID & FUniqueID::FromString(const std::string &str) {
 }
 
 FUniqueID FUniqueID::RandomGenerate() {
-    static absl::BitGen gen;
-    const uint64_t number = absl::Uniform(gen, 100000, 999999);
+    static std::random_device sRandomDevice;
+    static std::mt19937 sGenerator(sRandomDevice());
+    static std::uniform_int_distribution<> sDistribution(100000, 999999);
+
+    const uint64_t number = sDistribution(sGenerator);
+
     return {
         utils::UnixTime(),
         number

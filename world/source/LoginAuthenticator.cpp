@@ -39,11 +39,11 @@ awaitable<void> ULoginAuthenticator::OnLogin(const AConnectionPointer &conn, IPa
     if (conn == nullptr || pkg == nullptr)
         co_return;
 
-    if (mHandler == nullptr) {
-        spdlog::critical("{} - handler not set.", __FUNCTION__);
-        mWorld->Shutdown();
-        exit(-1);
-    }
+    // if (mHandler == nullptr) {
+    //     spdlog::critical("{} - handler not set.", __FUNCTION__);
+    //     mWorld->Shutdown();
+    //     exit(-1);
+    // }
 
     const auto info = co_await mHandler->ParseLoginInfo(pkg);
     if (!info.pid.IsAvailable()) {
@@ -70,4 +70,8 @@ awaitable<void> ULoginAuthenticator::OnLogin(const AConnectionPointer &conn, IPa
 
     conn->ResetContext();
     conn->Disconnect();
+}
+
+void ULoginAuthenticator::AbortHandler() const {
+    assert(mHandler != nullptr);
 }

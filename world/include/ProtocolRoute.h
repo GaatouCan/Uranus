@@ -42,6 +42,7 @@ public:
     void OnReadPackage(const std::shared_ptr<UConnection> &conn, IPackage *pkg) const;
     // awaitable<void> OnCrossPackage(IPackage *pkg) const;
 
+    void AbortHandler() const;
 private:
     UGameWorld *mWorld;
 

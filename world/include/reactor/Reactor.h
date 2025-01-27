@@ -27,10 +27,9 @@ public:
     template<typename ReactorType, typename Functor, typename... ARGS>
     requires std::derived_from<ReactorType, UReactor>
     void PushTask(Functor &&func, ARGS &&... args) const {
-        this->PushTask(
-            [this, func = std::forward<Functor>(func), ...args = std::forward<ARGS>(args)](UReactor *reactor) mutable {
-                std::invoke(func, dynamic_cast<ReactorType *>(reactor), args...);
-            });
+        this->PushTask([this, func = std::forward<Functor>(func), ...args = std::forward<ARGS>(args)](UReactor *reactor) mutable {
+            std::invoke(func, dynamic_cast<ReactorType *>(reactor), args...);
+        });
     }
 
     virtual void Invoke(const std::string &func, FByteArray &&bytes) {}

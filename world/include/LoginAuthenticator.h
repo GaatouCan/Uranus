@@ -38,6 +38,8 @@ public:
         mHandler = std::make_unique<T>(this);
     }
 
+    void AbortHandler() const;
+
 private:
     UGameWorld* mWorld;
     std::unique_ptr<ILoginHandler> mHandler;

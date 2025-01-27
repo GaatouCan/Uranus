@@ -99,7 +99,6 @@ target_include_directories(Uranus PUBLIC
 target_link_libraries(Uranus PUBLIC spdlog::spdlog)
 target_link_libraries(Uranus PUBLIC asio::asio)
 target_link_libraries(Uranus PUBLIC nlohmann_json::nlohmann_json)
-target_link_libraries(Uranus PUBLIC protobuf::libprotobuf)
 target_link_libraries(Uranus PUBLIC yaml-cpp::yaml-cpp)
 #target_link_libraries(base_static PUBLIC mysql::concpp)
 
@@ -178,6 +177,7 @@ if (MSVC)
 endif ()
 
 add_library(server SHARED ${SERVER_SRC})
+target_link_libraries(server PUBLIC protobuf::libprotobuf)
 target_include_directories(server PRIVATE ${PROTOBUF_GENERATED_DIR})
 target_link_libraries(server PRIVATE proto_static)
 target_link_libraries(server PUBLIC Uranus)
