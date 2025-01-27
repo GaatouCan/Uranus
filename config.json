@@ -1,0 +1,30 @@
+{
+    "project": "demo",
+    "only_xlsx": false,
+    "protobuf": {
+        "dir": "protobuf/def",
+        "gen": "server/common",
+        "def": [
+            "login",
+            "appearance",
+            "chat"
+        ],
+        "except": ["C2W_LoginRequest"],
+        "include_dir": "ProtocolRoute.h"
+    },
+    "sql": {
+        "sql": "struct/sql",
+        "gen": "struct/orm",
+        "desc": "struct/describe.json"
+    },
+    "xlsx": {
+        "xlsx": "config/xlsx",
+        "json": "config/json"
+    },
+    "database": {
+        "host": "192.168.50.237",
+        "port": 3306,
+        "user": "root",
+        "password": "12345678"
+    }
+}

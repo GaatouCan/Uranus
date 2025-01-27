@@ -1,0 +1,71 @@
+syntax = "proto3";
+
+package Chat;
+
+message C2W_ChatRoomRequest {
+  string roomId = 1;
+}
+
+message W2C_ChatRoomResponse {
+  string roomId = 1;
+  uint64 leader = 2;
+
+  message ChatRoomMember {
+    uint32 pid = 1;
+    bool online = 2;
+  }
+
+  repeated ChatRoomMember memberList = 3;
+
+  enum Reason {
+    NORMAL_SEND = 0;
+    MEMBER_UPDATE = 1;
+    MEMBER_ENTERED = 2;
+    MEMBER_EXITED = 3;
+  }
+
+  Reason reason = 4;
+}
+
+message C2W_ChatToRoomRequest {
+  string roomId = 1;
+  string content = 2;
+  int64 clientTime = 3;
+  uint32 clientIndex = 4;
+  int64 refTime = 5;
+  uint32 refIndex = 6;
+}
+
+message W2C_ChatToRoomResponse {
+  string roomId = 1;
+  int64 clientTime = 3;
+  uint32 clientIndex = 4;
+  int64 serverTime = 5;
+  uint32 serverIndex = 6;
+
+  enum Reason {
+    SUCCESS = 0;
+    NOT_ROOM_MEMBER = 1;
+    IN_LIMITED = 2;
+  }
+
+  Reason reason = 7;
+}
+
+message W2C_OnChatRoomResponse {
+  string roomId = 1;
+  uint64 sender = 2;
+  string content = 3;
+  int64 serverTime = 4;
+  uint32 serverIndex = 5;
+  int64 refTime = 6;
+  uint32 refIndex = 7;
+}
+
+message W2Q_ChatBroadCast {
+  string content = 1;
+}
+
+message Q2W_ChatResponse {
+  string content = 1;
+}

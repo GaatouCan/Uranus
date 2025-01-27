@@ -1,0 +1,40 @@
+server:
+  port: 8080
+  io_thread: 4
+  work_thread: 6
+  cross_id: 1
+
+log_dir:
+  ./logs/
+
+package:
+  magic: 23244435
+  version: 20241013
+  method: Protobuf
+  pool:
+    default_capacity: 64
+    minimum_capacity: 64
+    expanse_rate: 0.3
+    expanse_scale: 0.7
+    collect_rate: 0.8
+    collect_scale: 0.5
+
+database:
+  pool: 2
+  mysql:
+    host: localhost
+    port: 33060
+    user: root
+    passwd: 12345678
+    schema: demo
+
+scene:
+  same: true
+  main:
+    - index: 1
+    - index: 2
+    - index: 3
+    - index: 4
+  state:
+    - index: 5
+    - index: 6
