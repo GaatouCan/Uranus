@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "../PlayerID.h"
 #include "../Actor.h"
@@ -53,7 +53,10 @@ public:
     [[nodiscard]] IPackage *BuildPackage() const;
     void SendPackage(IPackage *pkg) const;
 
+    // 如果继承 请将基类调用放在最顶部
     virtual void OnEnterScene(IAbstractScene *scene);
+
+    // 如果继承 请将基类调用放在最底部
     virtual void OnLeaveScene(IAbstractScene *scene);
 
     bool TryLeaveScene();
