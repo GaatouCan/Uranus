@@ -40,7 +40,7 @@ asio::io_context &IBasePlayer::GetIOContext() const {
 }
 
 UGameWorld * IBasePlayer::GetWorld() const {
-    return mOwnerScene ? mOwnerScene->GetWorld() : nullptr;
+    return mConn->GetWorld();
 }
 
 AThreadID IBasePlayer::GetThreadID() const {

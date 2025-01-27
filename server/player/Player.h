@@ -39,9 +39,6 @@ public:
     awaitable<void> OnLogin();
     void OnLogout(bool bForce = false, const std::string &otherAddress = "");
 
-    void OnEnterScene(IAbstractScene *scene) override;
-    void OnLeaveScene(IAbstractScene *scene) override;
-
     bool IsOnline() const;
 
     void Send(int32_t id, std::string_view data) const;
