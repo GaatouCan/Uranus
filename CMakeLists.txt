@@ -86,6 +86,8 @@ if (MSVC)
     endforeach()
 endif ()
 
+set(CMAKE_DEBUG_POSTFIX d)
+
 add_library(Uranus SHARED ${WORLD_SRC})
 
 target_include_directories(Uranus PUBLIC
@@ -150,6 +152,8 @@ install(EXPORT UranusTargets
         NAMESPACE Uranus::
         DESTINATION lib/cmake/Uranus
 )
+
+unset(CMAKE_DEBUG_POSTFIX )
 
 add_executable(world world/world.cpp)
 target_include_directories(world PRIVATE ${CMAKE_SOURCE_DIR}/world/include)
