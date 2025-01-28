@@ -1,7 +1,7 @@
 #include "../../include/scene/MainScene.h"
 #include "../../include/PackagePool.h"
 
-UMainScene::UMainScene(USceneManager *owner, const int32_t id)
+UMainScene::UMainScene(USceneManager *owner, const uint32_t id)
     : IAbstractScene(owner, id),
       mPackagePool(new UPackagePool()) {
 }

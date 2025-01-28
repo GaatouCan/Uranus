@@ -61,8 +61,8 @@ public:
 
     bool TryLeaveScene();
 
-    bool IsInScene(int32_t id = 0) const;
-    int32_t GetCurrentSceneID() const;
+    bool IsInScene(uint32_t id = 0) const;
+    uint32_t GetCurrentSceneID() const;
 
     [[nodiscard]] IAbstractScene *GetCurrentScene() const;
 

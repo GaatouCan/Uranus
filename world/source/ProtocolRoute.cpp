@@ -19,7 +19,7 @@ UGameWorld *UProtocolRoute::GetWorld() const {
 }
 
 
-void UProtocolRoute::RegisterProtocol(const int32_t type, const AProtoFunctor &func) {
+void UProtocolRoute::RegisterProtocol(const uint32_t type, const AProtoFunctor &func) {
     mProtoMap[type] = func;
 }
 
@@ -34,7 +34,7 @@ void UProtocolRoute::RegisterProtocol(const int32_t type, const AProtoFunctor &f
 //     return nullptr;
 // }
 
-AProtoFunctor UProtocolRoute::FindProto(const int32_t proto) const {
+AProtoFunctor UProtocolRoute::FindProto(const uint32_t proto) const {
     if (const auto it = mProtoMap.find(proto); it != mProtoMap.end()) {
         return it->second;
     }

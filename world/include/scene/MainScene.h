@@ -11,7 +11,7 @@ class BASE_API UMainScene final : public IAbstractScene {
     AThreadID mThreadID;
 
 public:
-    UMainScene(USceneManager *owner, int32_t id);
+    UMainScene(USceneManager *owner, uint32_t id);
     ~UMainScene() override;
 
     void SetThreadID(AThreadID tid);

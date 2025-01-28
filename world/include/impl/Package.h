@@ -6,10 +6,10 @@
 #include <sstream>
 #include <yaml-cpp/yaml.h>
 
-static constexpr int32_t kInvalidPackageId = 1000;
+static constexpr uint32_t kInvalidPackageId = 1000;
 
 
-enum class ECodecMethod : int16_t {
+enum class ECodecMethod : uint16_t {
     BASE_LINE = 1,
     PROTOBUF = 2
 };
@@ -20,16 +20,14 @@ class BASE_API FPackage final : public IPackage {
     friend class UCrossRouteCodecImpl;
 
     struct FHeader {
-        int32_t magic;
-        int32_t version;
+        uint32_t magic;
+        uint32_t version;
 
         ECodecMethod method;
-        int16_t reversh;
+        uint16_t reversh;
 
-        int32_t reverse;
-
-        int32_t id;
-        int32_t length;
+        uint32_t id;
+        size_t length;
     };
 
     FHeader header;
@@ -45,38 +43,38 @@ public:
     FPackage &operator=(const FPackage &rhs);
     FPackage &operator=(FPackage &&rhs) noexcept;
 
-    FPackage(int32_t id, std::string_view str);
-    FPackage(int32_t id, const std::stringstream &ss);
+    FPackage(uint32_t id, std::string_view str);
+    FPackage(uint32_t id, const std::stringstream &ss);
 
     void Reset() override;
 
     void Invalid() override;
     [[nodiscard]] bool IsAvailable() const override;
 
-    FPackage &SetPackageID(int32_t id);
-    [[nodiscard]] int32_t GetPackageID() const override;
+    FPackage &SetPackageID(uint32_t id);
+    [[nodiscard]] uint32_t GetPackageID() const override;
 
     void CopyFrom(IPackage *other) override;
 
     FPackage &SetData(std::string_view str);
     FPackage &SetData(const std::stringstream &ss);
 
-    FPackage &SetMagic(int32_t magic);
-    [[nodiscard]] int32_t GetMagic() const;
+    FPackage &SetMagic(uint32_t magic);
+    [[nodiscard]] uint32_t GetMagic() const;
 
-    FPackage &SetVersion(int32_t version);
-    [[nodiscard]] int32_t GetVersion() const;
+    FPackage &SetVersion(uint32_t version);
+    [[nodiscard]] uint32_t GetVersion() const;
 
     FPackage &SetMethod(ECodecMethod method);
     [[nodiscard]] ECodecMethod GetMethod() const;
 
-    [[nodiscard]] int32_t GetDataLength() const;
+    [[nodiscard]] size_t GetDataLength() const;
 
     [[nodiscard]] std::string ToString() const;
     [[nodiscard]] const FByteArray &GetByteArray() const;
 
-    static void SetPackageMagic(int32_t magic);
-    static void SetPackageVersion(int32_t version);
+    static void SetPackageMagic(uint32_t magic);
+    static void SetPackageVersion(uint32_t version);
     static void SetPackageMethod(const std::string &method);
 
     static void LoadConfig(const YAML::Node &config);
@@ -86,8 +84,8 @@ public:
 
     static constexpr size_t kHeaderSize = sizeof(FHeader);
 
-    static int32_t sPackageMagic;
-    static int32_t sPackageVersion;
+    static uint32_t sPackageMagic;
+    static uint32_t sPackageVersion;
     static std::string sPackageMethod;
 
 private:

@@ -11,7 +11,7 @@ class IBasePlayer;
 class BASE_API IAbstractScene {
 
     class USceneManager* mOwner;
-    int32_t mSceneID;
+    const uint32_t mSceneID;
 
     std::map<uint32_t, std::shared_ptr<IBasePlayer>> mPlayerMap;
     std::mutex mMutex;
@@ -20,10 +20,10 @@ class BASE_API IAbstractScene {
 public:
     IAbstractScene() = delete;
 
-    IAbstractScene(USceneManager *owner, int32_t id);
+    IAbstractScene(USceneManager *owner, uint32_t id);
     virtual ~IAbstractScene();
 
-    [[nodiscard]] int32_t GetSceneID() const;
+    [[nodiscard]] uint32_t GetSceneID() const;
     [[nodiscard]] USceneManager* GetOwner() const;
     [[nodiscard]] class UGameWorld *GetWorld() const;
 

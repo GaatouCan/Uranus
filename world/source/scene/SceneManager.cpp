@@ -33,7 +33,7 @@ void USceneManager::Init()
     const auto &cfg = mWorld->GetServerConfig();
     const auto num = cfg["server"]["io_thread"].as<int32_t>();
 
-    for (int32_t idx = 0; idx < num; ++idx)
+    for (uint32_t idx = 0; idx < num; ++idx)
         mMainVec.emplace_back(new UMainScene(this, idx));
 
     for (const auto val : mMainVec)
@@ -74,11 +74,11 @@ IAbstractScene* USceneManager::GetNextMainScene()
     return res;
 }
 
-IAbstractScene* USceneManager::GetScene(const int32_t sid) const
+IAbstractScene* USceneManager::GetScene(const uint32_t sid) const
 {
     if (sid < kNormalSceneIDBegin)
     {
-        if (sid < 0 || sid >= mMainVec.size())
+        if (sid >= mMainVec.size())
             return nullptr;
 
         return mMainVec[sid];

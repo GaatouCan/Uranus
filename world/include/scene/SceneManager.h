@@ -29,7 +29,7 @@ public:
     UGameWorld *GetWorld() const;
     IAbstractScene *GetNextMainScene();
 
-    IAbstractScene *GetScene(int32_t sid) const;
+    IAbstractScene *GetScene(uint32_t sid) const;
 
 private:
     UGameWorld *mWorld;
@@ -40,5 +40,5 @@ private:
 
     std::atomic_size_t mNextIndex;
 
-    std::unordered_map<int32_t, IAbstractScene *> mSceneMap;
+    std::unordered_map<uint32_t, IAbstractScene *> mSceneMap;
 };

@@ -15,6 +15,6 @@ class BASE_API IAbstractPlugin {
 public:
     virtual ~IAbstractPlugin() = default;
 
-    virtual EPluginType GetType() const = 0;
-    virtual const char* GetPluginName() const = 0;
+    [[nodiscard]] virtual EPluginType GetType() const = 0;
+    [[nodiscard]] virtual const char* GetPluginName() const = 0;
 };

@@ -3,7 +3,7 @@
 #include "../../include/scene/BasePlayer.h"
 #include "../../include/GameWorld.h"
 
-IAbstractScene::IAbstractScene(USceneManager *owner, const int32_t id)
+IAbstractScene::IAbstractScene(USceneManager *owner, const uint32_t id)
     : mOwner(owner),
       mSceneID(id) {
 }
@@ -11,7 +11,7 @@ IAbstractScene::IAbstractScene(USceneManager *owner, const int32_t id)
 IAbstractScene::~IAbstractScene() {
 }
 
-int32_t IAbstractScene::GetSceneID() const {
+uint32_t IAbstractScene::GetSceneID() const {
     return mSceneID;
 }
 
@@ -49,7 +49,7 @@ void IAbstractScene::PlayerEnterScene(const std::shared_ptr<IBasePlayer> &player
     player->OnEnterScene(this);
 }
 
-void IAbstractScene::PlayerLeaveScene(const std::shared_ptr<IBasePlayer> &player, bool bChange) {
+void IAbstractScene::PlayerLeaveScene(const std::shared_ptr<IBasePlayer> &player, const bool bChange) {
     if (player == nullptr)
         return;
 

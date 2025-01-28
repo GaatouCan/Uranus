@@ -24,10 +24,10 @@ public:
 
     [[nodiscard]] UGameWorld* GetWorld() const;
 
-    void RegisterProtocol(int32_t type, const AProtoFunctor &func);
+    void RegisterProtocol(uint32_t type, const AProtoFunctor &func);
     // void RegisterCrossProtocol(uint32_t type, const ACrossFunctor &func);
 
-    [[nodiscard]] AProtoFunctor FindProto(int32_t proto) const;
+    [[nodiscard]] AProtoFunctor FindProto(uint32_t proto) const;
     // [[nodiscard]] ACrossFunctor FindCross(uint32_t proto) const;
 
     template<typename T>
@@ -46,7 +46,7 @@ public:
 private:
     UGameWorld *mWorld;
 
-    std::unordered_map<int32_t, AProtoFunctor> mProtoMap;
+    std::unordered_map<uint32_t, AProtoFunctor> mProtoMap;
     // std::unordered_map<uint32_t, ACrossFunctor> mCrossMap;
 
     std::unique_ptr<IProtocolHandler> mHandler;

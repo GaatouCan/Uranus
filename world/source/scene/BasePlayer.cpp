@@ -104,7 +104,7 @@ bool IBasePlayer::TryLeaveScene() {
     return true;
 }
 
-bool IBasePlayer::IsInScene(const int32_t id) const {
+bool IBasePlayer::IsInScene(const uint32_t id) const {
     if (mOwnerScene == nullptr)
         return false;
 
@@ -114,7 +114,7 @@ bool IBasePlayer::IsInScene(const int32_t id) const {
     return mOwnerScene->GetSceneID() == id;
 }
 
-int32_t IBasePlayer::GetCurrentSceneID() const {
+uint32_t IBasePlayer::GetCurrentSceneID() const {
     if (mOwnerScene == nullptr)
         return -1;
     return mOwnerScene->GetSceneID();
