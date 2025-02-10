@@ -20,7 +20,7 @@ public:
      * 获取数据包ID
      * @return int
      */
-    [[nodiscard]] virtual uint32_t GetPackageID() const { return -1; }
+    [[nodiscard]] virtual int32_t GetPackageID() const { return -1; }
 
     /**
      * 清空数据包内所有数据

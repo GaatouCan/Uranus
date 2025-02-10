@@ -1,87 +1,87 @@
 #include "../../include/impl/Package.h"
 
-uint32_t FPackage::sPackageMagic = 20250122;
-uint32_t FPackage::sPackageVersion = 1001;
+int32_t FPackage::sPackageMagic = 20250122;
+int32_t FPackage::sPackageVersion = 1001;
 std::string FPackage::sPackageMethod = "PROTOBUF";
 
 
 FPackage::FPackage()
-    : header() {
-    memset(&header, 0, sizeof(header));
+    : header_() {
+    memset(&header_, 0, sizeof(header_));
 }
 
 FPackage::~FPackage() = default;
 
 FPackage::FPackage(const FPackage &rhs) : FPackage() {
     if (this != &rhs) {
-        memcpy(&header, &rhs.header, sizeof(header));
+        memcpy(&header_, &rhs.header_, sizeof(header_));
 
-        data = rhs.data;
-        header.length = static_cast<int32_t>(data.Size());
+        data_ = rhs.data_;
+        header_.length = static_cast<int64_t>(data_.Size());
     }
 }
 
 FPackage::FPackage(FPackage &&rhs) noexcept : FPackage() {
     if (this != &rhs) {
-        memcpy(&header, &rhs.header, sizeof(header));
+        memcpy(&header_, &rhs.header_, sizeof(header_));
 
-        data = std::move(rhs.data);
-        header.length = static_cast<int32_t>(data.Size());
+        data_ = std::move(rhs.data_);
+        header_.length = static_cast<int64_t>(data_.Size());
     }
 }
 
 FPackage &FPackage::operator=(const FPackage &rhs) {
     if (this != &rhs) {
-        memcpy(&header, &rhs.header, sizeof(header));
+        memcpy(&header_, &rhs.header_, sizeof(header_));
 
-        data = rhs.data;
-        header.length = static_cast<int32_t>(data.Size());
+        data_ = rhs.data_;
+        header_.length = static_cast<int64_t>(data_.Size());
     }
     return *this;
 }
 
 FPackage &FPackage::operator=(FPackage &&rhs) noexcept {
     if (this != &rhs) {
-        memcpy(&header, &rhs.header, sizeof(header));
+        memcpy(&header_, &rhs.header_, sizeof(header_));
 
-        data = std::move(rhs.data);
-        header.length = static_cast<int32_t>(data.Size());
+        data_ = std::move(rhs.data_);
+        header_.length = static_cast<int64_t>(data_.Size());
     }
     return *this;
 }
 
-FPackage::FPackage(const uint32_t id, const std::string_view str)
+FPackage::FPackage(const int32_t id, const std::string_view str)
     : FPackage() {
-    header.id = id;
+    header_.id = id;
     SetData(str);
 }
 
-FPackage::FPackage(const uint32_t id, const std::stringstream &ss)
+FPackage::FPackage(const int32_t id, const std::stringstream &ss)
     : FPackage(id, ss.str()) {
 }
 
 void FPackage::Reset() {
-    memset(&header, 0, sizeof(header));
-    data.Reset();
+    memset(&header_, 0, sizeof(header_));
+    data_.Reset();
 }
 
 void FPackage::Invalid() {
-    header.id = kInvalidPackageId;
+    header_.id = kInvalidPackageId;
 }
 
 bool FPackage::IsAvailable() const {
-    return header.id > kInvalidPackageId;
+    return header_.id > kInvalidPackageId;
 }
 
-FPackage &FPackage::SetPackageID(const uint32_t id) {
-    header.id = id;
+FPackage &FPackage::SetPackageID(const int32_t id) {
+    header_.id = id;
     return *this;
 }
 
 FPackage &FPackage::SetData(const std::string_view str) {
-    data.Resize(str.size());
-    memcpy(data.Data(), str.data(), str.size());
-    header.length = static_cast<int32_t>(str.size());
+    data_.Resize(str.size());
+    memcpy(data_.Data(), str.data(), str.size());
+    header_.length = static_cast<int64_t>(str.size());
     return *this;
 }
 
@@ -89,35 +89,38 @@ FPackage &FPackage::SetData(const std::stringstream &ss) {
     return SetData(ss.str());
 }
 
-FPackage &FPackage::SetMagic(const uint32_t magic) {
-    header.magic = magic;
+FPackage &FPackage::SetMagic(const int32_t magic) {
+    header_.magic = magic;
     return *this;
 }
 
-FPackage &FPackage::SetVersion(const uint32_t version) {
-    header.version = version;
+FPackage &FPackage::SetVersion(const int32_t version) {
+    header_.version = version;
     return *this;
 }
 
-uint32_t FPackage::GetMagic() const {
-    return header.magic;
+int32_t FPackage::GetMagic() const {
+    return header_.magic;
 }
 
-uint32_t FPackage::GetVersion() const {
-    return header.version;
+int32_t FPackage::GetVersion() const {
+    return header_.version;
 }
 
 FPackage &FPackage::SetMethod(const ECodecMethod method) {
-    header.method = method;
+    header_.method = static_cast<int16_t>(method);
     return *this;
 }
 
 ECodecMethod FPackage::GetMethod() const {
-    return header.method;
+    if (header_.method < 0 || header_.method >= static_cast<int16_t>(ECodecMethod::MAX_METHOD))
+        return ECodecMethod::INVALID;
+
+    return static_cast<ECodecMethod>(header_.method);
 }
 
-uint32_t FPackage::GetPackageID() const {
-    return header.id;
+int32_t FPackage::GetPackageID() const {
+    return header_.id;
 }
 
 void FPackage::CopyFrom(IPackage *other) {
@@ -127,22 +130,22 @@ void FPackage::CopyFrom(IPackage *other) {
 }
 
 size_t FPackage::GetDataLength() const {
-    return data.Size();
+    return data_.Size();
 }
 
 std::string FPackage::ToString() const {
-    return {data.Begin(), data.End()};
+    return {data_.Begin(), data_.End()};
 }
 
 const FByteArray &FPackage::GetByteArray() const {
-    return data;
+    return data_;
 }
 
-void FPackage::SetPackageMagic(const uint32_t magic) {
+void FPackage::SetPackageMagic(const int32_t magic) {
     sPackageMagic = magic;
 }
 
-void FPackage::SetPackageVersion(const uint32_t version) {
+void FPackage::SetPackageVersion(const int32_t version) {
     sPackageVersion = version;
 }
 
@@ -184,5 +187,5 @@ void FPackage::InitPackage(IPackage *pkg) {
 }
 
 FByteArray &FPackage::RawByteArray() {
-    return data;
+    return data_;
 }
