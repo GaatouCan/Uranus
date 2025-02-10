@@ -11,33 +11,33 @@ static constexpr unsigned int kPlayerLocalIDEnd = 99'999;
 
 struct BASE_API FPlayerID {
     // 1000 - 99999
-    uint32_t localID = 0;
-    uint32_t crossID = 0;
+    int32_t local = 0;
+    int32_t cross = 0;
 
-    [[nodiscard]] uint32_t GetLocalID() const {
-        return localID;
+    [[nodiscard]] int32_t GetLocalID() const {
+        return local;
     }
 
-    [[nodiscard]] uint32_t GetCrossID() const {
-        return crossID;
+    [[nodiscard]] int32_t GetCrossID() const {
+        return cross;
     }
 
-    [[nodiscard]] uint64_t ToUInt64() const {
-        return crossID * kCrossServerIDOffset + localID;
+    [[nodiscard]] int64_t ToInt64() const {
+        return cross * kCrossServerIDOffset + local;
     }
 
-    FPlayerID &FromUInt64(const uint64_t id) {
-        localID = id % kCrossServerIDOffset;
-        crossID = id / kCrossServerIDOffset;
+    FPlayerID &FromInt64(const int64_t id) {
+        local = id % kCrossServerIDOffset;
+        cross = id / kCrossServerIDOffset;
         return *this;
     }
 
     bool operator<(const FPlayerID &other) const {
-        return ToUInt64() < other.ToUInt64();
+        return ToInt64() < other.ToInt64();
     }
 
     bool operator==(const FPlayerID& other) const {
-        return localID == other.localID && crossID == other.crossID;
+        return local == other.local && cross == other.cross;
     }
 
     bool operator!=(const FPlayerID& other) const {
@@ -45,17 +45,17 @@ struct BASE_API FPlayerID {
     }
 
     bool operator()(const FPlayerID &lhs, const FPlayerID &rhs) const {
-        return lhs.ToUInt64() < rhs.ToUInt64();
+        return lhs.ToInt64() < rhs.ToInt64();
     }
 
     [[nodiscard]] bool IsAvailable() const {
-        return localID >= kPlayerLocalIDBegin && localID <= kPlayerLocalIDEnd && crossID > 0;
+        return local >= kPlayerLocalIDBegin && local <= kPlayerLocalIDEnd && cross > 0;
     }
 };
 
 struct BASE_API FPlayerHash {
     std::size_t operator()(const FPlayerID& pid) const {
         // 使用 std::hash 组合 x 和 y 的哈希值
-        return std::hash<uint32_t>()(pid.localID) ^ (std::hash<uint32_t>()(pid.crossID) << 1);
+        return std::hash<uint32_t>()(pid.local) ^ (std::hash<uint32_t>()(pid.cross) << 1);
     }
 };

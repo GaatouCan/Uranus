@@ -6,32 +6,32 @@
 #include <ranges>
 
 IBasePlayer::IBasePlayer(AConnectionPointer conn)
-    : mOwnerScene(nullptr),
-      mConn(std::move(conn)),
-      mPlayerID(std::any_cast<FPlayerID>(mConn->GetContext())) {
+    : owner_(nullptr),
+      conn_(std::move(conn)),
+      pid_(std::any_cast<FPlayerID>(conn_->GetContext())) {
 
 }
 
 IBasePlayer::~IBasePlayer() {
-    for (const auto timer: mTimerMap | std::views::values) {
+    for (const auto timer: timerMap_ | std::views::values) {
         delete timer;
     }
 }
 
 bool IBasePlayer::SetConnection(AConnectionPointer conn) {
-    if (std::any_cast<FPlayerID>(mConn->GetContext()) != mPlayerID) {
+    if (std::any_cast<FPlayerID>(conn_->GetContext()) != pid_) {
         return false;
     }
-    mConn = std::move(conn);
+    conn_ = std::move(conn);
     return true;
 }
 
 AConnectionPointer IBasePlayer::GetConnection() const {
-    return mConn;
+    return conn_;
 }
 
 ATcpSocket &IBasePlayer::GetSocket() const {
-    return mConn->GetSocket();
+    return conn_->GetSocket();
 }
 
 asio::io_context &IBasePlayer::GetIOContext() const {
@@ -40,35 +40,35 @@ asio::io_context &IBasePlayer::GetIOContext() const {
 }
 
 UGameWorld * IBasePlayer::GetWorld() const {
-    return mConn->GetWorld();
+    return conn_->GetWorld();
 }
 
 AThreadID IBasePlayer::GetThreadID() const {
-    return mConn->GetThreadID();
+    return conn_->GetThreadID();
 }
 
 bool IBasePlayer::IsSameThread() const {
-    return mConn->IsSameThread();
+    return conn_->IsSameThread();
 }
 
-uint32_t IBasePlayer::GetLocalID() const {
-    return mPlayerID.GetLocalID();
+int32_t IBasePlayer::GetLocalID() const {
+    return pid_.GetLocalID();
 }
 
-uint32_t IBasePlayer::GetCrossID() const {
-    return mPlayerID.GetCrossID();
+int32_t IBasePlayer::GetCrossID() const {
+    return pid_.GetCrossID();
 }
 
 const FPlayerID &IBasePlayer::GetPlayerID() const {
-    return mPlayerID;
+    return pid_;
 }
 
-uint64_t IBasePlayer::GetFullID() const {
-    return mPlayerID.ToUInt64();
+int64_t IBasePlayer::GetFullID() const {
+    return pid_.ToInt64();
 }
 
 IPackage *IBasePlayer::BuildPackage() const {
-    return mConn->BuildPackage();
+    return conn_->BuildPackage();
 }
 
 void IBasePlayer::SendPackage(IPackage *pkg) const {
@@ -77,67 +77,67 @@ void IBasePlayer::SendPackage(IPackage *pkg) const {
     //     return;
     // }
 
-    mConn->Send(pkg);
+    conn_->Send(pkg);
 }
 
 void IBasePlayer::OnEnterScene(IAbstractScene *scene) {
-    if (mOwnerScene != nullptr) {
+    if (owner_ != nullptr) {
         // TODO
     }
-    mOwnerScene = scene;
-    mEnterTime = NowTimePoint();
+    owner_ = scene;
+    enterTime_ = NowTimePoint();
 }
 
 void IBasePlayer::OnLeaveScene(IAbstractScene *scene) {
-    if (mOwnerScene == nullptr)
+    if (owner_ == nullptr)
         return;
 
-    mLeaveTime = NowTimePoint();
-    mOwnerScene = nullptr;
+    leaveTime_ = NowTimePoint();
+    owner_ = nullptr;
 }
 
 bool IBasePlayer::TryLeaveScene() {
-    if (mOwnerScene == nullptr) {
+    if (owner_ == nullptr) {
         return false;
     }
-    mOwnerScene->PlayerLeaveScene(shared_from_this());
+    owner_->PlayerLeaveScene(shared_from_this());
     return true;
 }
 
-bool IBasePlayer::IsInScene(const uint32_t id) const {
-    if (mOwnerScene == nullptr)
+bool IBasePlayer::IsInScene(const int32_t id) const {
+    if (owner_ == nullptr)
         return false;
 
     if (id == 0)
         return true;
 
-    return mOwnerScene->GetSceneID() == id;
+    return owner_->GetSceneID() == id;
 }
 
-uint32_t IBasePlayer::GetCurrentSceneID() const {
-    if (mOwnerScene == nullptr)
+int32_t IBasePlayer::GetCurrentSceneID() const {
+    if (owner_ == nullptr)
         return -1;
-    return mOwnerScene->GetSceneID();
+    return owner_->GetSceneID();
 }
 
 IAbstractScene *IBasePlayer::GetCurrentScene() const {
-    return mOwnerScene;
+    return owner_;
 }
 
 ATimePoint IBasePlayer::GetEnterSceneTime() const {
-    return mEnterTime;
+    return enterTime_;
 }
 
 ATimePoint IBasePlayer::GetLeaveSceneTime() const {
-    return mLeaveTime;
+    return leaveTime_;
 }
 
 void IBasePlayer::SetPlatformInfo(const FPlatformInfo &platform) {
-    mPlatform = platform;
+    platform_ = platform;
 }
 
 const FPlatformInfo &IBasePlayer::GetPlatformInfo() const {
-    return mPlatform;
+    return platform_;
 }
 
 bool IBasePlayer::StopTimer(const FUniqueID &tid) {
@@ -150,15 +150,15 @@ bool IBasePlayer::StopTimer(const FUniqueID &tid) {
 }
 
 void IBasePlayer::CleanAllTimer() {
-    std::scoped_lock lock(mTimerMutex);
-    for (const auto timer: mTimerMap | std::views::values) {
+    std::unique_lock lock(timerMutex_);
+    for (const auto timer: timerMap_ | std::views::values) {
         delete timer;
     }
 }
 
 URepeatedTimer *IBasePlayer::GetTimer(const FUniqueID &tid) {
-    std::shared_lock lock(mTimerSharedMutex);
-    if (const auto it = mTimerMap.find(tid); it != mTimerMap.end()) {
+    std::shared_lock lock(timerMutex_);
+    if (const auto it = timerMap_.find(tid); it != timerMap_.end()) {
         return it->second;
     }
     return nullptr;
@@ -168,14 +168,18 @@ std::optional<FUniqueID> IBasePlayer::AddTimer(URepeatedTimer *timer) {
     if (timer == nullptr)
         return std::nullopt;
 
-    FUniqueID timerID = FUniqueID::RandomGenerate(); {
-        std::shared_lock lock(mTimerSharedMutex);
-        while (mTimerMap.contains(timerID)) {
+    FUniqueID timerID = FUniqueID::RandomGenerate();
+
+    {
+        std::shared_lock lock(timerMutex_);
+        while (timerMap_.contains(timerID)) {
             timerID = FUniqueID::RandomGenerate();
         }
-    } {
-        std::scoped_lock lock(mTimerMutex);
-        mTimerMap[timerID] = timer;
+    }
+
+    {
+        std::unique_lock lock(timerMutex_);
+        timerMap_[timerID] = timer;
     }
 
     timer->SetTimerID(timerID).SetCompleteCallback([weak = weak_from_this()](const FUniqueID &tid) mutable {
@@ -187,10 +191,10 @@ std::optional<FUniqueID> IBasePlayer::AddTimer(URepeatedTimer *timer) {
 }
 
 bool IBasePlayer::RemoveTimer(const FUniqueID &tid) {
-    std::scoped_lock lock(mTimerMutex);
-    if (const auto it = mTimerMap.find(tid); it != mTimerMap.end()) {
+    std::unique_lock lock(timerMutex_);
+    if (const auto it = timerMap_.find(tid); it != timerMap_.end()) {
         const auto timer = it->second;
-        mTimerMap.erase(it);
+        timerMap_.erase(it);
 
         if (timer != nullptr) {
             delete timer;

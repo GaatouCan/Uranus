@@ -10,17 +10,21 @@ std::string FUniqueID::ToString() const {
 
 FUniqueID & FUniqueID::FromString(const std::string &str) {
     const std::vector<std::string> res = utils::SplitString(str, '-');
+
+    if (res.size() < 2)
+        return *this;
+
     time = std::stoll(res[0]);
     random = std::stoull(res[1]);
     return *this;
 }
 
 FUniqueID FUniqueID::RandomGenerate() {
-    static std::random_device sRandomDevice;
-    static std::mt19937 sGenerator(sRandomDevice());
-    static std::uniform_int_distribution<> sDistribution(100000, 999999);
+    std::random_device RandomDevice;
+    std::mt19937 Generator(RandomDevice());
+    std::uniform_int_distribution Distribution(100000, 999999);
 
-    const uint64_t number = sDistribution(sGenerator);
+    const int64_t number = Distribution(Generator);
 
     return {
         utils::UnixTime(),

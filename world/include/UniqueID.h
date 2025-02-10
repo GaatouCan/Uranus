@@ -16,7 +16,7 @@
 struct BASE_API FUniqueID {
 
     long long time;
-    uint64_t random;
+    int64_t random;
 
     [[nodiscard]] std::string ToString() const;
 

@@ -69,12 +69,12 @@ private:
     void Collect();
 
 private:
-    std::queue<IPackage *> mQueue;
-    std::set<IPackage *> mInUseSet;
-    std::atomic<ATimePoint> mCollectTime;
+    std::queue<IPackage *> queue_;
+    std::set<IPackage *> set_;
+    std::atomic<ATimePoint> collectTime_;
 
-    std::mutex mMutex;
-    mutable std::shared_mutex mSharedMutex;
+    // std::mutex mMutex;
+    mutable std::shared_mutex mutex_;
 
     // 扩容和收缩临界点和比例
     // 每个线程下的数据包池行为目前设计为一致

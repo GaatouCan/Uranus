@@ -5,13 +5,13 @@
 
 class BASE_API UMainScene final : public IAbstractScene {
 
-    class UPackagePool* mPackagePool;
+    class UPackagePool* pool_;
 
-    asio::io_context mIOContext;
-    AThreadID mThreadID;
+    asio::io_context ctx_;
+    AThreadID tid_;
 
 public:
-    UMainScene(USceneManager *owner, uint32_t id);
+    UMainScene(USceneManager *owner, int32_t id);
     ~UMainScene() override;
 
     void SetThreadID(AThreadID tid);

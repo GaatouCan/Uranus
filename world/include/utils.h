@@ -51,17 +51,17 @@ namespace utils {
 
     std::string BASE_API StringReplace(std::string source, char toReplace, char replacement);
 
-    uint64_t BASE_API ThreadIdToInt(std::thread::id threadID);
+    int64_t BASE_API ThreadIdToInt(std::thread::id threadID);
 
     std::string BASE_API PascalToUnderline(const std::string &src);
 
     long long BASE_API UnixTime();
     long long BASE_API ToUnixTime(ATimePoint point);
 
-    uint64_t BASE_API SetBit(uint64_t, uint32_t);
-    uint64_t BASE_API ClearBit(uint64_t, uint32_t);
-    uint64_t BASE_API ToggleBit(uint64_t, uint32_t);
-    bool BASE_API CheckBit(uint64_t, uint32_t);
+    int64_t BASE_API SetBit(int64_t, int32_t);
+    int64_t BASE_API ClearBit(int64_t, int32_t);
+    int64_t BASE_API ToggleBit(int64_t, int32_t);
+    bool BASE_API CheckBit(int64_t, int32_t);
 
     std::vector<std::string> BASE_API SplitString(const std::string &src, char delimiter);
     std::vector<int> BASE_API SplitStringToInt(const std::string &src, char delimiter);

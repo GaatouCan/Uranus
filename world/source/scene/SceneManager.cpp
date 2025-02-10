@@ -7,21 +7,21 @@
 
 
 USceneManager::USceneManager(UGameWorld* world)
-    : mWorld(world),
-      mNextIndex(0)
+    : world_(world),
+      nextIndex_(0)
 {
 }
 
 USceneManager::~USceneManager()
 {
-    for (const auto it : mSceneMap | std::views::values)
+    for (const auto it : sceneMap_ | std::views::values)
         delete it;
 
-    mWorkVec.clear();
-    for (const auto it : mMainVec)
+    workVec_.clear();
+    for (const auto it : mainSceneVec_)
         delete it;
 
-    for (auto& th : mThreadVec)
+    for (auto& th : threadVec_)
     {
         if (th.joinable())
             th.join();
@@ -30,18 +30,18 @@ USceneManager::~USceneManager()
 
 void USceneManager::Init()
 {
-    const auto &cfg = mWorld->GetServerConfig();
+    const auto &cfg = world_->GetServerConfig();
     const auto num = cfg["server"]["io_thread"].as<int32_t>();
 
-    for (uint32_t idx = 0; idx < num; ++idx)
-        mMainVec.emplace_back(new UMainScene(this, idx));
+    for (int32_t idx = 0; idx < num; ++idx)
+        mainSceneVec_.emplace_back(new UMainScene(this, idx));
 
-    for (const auto val : mMainVec)
+    for (const auto val : mainSceneVec_)
     {
         if (const auto scene = dynamic_cast<UMainScene*>(val); scene != nullptr)
         {
-            mWorkVec.emplace_back(scene->GetIOContext());
-            mThreadVec.emplace_back([this, scene]
+            workVec_.emplace_back(scene->GetIOContext());
+            threadVec_.emplace_back([this, scene]
             {
                 asio::signal_set signals(scene->GetIOContext(), SIGINT, SIGTERM);
                 signals.async_wait([scene](auto, auto) {
@@ -60,31 +60,34 @@ void USceneManager::Init()
 
 UGameWorld* USceneManager::GetWorld() const
 {
-    return mWorld;
+    return world_;
 }
 
 IAbstractScene* USceneManager::GetNextMainScene()
 {
-    if (mMainVec.empty())
+    if (mainSceneVec_.empty())
         throw std::runtime_error("No context node available");
 
-    const auto res = mMainVec[mNextIndex++];
-    mNextIndex = mNextIndex % mMainVec.size();
+    const auto res = mainSceneVec_[nextIndex_++];
+    nextIndex_ = nextIndex_ % mainSceneVec_.size();
 
     return res;
 }
 
-IAbstractScene* USceneManager::GetScene(const uint32_t sid) const
+IAbstractScene* USceneManager::GetScene(const int32_t sid) const
 {
+    if (sid < 0)
+        return nullptr;
+
     if (sid < kNormalSceneIDBegin)
     {
-        if (sid >= mMainVec.size())
+        if (sid >= mainSceneVec_.size())
             return nullptr;
 
-        return mMainVec[sid];
+        return mainSceneVec_[sid];
     }
 
-    if (const auto it = mSceneMap.find(sid); it != mSceneMap.end())
+    if (const auto it = sceneMap_.find(sid); it != sceneMap_.end())
         return it->second;
 
     return nullptr;

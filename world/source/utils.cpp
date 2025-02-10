@@ -24,10 +24,10 @@ namespace utils {
         return source;
     }
 
-    uint64_t ThreadIdToInt(const std::thread::id threadID) {
+    int64_t ThreadIdToInt(const std::thread::id threadID) {
         std::stringstream ss;
         ss << threadID;
-        return std::stoull(ss.str());
+        return std::stoll(ss.str());
     }
 
     std::string PascalToUnderline(const std::string &src) {
@@ -68,24 +68,24 @@ namespace utils {
         return secondsSinceEpoch.count();
     }
 
-    uint64_t SetBit(const uint64_t number, const uint32_t n) {
-        assert(n < sizeof(uint64_t) * 8);
-        return number | static_cast<uint64_t>(1) << n;
+    int64_t SetBit(const int64_t number, const int32_t n) {
+        assert(n >= 0 && n < sizeof(int64_t) * 8);
+        return number | static_cast<int64_t>(1) << n;
     }
 
-    uint64_t ClearBit(const uint64_t number, const uint32_t n) {
-        assert(n < sizeof(uint64_t) * 8);
-        return number & ~(static_cast<uint64_t>(1) << n);
+    int64_t ClearBit(const int64_t number, const int32_t n) {
+        assert(n >= 0 && n < sizeof(int64_t) * 8);
+        return number & ~(static_cast<int64_t>(1) << n);
     }
 
-    uint64_t ToggleBit(const uint64_t number, const uint32_t n) {
-        assert(n < sizeof(uint64_t) * 8);
-        return number ^ static_cast<uint64_t>(1) << n;
+    int64_t ToggleBit(const int64_t number, const int32_t n) {
+        assert(n >= 0 && n < sizeof(int64_t) * 8);
+        return number ^ static_cast<int64_t>(1) << n;
     }
 
-    bool CheckBit(const uint64_t number, const uint32_t n) {
-        assert(n < sizeof(uint64_t) * 8);
-        return number & static_cast<uint64_t>(1) << n;
+    bool CheckBit(const int64_t number, const int32_t n) {
+        assert(n >= 0 && n < sizeof(int64_t) * 8);
+        return number & static_cast<int64_t>(1) << n;
     }
 
     std::vector<std::string> SplitString(const std::string &src, const char delimiter) {

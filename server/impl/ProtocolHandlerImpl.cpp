@@ -22,7 +22,7 @@ void UProtocolHandlerImpl::Invoke(const AProtoFunctor &func, const std::shared_p
     }
 
     const auto pid = std::any_cast<FPlayerID>(conn->GetContext());
-    if (const auto plr = mgr->FindPlayer(pid.localID); plr != nullptr) {
+    if (const auto plr = mgr->FindPlayer(pid.local); plr != nullptr) {
         try {
             assert(plr->GetConnection() == conn);
             std::invoke(func, plr, pkg);

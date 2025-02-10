@@ -29,16 +29,16 @@ public:
     UGameWorld *GetWorld() const;
     IAbstractScene *GetNextMainScene();
 
-    IAbstractScene *GetScene(uint32_t sid) const;
+    IAbstractScene *GetScene(int32_t sid) const;
 
 private:
-    UGameWorld *mWorld;
+    UGameWorld *world_;
 
-    std::vector<IAbstractScene *> mMainVec;
-    std::vector<asio::io_context::work> mWorkVec;
-    std::vector<std::thread> mThreadVec;
+    std::vector<IAbstractScene *> mainSceneVec_;
+    std::vector<asio::io_context::work> workVec_;
+    std::vector<std::thread> threadVec_;
 
-    std::atomic_size_t mNextIndex;
+    std::atomic_size_t nextIndex_;
 
-    std::unordered_map<uint32_t, IAbstractScene *> mSceneMap;
+    std::unordered_map<int32_t, IAbstractScene *> sceneMap_;
 };

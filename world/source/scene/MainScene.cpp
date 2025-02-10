@@ -1,27 +1,27 @@
 #include "../../include/scene/MainScene.h"
 #include "../../include/PackagePool.h"
 
-UMainScene::UMainScene(USceneManager *owner, const uint32_t id)
+UMainScene::UMainScene(USceneManager *owner, const int32_t id)
     : IAbstractScene(owner, id),
-      mPackagePool(new UPackagePool()) {
+      pool_(new UPackagePool()) {
 }
 
 UMainScene::~UMainScene() {
-    delete mPackagePool;
+    delete pool_;
 }
 
 void UMainScene::SetThreadID(const AThreadID tid) {
-    mThreadID = tid;
+    tid_ = tid;
 }
 
 AThreadID UMainScene::GetThreadID() const {
-    return mThreadID;
+    return tid_;
 }
 
 asio::io_context & UMainScene::GetIOContext() {
-    return mIOContext;
+    return ctx_;
 }
 
 UPackagePool * UMainScene::GetPackagePool() const {
-    return mPackagePool;
+    return pool_;
 }

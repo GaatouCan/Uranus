@@ -10,27 +10,26 @@ class IBasePlayer;
 
 class BASE_API IAbstractScene {
 
-    class USceneManager* mOwner;
-    const uint32_t mSceneID;
+    class USceneManager* owner_;
+    const int32_t id_;
 
-    std::map<uint32_t, std::shared_ptr<IBasePlayer>> mPlayerMap;
-    std::mutex mMutex;
-    mutable std::shared_mutex mSharedMutex;
+    std::map<int32_t, std::shared_ptr<IBasePlayer>> playerMap_;
+    mutable std::shared_mutex mutex_;
 
 public:
     IAbstractScene() = delete;
 
-    IAbstractScene(USceneManager *owner, uint32_t id);
+    IAbstractScene(USceneManager *owner, int32_t id);
     virtual ~IAbstractScene();
 
-    [[nodiscard]] uint32_t GetSceneID() const;
+    [[nodiscard]] int32_t GetSceneID() const;
     [[nodiscard]] USceneManager* GetOwner() const;
     [[nodiscard]] class UGameWorld *GetWorld() const;
 
     void PlayerEnterScene(const std::shared_ptr<IBasePlayer> &player);
     void PlayerLeaveScene(const std::shared_ptr<IBasePlayer> &player, bool bChange = false);
 
-    std::shared_ptr<IBasePlayer> GetPlayer(uint32_t pid) const;
+    std::shared_ptr<IBasePlayer> GetPlayer(int32_t pid) const;
 
     void RunInThread(const std::function<awaitable<void>()> &func) const;
     void RunInThread(std::function<awaitable<void>()> &&func) const;

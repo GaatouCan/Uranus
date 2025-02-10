@@ -33,10 +33,10 @@ awaitable<std::shared_ptr<UPlayer> > UPlayerManager::OnPlayerLogin(const std::sh
         co_return nullptr;
     }
 
-    if (const auto plr = FindPlayer(id.localID); plr != nullptr) {
+    if (const auto plr = FindPlayer(id.local); plr != nullptr) {
         {
             std::scoped_lock lock(mPlayerMutex);
-            mPlayerMap.erase(id.localID);
+            mPlayerMap.erase(id.local);
         }
 
         spdlog::info("{} - Player[{}] Over Login", __FUNCTION__, plr->GetFullID());
@@ -55,7 +55,7 @@ awaitable<std::shared_ptr<UPlayer> > UPlayerManager::OnPlayerLogin(const std::sh
 
     {
         std::scoped_lock lock(mPlayerMutex);
-        mPlayerMap[id.localID] = plr;
+        mPlayerMap[id.local] = plr;
     }
 
     spdlog::info("{} - New Player[{}] Login", __FUNCTION__, plr->GetFullID());
@@ -69,7 +69,7 @@ awaitable<std::shared_ptr<UPlayer> > UPlayerManager::OnPlayerLogin(const std::sh
 
 void UPlayerManager::OnPlayerLogout(const FPlayerID pid) {
     spdlog::info("{} - Player[{}] Logout", __FUNCTION__, pid.ToUInt64());
-    if (const auto plr = RemovePlayer(pid.localID); plr != nullptr) {
+    if (const auto plr = RemovePlayer(pid.local); plr != nullptr) {
         plr->TryLeaveScene();
         plr->OnLogout();
     }
@@ -129,7 +129,7 @@ void UPlayerManager::SyncCache(const FCacheNode &node) {
         return;
 
     std::scoped_lock lock(mCacheMutex);
-    mCacheMap[node.pid.localID] = node;
+    mCacheMap[node.pid.local] = node;
     spdlog::info("{} - Player[{}] Success.", __FUNCTION__, node.pid.ToUInt64());
 }
 
@@ -137,17 +137,17 @@ awaitable<std::optional<FCacheNode> > UPlayerManager::FindCacheNode(const FPlaye
     if (!pid.IsAvailable())
         co_return std::nullopt;
 
-    if (pid.crossID != GetWorld()->GetServerID()) {
+    if (pid.cross != GetWorld()->GetServerID()) {
         // TODO
         co_return std::nullopt;
     }
 
-    if (const auto plr = FindPlayer(pid.localID); plr != nullptr) {
+    if (const auto plr = FindPlayer(pid.local); plr != nullptr) {
         SyncCache(plr);
     }
 
     std::shared_lock lock(mCacheSharedMutex);
-    if (const auto it = mCacheMap.find(pid.localID); it != mCacheMap.end()) {
+    if (const auto it = mCacheMap.find(pid.local); it != mCacheMap.end()) {
         co_return std::make_optional(it->second);
     }
 

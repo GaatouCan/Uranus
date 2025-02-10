@@ -7,26 +7,25 @@
 #include "../PlatformInfo.h"
 
 #include <map>
-#include <mutex>
 #include <shared_mutex>
 #include <spdlog/spdlog.h>
 
 
 class BASE_API IBasePlayer : public UActor, public std::enable_shared_from_this<IBasePlayer> {
 
-    class IAbstractScene *mOwnerScene;
+    class IAbstractScene *owner_;
 
-    AConnectionPointer mConn;
-    FPlayerID mPlayerID;
+    AConnectionPointer conn_;
+    FPlayerID pid_;
 
-    ATimePoint mEnterTime;
-    ATimePoint mLeaveTime;
+    ATimePoint enterTime_;
+    ATimePoint leaveTime_;
 
-    FPlatformInfo mPlatform;
+    FPlatformInfo platform_;
 
-    std::map<FUniqueID, URepeatedTimer *> mTimerMap;
-    std::mutex mTimerMutex;
-    mutable std::shared_mutex mTimerSharedMutex;
+    std::map<FUniqueID, URepeatedTimer *> timerMap_;
+    // std::mutex mTimerMutex;
+    mutable std::shared_mutex timerMutex_;
 
 public:
     IBasePlayer() = delete;
@@ -45,10 +44,10 @@ public:
     [[nodiscard]] AThreadID GetThreadID() const;
     bool IsSameThread() const;
 
-    [[nodiscard]] uint32_t GetLocalID() const;
-    [[nodiscard]] uint32_t GetCrossID() const;
+    [[nodiscard]] int32_t GetLocalID() const;
+    [[nodiscard]] int32_t GetCrossID() const;
     [[nodiscard]] const FPlayerID &GetPlayerID() const;
-    [[nodiscard]] uint64_t GetFullID() const;
+    [[nodiscard]] int64_t GetFullID() const;
 
     [[nodiscard]] IPackage *BuildPackage() const;
     void SendPackage(IPackage *pkg) const;
@@ -61,8 +60,8 @@ public:
 
     bool TryLeaveScene();
 
-    bool IsInScene(uint32_t id = 0) const;
-    uint32_t GetCurrentSceneID() const;
+    bool IsInScene(int32_t id = 0) const;
+    int32_t GetCurrentSceneID() const;
 
     [[nodiscard]] IAbstractScene *GetCurrentScene() const;
 
@@ -74,7 +73,7 @@ public:
 
     template<typename FUNC, typename... ARGS>
     void RunInThread(FUNC &&func, ARGS &&... args) {
-        co_spawn(mConn->GetSocket().get_executor(), [func = std::forward<FUNC>(func), ...args = std::forward<ARGS>(args)]() mutable -> awaitable<void> {
+        co_spawn(conn_->GetSocket().get_executor(), [func = std::forward<FUNC>(func), ...args = std::forward<ARGS>(args)]() mutable -> awaitable<void> {
             try {
                 std::invoke(func, args...);
             } catch (std::exception &e) {

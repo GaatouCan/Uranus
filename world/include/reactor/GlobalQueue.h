@@ -47,10 +47,8 @@ private:
     std::vector<std::thread> workerVec_;
 
     std::map<UReactor *, std::weak_ptr<UTaskQueue>> reactorMap_;
-    // std::mutex mReactorMutex;
     mutable std::shared_mutex reactorMutex_;
 
     std::set<std::weak_ptr<UTaskQueue>, FWeakPointerRawAddressCompare> emptySet_;
-    // std::mutex mEmptyMutex;
     mutable std::shared_mutex emptyMutex_;
 };
