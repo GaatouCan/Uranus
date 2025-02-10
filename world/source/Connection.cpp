@@ -25,6 +25,8 @@ UConnection::~UConnection() {
 }
 
 void UConnection::ConnectToClient() {
+    assert(codec_ != nullptr && handler_ != nullptr);
+
     deadline_ = NowTimePoint() + expireTime;
 
     spdlog::debug("{} - Connection from {} run in thread: {}", __FUNCTION__, RemoteAddress().to_string(), utils::ThreadIdToInt(GetThreadID()));
@@ -109,14 +111,6 @@ UGameWorld *UConnection::GetWorld() const {
 
 bool UConnection::IsSameThread() const {
     return GetThreadID() == std::this_thread::get_id();
-}
-
-bool UConnection::HasCodecSet() const {
-    return codec_ != nullptr;
-}
-
-bool UConnection::HasHandlerSet() const {
-    return handler_ != nullptr;
 }
 
 IPackage *UConnection::BuildPackage() const {

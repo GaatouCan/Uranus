@@ -64,7 +64,6 @@ public:
     static void SetReadTimeout(uint32_t sec);
 
     [[nodiscard]] bool IsSameThread() const;
-    [[nodiscard]] bool HasCodecSet() const;
 
     template<typename T>
     requires std::derived_from<T, IPackageCodec>
@@ -75,8 +74,6 @@ public:
         codec_ = std::make_unique<T>(this);
         return *this;
     }
-
-    [[nodiscard]] bool HasHandlerSet() const;
 
     template<typename T>
     requires std::derived_from<T, IConnectionHandler>
