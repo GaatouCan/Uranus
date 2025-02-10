@@ -37,7 +37,6 @@ UGameWorld::UGameWorld()
     protocolRoute_ = new UProtocolRoute(this);
 
     // Create Sub System
-    // CreateSystem<UCommandSystem>(2);
     CreateSystem<UTimerSystem>(3);
     CreateSystem<UManagerSystem>(4);
     CreateSystem<UEventSystem>(5);
@@ -153,17 +152,10 @@ UGameWorld &UGameWorld::Shutdown() {
     if (!ctx_.stopped())
         ctx_.stop();
 
-    // for (const auto& conn : mConnectionMap | std::views::values)
-    //     conn->Disconnect();
-
     connectionMap_.clear();
 
     return *this;
 }
-
-// void UGameWorld::FilterConnection(const std::function<void(const AConnectionPointer &)> &filter) {
-//     mConnectionFilter = filter;
-// }
 
 void UGameWorld::RemoveConnection(const std::string &key) {
     if (!running_)
@@ -279,8 +271,6 @@ awaitable<void> UGameWorld::WaitForConnect() {
         spdlog::info("Waiting For Client To Connect - Server Port: {}", config["server"]["port"].as<uint16_t>());
 
         while (running_) {
-            // PackagePool and io_context in per sub thread
-            // auto &[pool, ctx, tid, index] = mContextPool->NextContextNode();
             const auto scene = dynamic_cast<UMainScene *>(sceneManager_->GetNextMainScene());
             if (scene == nullptr) {
                 spdlog::critical("{} - Failed to get main scene.", __FUNCTION__);

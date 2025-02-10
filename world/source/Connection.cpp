@@ -8,9 +8,9 @@
 #include <spdlog/spdlog.h>
 
 
-std::chrono::duration<uint32_t> UConnection::expireTime = 30s;
-std::chrono::duration<uint32_t> UConnection::writeTimeout = 10s;
-std::chrono::duration<uint32_t> UConnection::readTimeout = 10s;
+std::chrono::duration<uint32_t> UConnection::kExpireTime = 30s;
+std::chrono::duration<uint32_t> UConnection::kWriteTimeout = 10s;
+std::chrono::duration<uint32_t> UConnection::kReadTimeout = 10s;
 
 
 UConnection::UConnection(ATcpSocket socket, UMainScene *scene)
@@ -27,7 +27,7 @@ UConnection::~UConnection() {
 void UConnection::ConnectToClient() {
     assert(codec_ != nullptr && handler_ != nullptr);
 
-    deadline_ = NowTimePoint() + expireTime;
+    deadline_ = NowTimePoint() + kExpireTime;
 
     spdlog::debug("{} - Connection from {} run in thread: {}", __FUNCTION__, RemoteAddress().to_string(), utils::ThreadIdToInt(GetThreadID()));
     if (handler_ != nullptr)
@@ -82,15 +82,15 @@ UConnection &UConnection::SetKey(const std::string &key) {
 }
 
 void UConnection::SetWatchdogTimeout(const uint32_t sec) {
-    expireTime = std::chrono::seconds(sec);
+    kExpireTime = std::chrono::seconds(sec);
 }
 
 void UConnection::SetWriteTimeout(const uint32_t sec) {
-    writeTimeout = std::chrono::seconds(sec);
+    kWriteTimeout = std::chrono::seconds(sec);
 }
 
 void UConnection::SetReadTimeout(const uint32_t sec) {
-    readTimeout = std::chrono::seconds(sec);
+    kReadTimeout = std::chrono::seconds(sec);
 }
 
 AThreadID UConnection::GetThreadID() const {
@@ -203,7 +203,7 @@ awaitable<void> UConnection::ReadPackage() {
             co_await codec_->Decode(pkg);
 
             if (pkg->IsAvailable()) {
-                deadline_ = NowTimePoint() + expireTime;
+                deadline_ = NowTimePoint() + kExpireTime;
 
                 if (handler_ != nullptr)
                     co_await handler_->OnReadPackage(pkg);

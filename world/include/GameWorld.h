@@ -84,8 +84,6 @@ public:
     UGameWorld &Run();
     UGameWorld &Shutdown();
 
-    // void FilterConnection(const std::function<void(const AConnectionPointer &)> &filter);
-
     void RemoveConnection(const std::string &key);
     void RemoveConnection(std::string_view key);
 

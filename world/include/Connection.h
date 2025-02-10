@@ -30,9 +30,9 @@ class BASE_API UConnection final : public std::enable_shared_from_this<UConnecti
     std::any ctx_;
     uint32_t contextNullCount_ = 0;
 
-    static std::chrono::duration<uint32_t> expireTime;
-    static std::chrono::duration<uint32_t> writeTimeout;
-    static std::chrono::duration<uint32_t> readTimeout;
+    static std::chrono::duration<uint32_t> kExpireTime;
+    static std::chrono::duration<uint32_t> kWriteTimeout;
+    static std::chrono::duration<uint32_t> kReadTimeout;
 
     static constexpr int NULL_CONTEXT_MAX_COUNT = 3;
 
