@@ -31,30 +31,32 @@ void UGlobalQueue::Init() {
                     break;
 
                 auto res = mQueue.PopFront();
+                if (!res.has_value()) continue;
 
-                if (res == nullptr)
+                auto reactor = res.value();
+                if (reactor == nullptr)
                     continue;
 
-                if (res->IsRemoved())
+                if (reactor->IsRemoved())
                     continue;
 
-                res->OnPopFromGlobal();
-                res->OnStart();
-                res->HandleTask(10000);
+                reactor->OnPopFromGlobal();
+                reactor->OnStart();
+                reactor->HandleTask(10000);
 
-                if (res->IsRemoved())
+                if (reactor->IsRemoved())
                     continue;
 
-                res->OnStop();
+                reactor->OnStop();
 
-                if (res->IsEmpty()) {
+                if (reactor->IsEmpty()) {
                     std::scoped_lock lock(mEmptyMutex);
-                    mEmptySet.emplace(res);
+                    mEmptySet.emplace(reactor);
                     continue;
                 }
 
-                mQueue.PushBack(res);
-                res->OnPushToGlobal();
+                mQueue.PushBack(reactor);
+                reactor->OnPushToGlobal();
             }
         });
     }

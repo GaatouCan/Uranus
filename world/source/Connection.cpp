@@ -55,7 +55,8 @@ void UConnection::Disconnect() {
 
     // 服务器关闭时数据包池不一定还在
     while (!mOutput.IsEmpty() && GetPackagePool()) {
-        GetPackagePool()->Recycle(mOutput.PopFront());
+        if (auto res = mOutput.PopFront(); res.has_value())
+            GetPackagePool()->Recycle(res.value());
     }
 }
 
@@ -170,8 +171,11 @@ awaitable<void> UConnection::WritePackage() {
         }
 
         while (mSocket.is_open() && !mOutput.IsEmpty()) {
-            const auto pkg = mOutput.PopFront();
+            auto res = mOutput.PopFront();
+            if (!res.has_value())
+                continue;
 
+            const auto pkg = res.value();
             co_await mCodec->Encode(pkg);
 
             if (pkg->IsAvailable()) {
