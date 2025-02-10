@@ -51,7 +51,7 @@ awaitable<void> ULoginAuthenticator::OnLogin(const AConnectionPointer &conn, IPa
         co_return;
     }
 
-    spdlog::debug("{} - Player id: {}, token: {}", __FUNCTION__, info.pid.ToUInt64(), info.token);
+    spdlog::debug("{} - Player id: {}, token: {}", __FUNCTION__, info.pid.ToInt64(), info.token);
     if (const auto pid = VerifyToken(info.pid, info.token); pid.IsAvailable() && pid.cross == mWorld->GetServerID()) {
         conn->SetContext(std::make_any<FPlayerID>(pid));
 
@@ -66,7 +66,7 @@ awaitable<void> ULoginAuthenticator::OnLogin(const AConnectionPointer &conn, IPa
     } else if (!pid.IsAvailable())
         spdlog::error("{} - Player ID not available - key[{}]", __FUNCTION__, conn->GetKey());
     else if (pid.cross != mWorld->GetServerID())
-        spdlog::error("{} - Server ID[{}] error, Connection Server ID[{}] - key[{}]", __FUNCTION__, mWorld->GetServerID(), pid.ToUInt64(), conn->GetKey());
+        spdlog::error("{} - Server ID[{}] error, Connection Server ID[{}] - key[{}]", __FUNCTION__, mWorld->GetServerID(), pid.ToInt64(), conn->GetKey());
 
     conn->ResetContext();
     conn->Disconnect();
