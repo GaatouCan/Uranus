@@ -3,7 +3,7 @@ import os
 
 VERSION = '0.1'
 
-def generate_protobuf_define(src: str, dist: str, proto: list, expt: list, include_dir: str):
+def generate_protobuf_define(src: str, dist: str, proto: list, include_dir: str):
     """生成协议枚举类型、回调函数声明头文件和回调注册源文件"""
     
     assert src, 'proto input path error'
@@ -23,37 +23,57 @@ def generate_protobuf_define(src: str, dist: str, proto: list, expt: list, inclu
         with open(os.path.join(src, val + '.proto'), 'r', encoding='utf-8') as file:
             package = {'list': []}
 
+            in_message = False
+            is_to_client = False
+
             line = file.readline()
             while line:
-                line = line.strip()
+                if line.startswith('}') and in_message:
+                    is_to_client = False
+                    in_message = False
 
+                line = line.strip()
                 if line.startswith('package'):
                     package['package'] = line[8:-1].strip()
 
-                if line.startswith('message'):
+                if line.startswith('// @ignore'):
+                    line = file.readline()
+                    line = file.readline()
+                    continue
+
+                if line.startswith('// @client'):
+                    print('Client')
+                    is_to_client = True
+
+                if line.startswith('message') and not in_message:
+                    in_message = True
+
+                    line = line.strip()
                     line = line[8:-1].strip()
 
-                    if line.startswith('C2W') or line.startswith('Q2W') or line.startswith('W2Q') or line.startswith('W2C'):
-                        if line in proto_name_set:
-                            raise f"{line} redefined."
+                    # if line.startswith('C2W') or line.startswith('Q2W') or line.startswith('W2Q') or line.startswith('W2C'):
+                    if line in proto_name_set:
+                        raise f"{line} redefined."
 
-                        proto_name_set.append(line)
+                    proto_name_set.append(line)
 
-                        if line in expt:
-                            package['list'].append({'proto': line, 'callback': 0})
-                            continue
+                        # if line in expt:
+                        #     package['list'].append({'proto': line, 'callback': 0})
+                        #     continue
                     
-                    if line.startswith('C2W'):
-                        package['list'].append({'proto': line, 'callback': 1})
+                    # if line.startswith('C2W'):
+                    #     package['list'].append({'proto': line, 'callback': 1})
                         
-                    if line.startswith('Q2W'):
-                        package['list'].append({'proto': line, 'callback': 2})
+                    # if line.startswith('Q2W'):
+                    #     package['list'].append({'proto': line, 'callback': 2})
                         
-                    if line.startswith('W2Q'):
-                        package['list'].append({'proto': line, 'callback': 3})
+                    # if line.startswith('W2Q'):
+                    #     package['list'].append({'proto': line, 'callback': 3})
                         
-                    if line.startswith("W2C"):
+                    if is_to_client:
                         package['list'].append({'proto': line, 'callback': 0})
+                    else:
+                        package['list'].append({'proto': line, 'callback': 1})
 
                 line = file.readline()
 

@@ -25,6 +25,8 @@ sql_type_map = {
     'FLOAT': "float",
     'float': "float",
 
+    'BOOLEAN': "bool",
+    'boolean': "bool",
 
     'VARCHAR(255)': "string",
     'varchar(255)': "string",
@@ -48,6 +50,7 @@ cpp_type_map = {
     "uint8": "uint8_t",
     "double": "double",
     "float": "float",
+    "bool": "bool",
     "string": "std::string",
     "text": "std::string",
     "blob": "FByteArray"
