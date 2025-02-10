@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../common.h"
-#include "../TSDeque.h"
+#include "../ThreadSafeDeque.h"
 
 #include <memory>
 #include <set>
@@ -43,7 +43,7 @@ public:
 private:
     UGameWorld *mWorld;
 
-    TSDeque<std::shared_ptr<UTaskQueue>> mQueue;
+    TThreadSafeDeque<std::shared_ptr<UTaskQueue>> mQueue;
     std::vector<std::thread> mWorkerVec;
 
     std::map<UReactor *, std::weak_ptr<UTaskQueue>> mReactorMap;

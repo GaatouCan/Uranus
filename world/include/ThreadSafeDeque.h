@@ -6,15 +6,12 @@
 #include <atomic>
 #include <optional>
 
-/**
- * Thread Safe Deque
- * @tparam T Element Type
- */
+
 template<typename T>
-class BASE_API TSDeque {
+class BASE_API TThreadSafeDeque {
 public:
-    TSDeque() = default;
-    ~TSDeque() = default;
+    TThreadSafeDeque() = default;
+    ~TThreadSafeDeque() = default;
 
     T &Front() {
         std::shared_lock lock(mutex_);

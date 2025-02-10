@@ -2,7 +2,7 @@
 
 #include "PackageCodec.h"
 #include "ConnectionHandler.h"
-#include "TSDeque.h"
+#include "ThreadSafeDeque.h"
 #include "utils.h"
 
 #include <asio/experimental/awaitable_operators.hpp>
@@ -20,7 +20,7 @@ class BASE_API UConnection final : public std::enable_shared_from_this<UConnecti
     std::unique_ptr<IPackageCodec> mCodec = nullptr;
     std::unique_ptr<IConnectionHandler> mHandler = nullptr;
 
-    TSDeque<IPackage *> mOutput;
+    TThreadSafeDeque<IPackage *> mOutput;
 
     std::string mKey;
 
