@@ -85,9 +85,9 @@ public:
 
     static constexpr size_t PACKAGE_HEADER_SIZE = sizeof(FHeader);
 
-    static uint32_t packageMagic;
-    static uint32_t packageVersion;
-    static std::string packageMethod;
+    static uint32_t kPackageMagic;
+    static uint32_t kPackageVersion;
+    static std::string kPackageMethod;
 
 private:
     [[nodiscard]] FByteArray &RawByteArray();
