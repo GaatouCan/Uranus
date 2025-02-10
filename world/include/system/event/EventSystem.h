@@ -25,15 +25,15 @@ class BASE_API UEventSystem final : public ISubSystem {
         IEventParam *param = nullptr;
     };
 
-    std::queue<FEventNode> mEventQueue;
-    std::mutex mEventMutex;
-    mutable std::shared_mutex mEventShared;
+    std::queue<FEventNode> eventQueue_;
+    // std::mutex mEventMutex;
+    mutable std::shared_mutex eventMutex_;
 
     using AListenerMap = std::map<void *, AEventListener>;
 
-    std::map<uint32_t, AListenerMap> mListenerMap;
-    AListenerMap mCurrentListener;
-    std::mutex mListenerMutex;
+    std::map<uint32_t, AListenerMap> listenerMap_;
+    AListenerMap currentListener_;
+    std::mutex listenerMutex_;
 
 public:
     explicit UEventSystem(UGameWorld *world);

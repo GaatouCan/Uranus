@@ -7,27 +7,27 @@
 #include <spdlog/spdlog.h>
 
 UManagerSystem::UManagerSystem(UGameWorld *world)
-    : ISubSystem(world), mTimerID() {
+    : ISubSystem(world), timerId_() {
 }
 
 UManagerSystem::~UManagerSystem() {
-    for (const auto mgr: mManagerMap | std::views::values)
+    for (const auto mgr: managerMap_ | std::views::values)
         delete mgr;
 }
 
 void UManagerSystem::Init() {
-    for (const auto mgr: mManagerMap | std::views::values) {
+    for (const auto mgr: managerMap_ | std::views::values) {
         GetWorld()->GetGlobalQueue()->RegisterReactor(mgr);
     }
 
-    for (const auto mgr: mManagerMap | std::views::values) {
+    for (const auto mgr: managerMap_ | std::views::values) {
         mgr->Init();
         spdlog::info("\t{} Initialized.", mgr->GetManagerName());
     }
 
     if (const auto sys = GetWorld()->GetSystem<UTimerSystem>(); sys != nullptr) {
         if (const auto value = sys->SetTimerTo(std::chrono::seconds(1), std::chrono::seconds(1), true, &UManagerSystem::OnTick, this); value.has_value())
-            mTimerID = value.value();
+            timerId_ = value.value();
         else {
             spdlog::error("{} - Failed to set timer for UManagerSystem", __FUNCTION__);
             GetWorld()->Shutdown();
@@ -39,8 +39,8 @@ void UManagerSystem::Init() {
 
 void UManagerSystem::OnTick(ATimePoint now) {
     // spdlog::debug("{} - {}", __FUNCTION__, ToUnixTime(now));
-    for (const auto mgr: std::views::values(mManagerMap)) {
-        if (!mgr->bTick) continue;
+    for (const auto mgr: std::views::values(managerMap_)) {
+        if (!mgr->tick_) continue;
         mgr->PushTask<IBaseManager>(&IBaseManager::OnTick, now);
     }
 
@@ -48,7 +48,7 @@ void UManagerSystem::OnTick(ATimePoint now) {
 
     if (const auto today = std::chrono::floor<std::chrono::days>(now).time_since_epoch().count(); today > day && day != 0) {
         day = today;
-        for (const auto mgr: std::views::values(mManagerMap)) {
+        for (const auto mgr: std::views::values(managerMap_)) {
             mgr->PushTask<IBaseManager>(&IBaseManager::OnDayChange);
         }
     }

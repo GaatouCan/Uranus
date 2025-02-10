@@ -10,9 +10,8 @@
 
 class BASE_API UTimerSystem final : public ISubSystem {
 
-    std::map<FUniqueID, URepeatedTimer *> mTimerMap;
-    std::mutex mMutex;
-    mutable std::shared_mutex mSharedMutex;
+    std::map<FUniqueID, URepeatedTimer *> timerMap_;
+    mutable std::shared_mutex mutex_;
 
 public:
     explicit UTimerSystem(UGameWorld *world);

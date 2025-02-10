@@ -31,23 +31,22 @@ struct FStringViewEqual {
 
 class BASE_API UGameWorld final {
 
-    asio::io_context mContext;
-    ATcpAcceptor mAcceptor;
+    asio::io_context ctx_;
+    ATcpAcceptor acceptor;
 
-    AModuleHandle mModule;
-    IServerLogic *mServer;
-    AServerDestroyer mServerDestroyer;
+    AModuleHandle module_;
+    IServerLogic *server_;
+    AServerDestroyer serverDestroyer_;
 
-    class UConfigManager *mConfigManager;
-    class ULoginAuthenticator *mLoginAuthenticator;
-    class USceneManager *mSceneManager;
-    class UGlobalQueue *mGlobalQueue;
-    class UProtocolRoute *mProtocolRoute;
+    class UConfigManager *configManager_;
+    class ULoginAuthenticator *loginAuthenticator_;
+    class USceneManager *sceneManager_;
+    class UGlobalQueue *globalQueue_;
+    class UProtocolRoute *protocolRoute_;
 
-    std::unordered_map<std::string, AConnectionPointer, FStringViewHash, FStringViewEqual>
-    mConnectionMap;
+    std::unordered_map<std::string, AConnectionPointer, FStringViewHash, FStringViewEqual> connectionMap_;
 
-    ASystemTimer mFullTimer;
+    ASystemTimer fullTimer_;
 
     struct FSystemPriority {
         int priority;
@@ -62,18 +61,18 @@ class BASE_API UGameWorld final {
         }
     };
 
-    std::priority_queue<FSystemPriority, std::vector<FSystemPriority>, std::greater<> > mInitPriority;
-    std::priority_queue<FSystemPriority, std::vector<FSystemPriority>, std::less<> > mDestPriority;
+    std::priority_queue<FSystemPriority, std::vector<FSystemPriority>, std::greater<> > initPriority_;
+    std::priority_queue<FSystemPriority, std::vector<FSystemPriority>, std::less<> > destPriority_;
 
-    std::unordered_map<std::type_index, ISubSystem *> mSystemMap;
-    std::unordered_map<std::string, ISubSystem *, FStringViewHash, FStringViewEqual> mNameToSystem;
+    std::unordered_map<std::type_index, ISubSystem *> systemMap_;
+    std::unordered_map<std::string, ISubSystem *, FStringViewHash, FStringViewEqual> nameToSystem_;
 
     // std::function<void(const AConnectionPointer &)> mConnectionFilter;
 
-    AThreadID mThreadID;
+    AThreadID worldThreadId_;
 
-    bool bInited;
-    std::atomic_bool bRunning;
+    bool inited_;
+    std::atomic_bool running_;
 
 public:
     UGameWorld();
@@ -97,7 +96,7 @@ public:
 
     template<SYSTEM_TYPE T>
     T *GetSystem() const noexcept {
-        if (const auto iter = mSystemMap.find(typeid(T)); iter != mSystemMap.end())
+        if (const auto iter = systemMap_.find(typeid(T)); iter != systemMap_.end())
             return dynamic_cast<T *>(iter->second);
         return nullptr;
     }
@@ -119,16 +118,16 @@ private:
 
     template<SYSTEM_TYPE T>
     T *CreateSystem(const int priority = 0) {
-        if (bInited)
+        if (inited_)
             return nullptr;
 
         const auto res = new T(this);
 
-        mSystemMap.insert_or_assign(typeid(T), res);
-        mNameToSystem.insert_or_assign(res->GetSystemName(), res);
+        systemMap_.insert_or_assign(typeid(T), res);
+        nameToSystem_.insert_or_assign(res->GetSystemName(), res);
 
-        mInitPriority.push({ priority, typeid(T) });
-        mDestPriority.push({ priority, typeid(T) });
+        initPriority_.push({ priority, typeid(T) });
+        destPriority_.push({ priority, typeid(T) });
 
         return res;
     }

@@ -22,19 +22,19 @@
 
 
 UGameWorld::UGameWorld()
-    : mAcceptor(mContext),
-      mModule(nullptr),
-      mServer(nullptr),
-      mServerDestroyer(nullptr),
-      mFullTimer(mContext),
-      bInited(false),
-      bRunning(false) {
+    : acceptor(ctx_),
+      module_(nullptr),
+      server_(nullptr),
+      serverDestroyer_(nullptr),
+      fullTimer_(ctx_),
+      inited_(false),
+      running_(false) {
 
-    mConfigManager = new UConfigManager();
-    mSceneManager = new USceneManager(this);
-    mGlobalQueue = new UGlobalQueue(this);
-    mLoginAuthenticator = new ULoginAuthenticator(this);
-    mProtocolRoute = new UProtocolRoute(this);
+    configManager_ = new UConfigManager();
+    sceneManager_ = new USceneManager(this);
+    globalQueue_ = new UGlobalQueue(this);
+    loginAuthenticator_ = new ULoginAuthenticator(this);
+    protocolRoute_ = new UProtocolRoute(this);
 
     // Create Sub System
     // CreateSystem<UCommandSystem>(2);
@@ -47,35 +47,35 @@ UGameWorld::UGameWorld()
 UGameWorld::~UGameWorld() {
     Shutdown();
 
-    while (!mDestPriority.empty()) {
-        auto [priority, type] = mDestPriority.top();
-        mDestPriority.pop();
+    while (!destPriority_.empty()) {
+        auto [priority, type] = destPriority_.top();
+        destPriority_.pop();
 
-        const auto iter = mSystemMap.find(type);
-        if (iter == mSystemMap.end())
+        const auto iter = systemMap_.find(type);
+        if (iter == systemMap_.end())
             continue;
 
         spdlog::info("{} Destroyed.", iter->second->GetSystemName());
         delete iter->second;
 
-        mSystemMap.erase(iter);
+        systemMap_.erase(iter);
     }
 
     // 正常情况下map应该是空了 但以防万一还是再遍历一次
-    for (const auto sys: mSystemMap | std::views::values) {
+    for (const auto sys: systemMap_ | std::views::values) {
         delete sys;
     }
 
-    delete mProtocolRoute;
-    delete mGlobalQueue;
-    delete mSceneManager;
-    delete mLoginAuthenticator;
-    delete mConfigManager;
+    delete protocolRoute_;
+    delete globalQueue_;
+    delete sceneManager_;
+    delete loginAuthenticator_;
+    delete configManager_;
 
-    if (mServer && mServerDestroyer) {
-        mServerDestroyer(mServer);
+    if (server_ && serverDestroyer_) {
+        serverDestroyer_(server_);
 #if defined(_WIN32) || defined(_WIN64)
-        FreeLibrary(mModule);
+        FreeLibrary(module_);
 #else
         dlclose(mModule);
 #endif
@@ -92,10 +92,10 @@ UGameWorld &UGameWorld::Init(const std::string &dllPath) {
         exit(-1);
     }
 
-    mThreadID = std::this_thread::get_id();
+    worldThreadId_ = std::this_thread::get_id();
 
-    mConfigManager->Init();
-    assert(mConfigManager->IsLoaded());
+    configManager_->Init();
+    assert(configManager_->IsLoaded());
 
     const auto &config = GetServerConfig();
 
@@ -105,58 +105,58 @@ UGameWorld &UGameWorld::Init(const std::string &dllPath) {
     UPackagePool::SetPackageBuilder(&FPackage::CreatePackage);
     UPackagePool::SetPackageInitializer(&FPackage::InitPackage);
 
-    mSceneManager->Init();
-    mGlobalQueue->Init();
-    mLoginAuthenticator->Init();
+    sceneManager_->Init();
+    globalQueue_->Init();
+    loginAuthenticator_->Init();
 
-    while (!mInitPriority.empty()) {
-        auto [priority, type] = mInitPriority.top();
-        mInitPriority.pop();
+    while (!initPriority_.empty()) {
+        auto [priority, type] = initPriority_.top();
+        initPriority_.pop();
 
-        const auto iter = mSystemMap.find(type);
-        if (iter == mSystemMap.end())
+        const auto iter = systemMap_.find(type);
+        if (iter == systemMap_.end())
             continue;
 
         iter->second->Init();
         spdlog::info("{} Initialized.", iter->second->GetSystemName());
     }
 
-    bInited = true;
+    inited_ = true;
 
     return *this;
 }
 
 UGameWorld &UGameWorld::Run() {
-    bRunning = true;
+    running_ = true;
 
-    asio::signal_set signals(mContext, SIGINT, SIGTERM);
+    asio::signal_set signals(ctx_, SIGINT, SIGTERM);
     signals.async_wait([this](auto, auto) {
         Shutdown();
     });
 
-    co_spawn(mContext, WaitForConnect(), detached);
-    mContext.run();
+    co_spawn(ctx_, WaitForConnect(), detached);
+    ctx_.run();
 
     return *this;
 }
 
 UGameWorld &UGameWorld::Shutdown() {
-    if (!bInited)
+    if (!inited_)
         return *this;
 
-    if (!bRunning)
+    if (!running_)
         return *this;
 
     spdlog::info("Server Shutting Down...");
-    bRunning = false;
+    running_ = false;
 
-    if (!mContext.stopped())
-        mContext.stop();
+    if (!ctx_.stopped())
+        ctx_.stop();
 
     // for (const auto& conn : mConnectionMap | std::views::values)
     //     conn->Disconnect();
 
-    mConnectionMap.clear();
+    connectionMap_.clear();
 
     return *this;
 }
@@ -166,55 +166,55 @@ UGameWorld &UGameWorld::Shutdown() {
 // }
 
 void UGameWorld::RemoveConnection(const std::string &key) {
-    if (!bRunning)
+    if (!running_)
         return;
 
-    if (std::this_thread::get_id() != mThreadID) {
-        co_spawn(mContext, [this, key]() mutable -> awaitable<void> {
-            mConnectionMap.erase(key);
+    if (std::this_thread::get_id() != worldThreadId_) {
+        co_spawn(ctx_, [this, key]() mutable -> awaitable<void> {
+            connectionMap_.erase(key);
             co_return;
         }, detached);
         return;
     }
-    mConnectionMap.erase(key);
+    connectionMap_.erase(key);
 }
 
 UConfigManager *UGameWorld::GetConfigManager() const {
-    return mConfigManager;
+    return configManager_;
 }
 
 USceneManager *UGameWorld::GetSceneManager() const {
-    return mSceneManager;
+    return sceneManager_;
 }
 
 ULoginAuthenticator * UGameWorld::GetLoginAuthenticator() const {
-    return mLoginAuthenticator;
+    return loginAuthenticator_;
 }
 
 UProtocolRoute * UGameWorld::GetProtocolRoute() const {
-    return mProtocolRoute;
+    return protocolRoute_;
 }
 
 UGlobalQueue* UGameWorld::GetGlobalQueue() const
 {
-    return mGlobalQueue;
+    return globalQueue_;
 }
 
 ISubSystem *UGameWorld::GetSystemByName(const std::string_view sys) const {
-    if (const auto it = mNameToSystem.find(sys); it != mNameToSystem.end()) {
+    if (const auto it = nameToSystem_.find(sys); it != nameToSystem_.end()) {
         return it->second;
     }
     return nullptr;
 }
 
 const YAML::Node &UGameWorld::GetServerConfig() {
-    if (!mConfigManager->IsLoaded()) {
+    if (!configManager_->IsLoaded()) {
         spdlog::critical("{} - ConfigSystem not loaded", __FUNCTION__);
         Shutdown();
         exit(-1);
     }
 
-    return mConfigManager->GetServerConfig();
+    return configManager_->GetServerConfig();
 }
 
 uint32_t UGameWorld::GetServerID() {
@@ -224,19 +224,19 @@ uint32_t UGameWorld::GetServerID() {
 
 bool UGameWorld::LoadServerDLL(const std::string &path) {
 #if defined(_WIN32) || defined(_WIN64)
-    mModule = LoadLibrary(path.c_str());
+    module_ = LoadLibrary(path.c_str());
 #else
     mModule = dlopen(path.c_str(), RTLD_LAZY);
 #endif
 
-    if (mModule == nullptr) {
+    if (module_ == nullptr) {
         spdlog::error("Failed to load server dll: {}", path);
         return false;
     }
 
 #if defined(_WIN32) || defined(_WIN64)
-    const auto creator = reinterpret_cast<AServerCreator>(GetProcAddress(mModule, "CreateServer"));
-    const auto destroyer = reinterpret_cast<AServerDestroyer>(GetProcAddress(mModule, "DestroyServer"));
+    const auto creator = reinterpret_cast<AServerCreator>(GetProcAddress(module_, "CreateServer"));
+    const auto destroyer = reinterpret_cast<AServerDestroyer>(GetProcAddress(module_, "DestroyServer"));
 #else
     const auto creator = reinterpret_cast<AServerCreator>(dlsym(mModule, "CreateServer"));
     const auto destroyer = reinterpret_cast<AServerDestroyer>(dlsym(mModule, "DestroyServer"));
@@ -246,7 +246,7 @@ bool UGameWorld::LoadServerDLL(const std::string &path) {
         spdlog::error("Failed to load DLL function: {}", path);
 
 #if defined(_WIN32) || defined(_WIN64)
-        FreeLibrary(mModule);
+        FreeLibrary(module_);
 #else
         dlclose(mModule);
 #endif
@@ -254,14 +254,14 @@ bool UGameWorld::LoadServerDLL(const std::string &path) {
         return false;
     }
 
-    mServer = creator(this);
-    mServerDestroyer = destroyer;
+    server_ = creator(this);
+    serverDestroyer_ = destroyer;
 
-    mServer->InitGameWorld();
+    server_->InitGameWorld();
 
-    mConfigManager->Abort();
-    mProtocolRoute->AbortHandler();
-    mLoginAuthenticator->AbortHandler();
+    configManager_->Abort();
+    protocolRoute_->AbortHandler();
+    loginAuthenticator_->AbortHandler();
 
     spdlog::info("Loaded DLL {} Success.", path);
 
@@ -272,27 +272,27 @@ awaitable<void> UGameWorld::WaitForConnect() {
     const auto &config = GetServerConfig();
 
     try {
-        mAcceptor.open(tcp::v4());
-        mAcceptor.bind({tcp::v4(), config["server"]["port"].as<uint16_t>()});
-        mAcceptor.listen();
+        acceptor.open(tcp::v4());
+        acceptor.bind({tcp::v4(), config["server"]["port"].as<uint16_t>()});
+        acceptor.listen();
 
         spdlog::info("Waiting For Client To Connect - Server Port: {}", config["server"]["port"].as<uint16_t>());
 
-        while (bRunning) {
+        while (running_) {
             // PackagePool and io_context in per sub thread
             // auto &[pool, ctx, tid, index] = mContextPool->NextContextNode();
-            const auto scene = dynamic_cast<UMainScene *>(mSceneManager->GetNextMainScene());
+            const auto scene = dynamic_cast<UMainScene *>(sceneManager_->GetNextMainScene());
             if (scene == nullptr) {
                 spdlog::critical("{} - Failed to get main scene.", __FUNCTION__);
                 Shutdown();
                 exit(-1);
             }
 
-            if (auto socket = co_await mAcceptor.async_accept(scene->GetIOContext()); socket.is_open()) {
+            if (auto socket = co_await acceptor.async_accept(scene->GetIOContext()); socket.is_open()) {
                 const auto addr = socket.remote_endpoint().address();
                 spdlog::info("New Connection From: {}", addr.to_string());
 
-                if (!mLoginAuthenticator->VerifyAddress(socket.remote_endpoint().address())) {
+                if (!loginAuthenticator_->VerifyAddress(socket.remote_endpoint().address())) {
                     socket.close();
                     spdlog::warn("Rejected Connection From: {}", addr.to_string());
                     continue;
@@ -308,7 +308,7 @@ awaitable<void> UGameWorld::WaitForConnect() {
                 do {
                     key = fmt::format("{}-{}-{}", addr.to_string(), utils::UnixTime(), sDistribution(sGenerator));
                     count++;
-                } while (mConnectionMap.contains(key) && count < 3);
+                } while (connectionMap_.contains(key) && count < 3);
 
                 if (count >= 3) {
                     socket.close();
@@ -326,7 +326,7 @@ awaitable<void> UGameWorld::WaitForConnect() {
                 //
                 // if (!conn->HasCodecSet())
                 conn->SetPackageCodec<UPackageCodecImpl>();
-                mServer->SetConnectionHandler(conn);
+                server_->SetConnectionHandler(conn);
 
                 // if (!conn->HasHandlerSet()) {
                 //     spdlog::warn("Connection handler is not set - [{}]", key);
@@ -334,11 +334,11 @@ awaitable<void> UGameWorld::WaitForConnect() {
 
                 conn->ConnectToClient();
 
-                mConnectionMap[key] = conn;
+                connectionMap_[key] = conn;
 
-                if (mConnectionMap.size() >= 1'000'000'000) {
-                    mFullTimer.expires_after(10s);
-                    co_await mFullTimer.async_wait();
+                if (connectionMap_.size() >= 1'000'000'000) {
+                    fullTimer_.expires_after(10s);
+                    co_await fullTimer_.async_wait();
                 }
             }
         }
@@ -349,24 +349,24 @@ awaitable<void> UGameWorld::WaitForConnect() {
 }
 
 void UGameWorld::RemoveConnection(const std::string_view key) {
-    if (std::this_thread::get_id() != mThreadID) {
-        co_spawn(mContext, [this, key]() mutable -> awaitable<void> {
-            mConnectionMap.erase(key);
+    if (std::this_thread::get_id() != worldThreadId_) {
+        co_spawn(ctx_, [this, key]() mutable -> awaitable<void> {
+            connectionMap_.erase(key);
             co_return;
         }, detached);
         return;
     }
-    mConnectionMap.erase(key);
+    connectionMap_.erase(key);
 }
 
 asio::io_context &UGameWorld::GetIOContext() {
-    return mContext;
+    return ctx_;
 }
 
 AThreadID UGameWorld::GetThreadID() const {
-    return mThreadID;
+    return worldThreadId_;
 }
 
 bool UGameWorld::IsMainThread() const {
-    return mThreadID == std::this_thread::get_id();
+    return worldThreadId_ == std::this_thread::get_id();
 }

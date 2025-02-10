@@ -8,8 +8,8 @@
 
 class UManagerSystem final : public ISubSystem {
 
-    std::unordered_map<std::type_index, IBaseManager *> mManagerMap;
-    FUniqueID mTimerID;
+    std::unordered_map<std::type_index, IBaseManager *> managerMap_;
+    FUniqueID timerId_;
 
 public:
     explicit UManagerSystem(UGameWorld *world);
@@ -22,13 +22,13 @@ public:
     template<MANAGER_TYPE T>
     T* CreateManager() {
         auto mgr = new T(this);
-        mManagerMap[typeid(T)] = mgr;
+        managerMap_[typeid(T)] = mgr;
         return mgr;
     }
 
     template<MANAGER_TYPE T>
     T *GetManager() {
-        if (const auto it = mManagerMap.find(typeid(T)); it != mManagerMap.end()) {
+        if (const auto it = managerMap_.find(typeid(T)); it != managerMap_.end()) {
             return dynamic_cast<T *>(it->second);
         }
         return nullptr;

@@ -9,7 +9,7 @@ UTimerSystem::UTimerSystem(UGameWorld *world)
 }
 
 UTimerSystem::~UTimerSystem() {
-    for (const auto timer: mTimerMap | std::views::values) {
+    for (const auto timer: timerMap_ | std::views::values) {
         delete timer;
     }
 }
@@ -19,8 +19,8 @@ void UTimerSystem::Init() {
 
 
 URepeatedTimer *UTimerSystem::GetTimer(const FUniqueID &tid) {
-    std::shared_lock lock(mSharedMutex);
-    if (const auto it = mTimerMap.find(tid); it != mTimerMap.end()) {
+    std::shared_lock lock(mutex_);
+    if (const auto it = timerMap_.find(tid); it != timerMap_.end()) {
         return it->second;
     }
     return nullptr;
@@ -36,8 +36,8 @@ bool UTimerSystem::StopTimer(const FUniqueID &tid) {
 }
 
 void UTimerSystem::CleanAllTimers() {
-    std::scoped_lock lock(mMutex);
-    for (const auto timer: mTimerMap | std::views::values) {
+    std::unique_lock lock(mutex_);
+    for (const auto timer: timerMap_ | std::views::values) {
         delete timer;
     }
 }
@@ -49,15 +49,15 @@ std::optional<FUniqueID> UTimerSystem::EmplaceTimer(URepeatedTimer *timer) {
     FUniqueID timerID = FUniqueID::RandomGenerate();
 
     {
-        std::shared_lock lock(mSharedMutex);
-        while (mTimerMap.contains(timerID)) {
+        std::shared_lock lock(mutex_);
+        while (timerMap_.contains(timerID)) {
             timerID = FUniqueID::RandomGenerate();
         }
     }
 
     {
-        std::scoped_lock lock(mMutex);
-        mTimerMap[timerID] = timer;
+        std::unique_lock lock(mutex_);
+        timerMap_[timerID] = timer;
     }
 
     timer->SetTimerID(timerID).SetCompleteCallback([self = this](const FUniqueID &id) mutable {
@@ -70,10 +70,10 @@ std::optional<FUniqueID> UTimerSystem::EmplaceTimer(URepeatedTimer *timer) {
 }
 
 bool UTimerSystem::RemoveTimer(const FUniqueID &tid) {
-    std::scoped_lock lock(mMutex);
-    if (const auto it = mTimerMap.find(tid); it != mTimerMap.end()) {
+    std::unique_lock lock(mutex_);
+    if (const auto it = timerMap_.find(tid); it != timerMap_.end()) {
         const auto timer = it->second;
-        mTimerMap.erase(it);
+        timerMap_.erase(it);
 
         if (timer != nullptr) {
             delete timer;

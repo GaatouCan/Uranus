@@ -6,7 +6,7 @@
 
 class BASE_API IBaseManager : public UReactor {
 
-    class UManagerSystem *mOwner;
+    class UManagerSystem *owner_;
 
 public:
     IBaseManager() = delete;
@@ -26,7 +26,7 @@ public:
     virtual void OnDayChange();
 
 public:
-    bool bTick;
+    bool tick_;
 };
 
 template<typename T>

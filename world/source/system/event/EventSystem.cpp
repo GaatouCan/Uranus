@@ -8,11 +8,11 @@ UEventSystem::UEventSystem(UGameWorld *world)
 }
 
 UEventSystem::~UEventSystem() {
-    mListenerMap.clear();
+    listenerMap_.clear();
 
-    while (!mEventQueue.empty()) {
-        auto &[event, param] = mEventQueue.front();
-        mEventQueue.pop();
+    while (!eventQueue_.empty()) {
+        auto &[event, param] = eventQueue_.front();
+        eventQueue_.pop();
         delete param;
     }
 }
@@ -26,9 +26,9 @@ awaitable<void> UEventSystem::HandleEvent() {
         FEventNode node;
 
         {
-            std::scoped_lock lock(mEventMutex);
-            node = mEventQueue.front();
-            mEventQueue.pop();
+            std::unique_lock lock(eventMutex_);
+            node = eventQueue_.front();
+            eventQueue_.pop();
         }
 
         if (node.event == 0) {
@@ -36,19 +36,19 @@ awaitable<void> UEventSystem::HandleEvent() {
             continue;
         }
 
-        mCurrentListener.clear();
+        currentListener_.clear();
 
         // 拷贝一份map 减少锁的范围 可以在调用事件处理函数时修改注册map
         {
-            std::scoped_lock lock(mListenerMutex);
-            if (const auto iter = mListenerMap.find(node.event); iter != mListenerMap.end()) {
-                mCurrentListener = iter->second;
+            std::scoped_lock lock(listenerMutex_);
+            if (const auto iter = listenerMap_.find(node.event); iter != listenerMap_.end()) {
+                currentListener_ = iter->second;
             }
         }
 
         spdlog::info("{} - Event Type: {}", __FUNCTION__, node.event);
 
-        for (const auto &listener: mCurrentListener | std::views::values) {
+        for (const auto &listener: currentListener_ | std::views::values) {
             std::invoke(listener, node.param);
         }
 
@@ -59,20 +59,20 @@ awaitable<void> UEventSystem::HandleEvent() {
 }
 
 bool UEventSystem::IsQueueEmpty() const {
-    std::shared_lock lock(mEventShared);
-    return mEventQueue.empty();
+    std::shared_lock lock(eventMutex_);
+    return eventQueue_.empty();
 }
 
 void UEventSystem::Dispatch(const uint32_t event, IEventParam *param, const EDispatchType type) {
    if (type == EDispatchType::DIRECT && GetWorld()->IsMainThread()) {
        {
-           std::scoped_lock lock(mListenerMutex);
-           if (const auto iter = mListenerMap.find(event); iter != mListenerMap.end()) {
-               mCurrentListener = iter->second;
+           std::scoped_lock lock(listenerMutex_);
+           if (const auto iter = listenerMap_.find(event); iter != listenerMap_.end()) {
+               currentListener_ = iter->second;
            }
        }
 
-       for (const auto &listener: mCurrentListener | std::views::values) {
+       for (const auto &listener: currentListener_ | std::views::values) {
            std::invoke(listener, param);
        }
 
@@ -83,8 +83,8 @@ void UEventSystem::Dispatch(const uint32_t event, IEventParam *param, const EDis
     const bool empty = IsQueueEmpty();
 
     {
-       std::scoped_lock lock(mEventMutex);
-       mEventQueue.emplace(event, param);
+       std::unique_lock lock(eventMutex_);
+       eventQueue_.emplace(event, param);
     }
 
     if (empty)
@@ -95,24 +95,24 @@ void UEventSystem::RegisterListener(const uint32_t event, void *ptr, const AEven
     if (event == 0 || ptr == nullptr)
         return;
 
-    std::scoped_lock lock(mListenerMutex);
-    if (!mListenerMap.contains(event))
-        mListenerMap[event] = std::map<void *, AEventListener>();
+    std::scoped_lock lock(listenerMutex_);
+    if (!listenerMap_.contains(event))
+        listenerMap_[event] = std::map<void *, AEventListener>();
 
-    mListenerMap[event][ptr] = listener;
+    listenerMap_[event][ptr] = listener;
 }
 
 void UEventSystem::RemoveListener(const uint32_t event, void *ptr) {
     if (ptr == nullptr)
         return;
 
-    std::scoped_lock lock(mListenerMutex);
+    std::scoped_lock lock(listenerMutex_);
     if (event == 0) {
-        for (auto &val: mListenerMap | std::views::values)
+        for (auto &val: listenerMap_ | std::views::values)
             val.erase(ptr);
     }
     else {
-        if (const auto iter = mListenerMap.find(event); iter != mListenerMap.end()) {
+        if (const auto iter = listenerMap_.find(event); iter != listenerMap_.end()) {
             iter->second.erase(ptr);
         }
     }

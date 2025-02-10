@@ -5,6 +5,7 @@
 
 #include <shared_mutex>
 
+
 class IAbstractPlugin;
 
 class BASE_API UPluginSystem final : public ISubSystem {
@@ -18,9 +19,8 @@ class BASE_API UPluginSystem final : public ISubSystem {
         IAbstractPlugin *plugin;
     };
 
-    std::unordered_map<std::string, FPluginNode> mPluginMap;
-    std::mutex mPluginMutex;
-    mutable std::shared_mutex mPluginShared;
+    std::unordered_map<std::string, FPluginNode> pluginMap_;
+    mutable std::shared_mutex mutex_;
 
 public:
     explicit UPluginSystem(UGameWorld *world);

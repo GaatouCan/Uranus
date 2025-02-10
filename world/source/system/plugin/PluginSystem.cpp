@@ -12,7 +12,7 @@ UPluginSystem::UPluginSystem(UGameWorld *world)
 }
 
 UPluginSystem::~UPluginSystem() {
-    for (const auto &[module, destroyer, plugin] : mPluginMap | std::views::values) {
+    for (const auto &[module, destroyer, plugin] : pluginMap_ | std::views::values) {
         if (destroyer) {
             destroyer(plugin);
 #if defined(_WIN32) || defined(_WIN64)
@@ -44,8 +44,8 @@ void UPluginSystem::Init() {
 }
 
 UPluginSystem::FPluginNode UPluginSystem::FindPlugin(const std::string &name) {
-    std::shared_lock lock(mPluginShared);
-    if (const auto it = mPluginMap.find(name); it != mPluginMap.end()) {
+    std::shared_lock lock(mutex_);
+    if (const auto it = pluginMap_.find(name); it != pluginMap_.end()) {
         return it->second;
     }
     return {nullptr, nullptr, nullptr};
@@ -93,8 +93,8 @@ bool UPluginSystem::LoadPlugin(const std::string_view path) {
     }
 
     {
-        std::shared_lock lock(mPluginShared);
-        if (mPluginMap.contains(plugin->GetPluginName())) {
+        std::shared_lock lock(mutex_);
+        if (pluginMap_.contains(plugin->GetPluginName())) {
             spdlog::warn("{} - Plugin {} already exists", __FUNCTION__, plugin->GetPluginName());
             destroyer(plugin);
 #if defined(_WIN32) || defined(_WIN64)
@@ -108,8 +108,8 @@ bool UPluginSystem::LoadPlugin(const std::string_view path) {
 
     FPluginNode node{ hModule, destroyer, plugin };
 
-    std::scoped_lock lock(mPluginMutex);
-    mPluginMap.insert_or_assign(plugin->GetPluginName(), node);
+    std::unique_lock lock(mutex_);
+    pluginMap_.insert_or_assign(plugin->GetPluginName(), node);
     spdlog::info("{} - Load {} Success.", __FUNCTION__, plugin->GetPluginName());
 
     return true;
@@ -123,8 +123,8 @@ bool UPluginSystem::UnloadPlugin(const std::string &name) {
     }
 
     {
-        std::scoped_lock lock(mPluginMutex);
-        mPluginMap.erase(name);
+        std::unique_lock lock(mutex_);
+        pluginMap_.erase(name);
     }
 
     destroyer(plugin);
