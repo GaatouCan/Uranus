@@ -28,5 +28,5 @@ public:
     [[nodiscard]] class UGameWorld *GetWorld() const;
 
 protected:
-    UConnection *mConn;
+    UConnection *conn_;
 };

@@ -24,7 +24,6 @@ class BASE_API IBasePlayer : public UActor, public std::enable_shared_from_this<
     FPlatformInfo platform_;
 
     std::map<FUniqueID, URepeatedTimer *> timerMap_;
-    // std::mutex mTimerMutex;
     mutable std::shared_mutex timerMutex_;
 
 public:

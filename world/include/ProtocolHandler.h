@@ -15,7 +15,7 @@ using AProtoFunctor = void(*)(const std::shared_ptr<IBasePlayer> &, IPackage *);
 
 class BASE_API IProtocolHandler {
 
-    UProtocolRoute *mOwner;
+    UProtocolRoute *owner_;
 
 public:
     IProtocolHandler() = delete;

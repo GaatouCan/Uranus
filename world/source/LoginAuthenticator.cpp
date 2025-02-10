@@ -11,7 +11,7 @@
 #include <spdlog/spdlog.h>
 
 ULoginAuthenticator::ULoginAuthenticator(UGameWorld *world)
-    : mWorld(world) {
+    : world_(world) {
 }
 
 ULoginAuthenticator::~ULoginAuthenticator() {
@@ -22,7 +22,7 @@ void ULoginAuthenticator::Init() {
 }
 
 UGameWorld * ULoginAuthenticator::GetWorld() const {
-    return mWorld;
+    return world_;
 }
 
 bool ULoginAuthenticator::VerifyAddress(const asio::ip::address &addr) {
@@ -45,18 +45,18 @@ awaitable<void> ULoginAuthenticator::OnLogin(const AConnectionPointer &conn, IPa
     //     exit(-1);
     // }
 
-    const auto info = co_await mHandler->ParseLoginInfo(pkg);
+    const auto info = co_await handler_->ParseLoginInfo(pkg);
     if (!info.pid.IsAvailable()) {
         spdlog::warn("{} - Connection[{}] context is null but not receive the login request", __FUNCTION__, conn->GetKey());
         co_return;
     }
 
     spdlog::debug("{} - Player id: {}, token: {}", __FUNCTION__, info.pid.ToInt64(), info.token);
-    if (const auto pid = VerifyToken(info.pid, info.token); pid.IsAvailable() && pid.cross == mWorld->GetServerID()) {
+    if (const auto pid = VerifyToken(info.pid, info.token); pid.IsAvailable() && pid.cross == world_->GetServerID()) {
         conn->SetContext(std::make_any<FPlayerID>(pid));
 
-        if (const auto plr = co_await mHandler->OnPlayerLogin(conn, info); plr != nullptr) {
-            if (const auto manager = mWorld->GetSceneManager(); manager != nullptr) {
+        if (const auto plr = co_await handler_->OnPlayerLogin(conn, info); plr != nullptr) {
+            if (const auto manager = world_->GetSceneManager(); manager != nullptr) {
                 if (const auto scene = manager->GetScene(conn->GetSceneID()); scene != nullptr) {
                     scene->PlayerEnterScene(plr);
                     co_return;
@@ -65,13 +65,13 @@ awaitable<void> ULoginAuthenticator::OnLogin(const AConnectionPointer &conn, IPa
         }
     } else if (!pid.IsAvailable())
         spdlog::error("{} - Player ID not available - key[{}]", __FUNCTION__, conn->GetKey());
-    else if (pid.cross != mWorld->GetServerID())
-        spdlog::error("{} - Server ID[{}] error, Connection Server ID[{}] - key[{}]", __FUNCTION__, mWorld->GetServerID(), pid.ToInt64(), conn->GetKey());
+    else if (pid.cross != world_->GetServerID())
+        spdlog::error("{} - Server ID[{}] error, Connection Server ID[{}] - key[{}]", __FUNCTION__, world_->GetServerID(), pid.ToInt64(), conn->GetKey());
 
     conn->ResetContext();
     conn->Disconnect();
 }
 
 void ULoginAuthenticator::AbortHandler() const {
-    assert(mHandler != nullptr);
+    assert(handler_ != nullptr);
 }

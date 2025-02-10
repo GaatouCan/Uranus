@@ -117,7 +117,7 @@ void UPlayerManager::SyncCache(const std::shared_ptr<UPlayer> &plr) {
 }
 
 void UPlayerManager::SyncCache(const uint32_t pid) {
-    if (pid < kPlayerLocalIDBegin || pid > kPlayerLocalIDEnd)
+    if (pid < PLAYER_LOCAL_ID_BEGIN || pid > PLAYER_LOCAL_ID_END)
         return;
 
     const auto plr = FindPlayer(pid);

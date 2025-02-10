@@ -12,20 +12,20 @@ public:
     ILogicConfig() = delete;
 
     explicit ILogicConfig(std::vector<nlohmann::json> configList)
-        : mConfigList(std::move(configList)) {}
+        : list_(std::move(configList)) {}
 
     virtual ~ILogicConfig() = default;
 
     DISABLE_COPY_MOVE(ILogicConfig)
 
     virtual void OnReload(std::vector<nlohmann::json> configList) {
-        mConfigList = std::move(configList);
+        list_ = std::move(configList);
     }
 
     virtual void Init() {}
 
 protected:
-    std::vector<nlohmann::json> mConfigList;
+    std::vector<nlohmann::json> list_;
 };
 
 template<typename T>

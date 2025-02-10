@@ -4,23 +4,23 @@
 #include <spdlog/spdlog.h>
 
 
-size_t UPackagePool::sDefaultCapacity = 64;
-size_t UPackagePool::sMinCapacity = 16;
+size_t UPackagePool::defaultCapacity = 64;
+size_t UPackagePool::minCapacity = 16;
 
-float UPackagePool::sExpanseRate = 0.3f;
-float UPackagePool::sExpanseScale = 1.f;
+float UPackagePool::expanseRate = 0.3f;
+float UPackagePool::expanseScale = 1.f;
 
-float UPackagePool::sCollectRate = 1.f;
-float UPackagePool::sCollectScale = 0.7f;
+float UPackagePool::collectRate = 1.f;
+float UPackagePool::collectScale = 0.7f;
 
-APackageCreator UPackagePool::sCreatePackage = nullptr;
-APackageInitializer UPackagePool::sInitPackage = nullptr;
+APackageCreator UPackagePool::createPackage = nullptr;
+APackageInitializer UPackagePool::initPackage = nullptr;
 
 
 UPackagePool::UPackagePool(const size_t capacity) {
     for (size_t i = 0; i < capacity; i++) {
         IPackage *pkg = nullptr;
-        pkg = sCreatePackage();
+        pkg = std::invoke(createPackage);
 
         if (pkg != nullptr) {
             queue_.push(pkg);
@@ -106,42 +106,42 @@ void UPackagePool::LoadConfig(const YAML::Node &cfg) {
 }
 
 void UPackagePool::SetDefaultCapacity(const size_t capacity) {
-    sDefaultCapacity = capacity;
+    defaultCapacity = capacity;
 }
 
 void UPackagePool::SetMinimumCapacity(const size_t capacity) {
-    sMinCapacity = capacity;
+    minCapacity = capacity;
 }
 
 void UPackagePool::SetExpanseRate(const float rate) {
-    sExpanseRate = rate;
+    expanseRate = rate;
 }
 
 void UPackagePool::SetExpanseScale(const float scale) {
-    sExpanseScale = scale;
+    expanseScale = scale;
 }
 
 void UPackagePool::SetCollectRate(const float rate) {
-    sCollectRate = rate;
+    collectRate = rate;
 }
 
 void UPackagePool::SetCollectScale(const float scale) {
-    sCollectScale = scale;
+    collectScale = scale;
 }
 
 void UPackagePool::SetPackageBuilder(const APackageCreator& func) {
-    sCreatePackage = func;
+    createPackage = func;
 }
 
 void UPackagePool::SetPackageInitializer(const APackageInitializer& func) {
-    sInitPackage = func;
+    initPackage = func;
 }
 
 bool UPackagePool::InitPackage(IPackage *pkg) {
     if (pkg == nullptr)
         return false;
 
-    sInitPackage(pkg);
+    std::invoke(initPackage, pkg);
     return true;
 }
 
@@ -149,16 +149,16 @@ void UPackagePool::Expanse() {
     if (set_.empty() && !queue_.empty())
         return;
 
-    if (std::floor(queue_.size() / Capacity()) <= sExpanseRate)
+    if (std::floor(queue_.size() / Capacity()) <= expanseRate)
         return;
 
-    const auto num = static_cast<size_t>(std::ceil(static_cast<float>(Capacity()) * sExpanseScale));
+    const auto num = static_cast<size_t>(std::ceil(static_cast<float>(Capacity()) * expanseScale));
     spdlog::trace("{} - Pool Rest[{}], Current Using[{}], Expand Number[{}].", __FUNCTION__, queue_.size(), set_.size(), num);
 
     std::unique_lock lock(mutex_);
     for (size_t i = 0; i < num; i++) {
         IPackage *pkg = nullptr;
-        pkg = sCreatePackage();
+        pkg = std::invoke(createPackage);
 
         if (pkg != nullptr) {
             queue_.push(pkg);
@@ -186,16 +186,16 @@ void UPackagePool::Collect() {
         }
     }
 
-    if (queue_.size() <= sMinCapacity || std::floor(queue_.size() / Capacity()) < sCollectRate)
+    if (queue_.size() <= minCapacity || std::floor(queue_.size() / Capacity()) < collectRate)
         return;
 
     collectTime_ = now;
 
-    const auto num = static_cast<size_t>(std::floor(static_cast<float>(Capacity()) * sCollectScale));
+    const auto num = static_cast<size_t>(std::floor(static_cast<float>(Capacity()) * collectScale));
     spdlog::trace("{} - Pool Rest[{}], Current Using[{}], collect Number[{}].", __FUNCTION__, queue_.size(), set_.size(), num);
 
     std::unique_lock lock(mutex_);
-    for (size_t i = 0; i < num && queue_.size() > sMinCapacity; i++) {
+    for (size_t i = 0; i < num && queue_.size() > minCapacity; i++) {
         const auto pkg = queue_.front();
         queue_.pop();
         delete pkg;

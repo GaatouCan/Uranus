@@ -19,7 +19,7 @@ struct BASE_API FLoginInfo {
 
 class BASE_API ILoginHandler {
 
-    class ULoginAuthenticator *mOwner;
+    class ULoginAuthenticator *owner_;
 
 public:
     ILoginHandler() = delete;

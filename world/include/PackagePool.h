@@ -24,7 +24,7 @@ class UPackagePool final {
     friend class UMainScene;
     // friend class UCrossRoute;
 
-    explicit UPackagePool(size_t capacity = sDefaultCapacity);
+    explicit UPackagePool(size_t capacity = defaultCapacity);
     ~UPackagePool();
 
 public:
@@ -79,15 +79,15 @@ private:
     // 扩容和收缩临界点和比例
     // 每个线程下的数据包池行为目前设计为一致
 
-    static size_t sDefaultCapacity;
-    static size_t sMinCapacity;
+    static size_t defaultCapacity;
+    static size_t minCapacity;
 
-    static float sExpanseRate;
-    static float sExpanseScale;
+    static float expanseRate;
+    static float expanseScale;
 
-    static float sCollectRate;
-    static float sCollectScale;
+    static float collectRate;
+    static float collectScale;
 
-    static APackageCreator sCreatePackage;
-    static APackageInitializer sInitPackage;
+    static APackageCreator createPackage;
+    static APackageInitializer initPackage;
 };

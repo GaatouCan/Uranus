@@ -5,9 +5,9 @@
 #include <cstdint>
 #include <xhash>
 
-static constexpr unsigned int kCrossServerIDOffset = 1'000'000;
-static constexpr unsigned int kPlayerLocalIDBegin = 1'000;
-static constexpr unsigned int kPlayerLocalIDEnd = 99'999;
+static constexpr unsigned int CROSS_SERVER_ID_OFFSET = 1'000'000;
+static constexpr unsigned int PLAYER_LOCAL_ID_BEGIN = 1'000;
+static constexpr unsigned int PLAYER_LOCAL_ID_END = 99'999;
 
 struct BASE_API FPlayerID {
     // 1000 - 99999
@@ -23,12 +23,12 @@ struct BASE_API FPlayerID {
     }
 
     [[nodiscard]] int64_t ToInt64() const {
-        return cross * kCrossServerIDOffset + local;
+        return cross * CROSS_SERVER_ID_OFFSET + local;
     }
 
     FPlayerID &FromInt64(const int64_t id) {
-        local = id % kCrossServerIDOffset;
-        cross = id / kCrossServerIDOffset;
+        local = id % CROSS_SERVER_ID_OFFSET;
+        cross = id / CROSS_SERVER_ID_OFFSET;
         return *this;
     }
 
@@ -49,7 +49,7 @@ struct BASE_API FPlayerID {
     }
 
     [[nodiscard]] bool IsAvailable() const {
-        return local >= kPlayerLocalIDBegin && local <= kPlayerLocalIDEnd && cross > 0;
+        return local >= PLAYER_LOCAL_ID_BEGIN && local <= PLAYER_LOCAL_ID_END && cross > 0;
     }
 };
 

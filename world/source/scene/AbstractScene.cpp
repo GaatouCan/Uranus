@@ -68,7 +68,7 @@ void IAbstractScene::PlayerLeaveScene(const std::shared_ptr<IBasePlayer> &player
 }
 
 std::shared_ptr<IBasePlayer> IAbstractScene::GetPlayer(const int32_t pid) const {
-    if (pid < kPlayerLocalIDBegin || pid > kPlayerLocalIDEnd)
+    if (pid < PLAYER_LOCAL_ID_BEGIN || pid > PLAYER_LOCAL_ID_END)
         return nullptr;
 
     std::shared_lock lock(mutex_);

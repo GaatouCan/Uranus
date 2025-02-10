@@ -16,10 +16,10 @@ void UConnectionHandlerImpl::OnConnected() {
 }
 
 void UConnectionHandlerImpl::OnClosed() {
-    if (!mConn->GetContext().has_value())
+    if (!conn_->GetContext().has_value())
         return;
 
-    const auto pid = std::any_cast<FPlayerID>(mConn->GetContext());
+    const auto pid = std::any_cast<FPlayerID>(conn_->GetContext());
 
     if (const auto mgr = GET_MANAGER(UPlayerManager);mgr != nullptr) {
         mgr->OnPlayerLogout(pid);
@@ -27,6 +27,6 @@ void UConnectionHandlerImpl::OnClosed() {
 }
 
 awaitable<void> UConnectionHandlerImpl::OnReadPackage(IPackage *pkg) {
-    spdlog::debug("{} - Receive Package[{}] From {}.", __FUNCTION__, ProtoTypeToString(static_cast<protocol::EProtoType>(pkg->GetPackageID())), mConn->RemoteAddress().to_string());
+    spdlog::debug("{} - Receive Package[{}] From {}.", __FUNCTION__, ProtoTypeToString(static_cast<protocol::EProtoType>(pkg->GetPackageID())), conn_->RemoteAddress().to_string());
     co_return;
 }

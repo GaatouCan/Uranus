@@ -3,15 +3,15 @@
 #include "../include/GameWorld.h"
 
 ISubSystem::ISubSystem(UGameWorld *world)
-    : mWorld(world) {
+    : world_(world) {
 
 }
 
 UGameWorld *ISubSystem::GetWorld() const {
-    return mWorld;
+    return world_;
 }
 
 asio::io_context & ISubSystem::GetIOContext() const {
-    return mWorld->GetIOContext();
+    return world_->GetIOContext();
 }
 

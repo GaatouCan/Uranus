@@ -8,7 +8,7 @@
 
 class BASE_API ISubSystem {
 
-    class UGameWorld *mWorld;
+    class UGameWorld *world_;
 
 public:
     ISubSystem() = delete;

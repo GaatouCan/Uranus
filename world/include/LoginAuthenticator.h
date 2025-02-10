@@ -32,15 +32,15 @@ public:
     template<typename T>
     requires std::derived_from<T, ILoginHandler>
     void SetHandler() {
-        if (mHandler != nullptr) {
-            mHandler.reset();
+        if (handler_ != nullptr) {
+            handler_.reset();
         }
-        mHandler = std::make_unique<T>(this);
+        handler_ = std::make_unique<T>(this);
     }
 
     void AbortHandler() const;
 
 private:
-    UGameWorld* mWorld;
-    std::unique_ptr<ILoginHandler> mHandler;
+    UGameWorld* world_;
+    std::unique_ptr<ILoginHandler> handler_;
 };

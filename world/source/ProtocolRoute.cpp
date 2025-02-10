@@ -4,7 +4,7 @@
 #include <spdlog/spdlog.h>
 
 UProtocolRoute::UProtocolRoute(UGameWorld *world)
-    : mWorld(world) {
+    : world_(world) {
 }
 
 UProtocolRoute::~UProtocolRoute() {
@@ -15,12 +15,12 @@ void UProtocolRoute::Init() {
 }
 
 UGameWorld *UProtocolRoute::GetWorld() const {
-    return mWorld;
+    return world_;
 }
 
 
 void UProtocolRoute::RegisterProtocol(const uint32_t type, const AProtoFunctor &func) {
-    mProtoMap[type] = func;
+    protoMap_[type] = func;
 }
 
 // void UProtocolRoute::RegisterCrossProtocol(const uint32_t type, const ACrossFunctor &func) {
@@ -35,7 +35,7 @@ void UProtocolRoute::RegisterProtocol(const uint32_t type, const AProtoFunctor &
 // }
 
 AProtoFunctor UProtocolRoute::FindProto(const uint32_t proto) const {
-    if (const auto it = mProtoMap.find(proto); it != mProtoMap.end()) {
+    if (const auto it = protoMap_.find(proto); it != protoMap_.end()) {
         return it->second;
     }
     return nullptr;
@@ -53,13 +53,13 @@ void UProtocolRoute::OnReadPackage(const std::shared_ptr<UConnection> &conn, IPa
     }
 
     if (const auto func = FindProto(pkg->GetPackageID()); func)
-        mHandler->Invoke(func, conn, pkg);
+        handler_->Invoke(func, conn, pkg);
     else
         spdlog::warn("{} - Package[{}] Protocol functor unavailable.", __FUNCTION__, pkg->GetPackageID());
 }
 
 void UProtocolRoute::AbortHandler() const {
-    assert(mHandler != nullptr);
+    assert(handler_ != nullptr);
 }
 
 // awaitable<void> UProtocolRoute::OnCrossPackage(IPackage *pkg) const {

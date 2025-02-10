@@ -1,8 +1,8 @@
 #include "../../include/impl/Package.h"
 
-uint32_t FPackage::sPackageMagic = 20250122;
-uint32_t FPackage::sPackageVersion = 1001;
-std::string FPackage::sPackageMethod = "PROTOBUF";
+uint32_t FPackage::packageMagic = 20250122;
+uint32_t FPackage::packageVersion = 1001;
+std::string FPackage::packageMethod = "PROTOBUF";
 
 
 FPackage::FPackage()
@@ -139,15 +139,15 @@ const FByteArray &FPackage::GetByteArray() const {
 }
 
 void FPackage::SetPackageMagic(const uint32_t magic) {
-    sPackageMagic = magic;
+    packageMagic = magic;
 }
 
 void FPackage::SetPackageVersion(const uint32_t version) {
-    sPackageVersion = version;
+    packageVersion = version;
 }
 
 void FPackage::SetPackageMethod(const std::string &method) {
-    sPackageMethod = method;
+    packageMethod = method;
 }
 
 void FPackage::LoadConfig(const YAML::Node &config) {
@@ -174,12 +174,12 @@ void FPackage::InitPackage(IPackage *pkg) {
     if (temp == nullptr)
         return;
 
-    temp->SetMagic(sPackageMagic);
-    temp->SetVersion(sPackageVersion);
+    temp->SetMagic(packageMagic);
+    temp->SetVersion(packageVersion);
 
-    if (sPackageMethod == "LineBased")
+    if (packageMethod == "LineBased")
         temp->SetMethod(ECodecMethod::BASE_LINE);
-    if (sPackageMethod == "Protobuf")
+    if (packageMethod == "Protobuf")
         temp->SetMethod(ECodecMethod::PROTOBUF);
 }
 

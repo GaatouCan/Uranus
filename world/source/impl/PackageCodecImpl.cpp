@@ -24,7 +24,7 @@ awaitable<void> UPackageCodecImpl::EncodeT(FPackage *pkg) {
     header.id = htonl(pkg->header_.id);
     header.length = htonll(pkg->header_.length);
 
-    if (const auto len = co_await async_write(conn_->GetSocket(), asio::buffer(&header, FPackage::kHeaderSize)); len == 0) {
+    if (const auto len = co_await async_write(conn_->GetSocket(), asio::buffer(&header, FPackage::PACKAGE_HEADER_SIZE)); len == 0) {
         spdlog::warn("{} - Write package header length equal zero", __FUNCTION__);
         pkg->Invalid();
         co_return;
@@ -37,7 +37,7 @@ awaitable<void> UPackageCodecImpl::EncodeT(FPackage *pkg) {
 }
 
 awaitable<void> UPackageCodecImpl::DecodeT(FPackage *pkg) {
-    if (const auto len = co_await async_read(conn_->GetSocket(), asio::buffer(&pkg->header_, FPackage::kHeaderSize)); len == 0) {
+    if (const auto len = co_await async_read(conn_->GetSocket(), asio::buffer(&pkg->header_, FPackage::PACKAGE_HEADER_SIZE)); len == 0) {
         spdlog::warn("{} - Read package header length equal zero", __FUNCTION__);
         pkg->Invalid();
         co_return;

@@ -11,25 +11,25 @@ class UConfigManager;
 typedef void(*ALogicConfigLoader)(UConfigManager *);
 typedef void(*ALoggerLoader)(const YAML::Node&);
 
-constexpr auto kServerConfigFile = "/server.yaml";
-constexpr auto kServerConfigJSON = "/json";
+constexpr auto SERVER_CONFIG_FILE = "/server.yaml";
+constexpr auto SERVER_CONFIG_JSON = "/json";
 
 
 class BASE_API UConfigManager final {
 
-    std::string mYAMLPath;
-    std::string mJSONPath;
+    std::string yamlPath_;
+    std::string jsonPath_;
 
-    YAML::Node mConfig;
-    std::unordered_map<std::string, nlohmann::json> mJSONConfigMap;
+    YAML::Node config_;
+    std::unordered_map<std::string, nlohmann::json> jsonMap_;
 
-    std::unordered_map<std::type_index, std::vector<std::string>> mLogicLoadMap;
-    std::unordered_map<std::type_index, ILogicConfig *> mLogicConfigMap;
+    std::unordered_map<std::type_index, std::vector<std::string>> logicLoadMap_;
+    std::unordered_map<std::type_index, ILogicConfig *> logicConfigMap_;
 
-    ALogicConfigLoader mLogicConfigLoader;
-    ALoggerLoader mLoggerLoader;
+    ALogicConfigLoader logicConfigLoader_;
+    ALoggerLoader loggerLoader_;
 
-    bool bLoaded = false;
+    bool loaded_ = false;
 
 public:
     UConfigManager();
@@ -47,19 +47,19 @@ public:
 
     template<LOGIC_CONFIG_TYPE T>
     void CreateLogicConfig(const std::vector<std::string> &pathList) {
-        mLogicLoadMap[typeid(T)] = pathList;
+        logicLoadMap_[typeid(T)] = pathList;
         std::vector<nlohmann::json> configs;
         for (const auto &path : pathList) {
-            if (const auto iter = mJSONConfigMap.find(path); iter != mJSONConfigMap.end()) {
+            if (const auto iter = jsonMap_.find(path); iter != jsonMap_.end()) {
                 configs.push_back(iter->second);
             }
         }
-        mLogicConfigMap.insert_or_assign(typeid(T), new T(configs));
+        logicConfigMap_.insert_or_assign(typeid(T), new T(configs));
     }
 
     template<LOGIC_CONFIG_TYPE T>
     T *FindLogicConfig() {
-        if (const auto iter = mLogicConfigMap.find(typeid(T)); iter != mLogicConfigMap.end()) {
+        if (const auto iter = logicConfigMap_.find(typeid(T)); iter != logicConfigMap_.end()) {
             return dynamic_cast<T *>(iter->second);
         }
         return nullptr;

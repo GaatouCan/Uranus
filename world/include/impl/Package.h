@@ -83,11 +83,11 @@ public:
     static IPackage *CreatePackage();
     static void InitPackage(IPackage *pkg);
 
-    static constexpr size_t kHeaderSize = sizeof(FHeader);
+    static constexpr size_t PACKAGE_HEADER_SIZE = sizeof(FHeader);
 
-    static uint32_t sPackageMagic;
-    static uint32_t sPackageVersion;
-    static std::string sPackageMethod;
+    static uint32_t packageMagic;
+    static uint32_t packageVersion;
+    static std::string packageMethod;
 
 private:
     [[nodiscard]] FByteArray &RawByteArray();
