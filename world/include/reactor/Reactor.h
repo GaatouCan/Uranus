@@ -9,10 +9,10 @@
 
 class BASE_API UReactor {
 
-    std::shared_ptr<class UTaskQueue> mTaskQueue;
+    std::shared_ptr<class UTaskQueue> queue_;
 
 public:
-    UReactor();
+    UReactor() = default;
     virtual ~UReactor();
 
     DISABLE_COPY_MOVE(UReactor)

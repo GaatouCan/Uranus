@@ -94,7 +94,7 @@ std::shared_ptr<UPlayer> UPlayerManager::RemovePlayer(const uint32_t pid) {
 }
 
 void UPlayerManager::SendToList(const std::set<FPlayerID> &players, const int32_t id, const std::string_view data) {
-    if (id <= kInvalidPackageId || id >= static_cast<int32_t>(protocol::EProtoType::PROTO_TYPE_MAX))
+    if (id <= MINIMUM_PACKAGE_ID || id >= static_cast<int32_t>(protocol::EProtoType::PROTO_TYPE_MAX))
         return;
 
     for (const auto [localID, crossID]: players) {

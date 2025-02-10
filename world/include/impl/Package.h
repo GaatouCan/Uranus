@@ -6,7 +6,8 @@
 #include <sstream>
 #include <yaml-cpp/yaml.h>
 
-static constexpr uint32_t kInvalidPackageId = 1000;
+static constexpr uint32_t MINIMUM_PACKAGE_ID = 1001;
+static constexpr uint32_t MAXIMUM_PACKAGE_ID = 999999;
 
 
 enum class ECodecMethod : uint16_t {

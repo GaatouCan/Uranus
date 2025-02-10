@@ -41,16 +41,16 @@ public:
     void OnPushTask(const std::shared_ptr<UTaskQueue> &queue);
 
 private:
-    UGameWorld *mWorld;
+    UGameWorld *world_;
 
-    TThreadSafeDeque<std::shared_ptr<UTaskQueue>> mQueue;
-    std::vector<std::thread> mWorkerVec;
+    TThreadSafeDeque<std::shared_ptr<UTaskQueue>> queue_;
+    std::vector<std::thread> workerVec_;
 
-    std::map<UReactor *, std::weak_ptr<UTaskQueue>> mReactorMap;
-    std::mutex mReactorMutex;
-    mutable std::shared_mutex mReactorShared;
+    std::map<UReactor *, std::weak_ptr<UTaskQueue>> reactorMap_;
+    // std::mutex mReactorMutex;
+    mutable std::shared_mutex reactorMutex_;
 
-    std::set<std::weak_ptr<UTaskQueue>, FWeakPointerRawAddressCompare> mEmptySet;
-    std::mutex mEmptyMutex;
-    mutable std::shared_mutex mEmptyShared;
+    std::set<std::weak_ptr<UTaskQueue>, FWeakPointerRawAddressCompare> emptySet_;
+    // std::mutex mEmptyMutex;
+    mutable std::shared_mutex emptyMutex_;
 };

@@ -3,7 +3,6 @@
 #include <memory>
 #include <functional>
 #include <queue>
-#include <mutex>
 #include <shared_mutex>
 
 #include "../common.h"
@@ -15,18 +14,18 @@ using AReactorTask = std::function<void(UReactor*)>;
 
 class UTaskQueue final : public std::enable_shared_from_this<UTaskQueue> {
 
-    UGlobalQueue *mGlobal;
-    UReactor *mReactor;
+    UGlobalQueue *global_;
+    UReactor *reactor_;
 
-    std::queue<AReactorTask> mCurrentQueue;
-    std::queue<AReactorTask> mWaitingQueue;
+    std::queue<AReactorTask> curQueue_;
+    std::queue<AReactorTask> waitQueue_;
 
-    std::mutex mMutex;
-    mutable std::shared_mutex mSharedMutex;
+    // std::mutex mMutex;
+    mutable std::shared_mutex mutex_;
 
-    std::atomic_bool bRunning;
-    std::atomic_bool bInGlobal;
-    std::atomic_bool bRemoved;
+    std::atomic_bool running_;
+    std::atomic_bool inGlobal_;
+    std::atomic_bool removed_;
 
 public:
     UTaskQueue() = delete;

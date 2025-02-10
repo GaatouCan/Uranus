@@ -66,11 +66,11 @@ void FPackage::Reset() {
 }
 
 void FPackage::Invalid() {
-    header_.id = kInvalidPackageId;
+    header_.id = MINIMUM_PACKAGE_ID - 1;
 }
 
 bool FPackage::IsAvailable() const {
-    return header_.id > kInvalidPackageId;
+    return header_.id >= MINIMUM_PACKAGE_ID && header_.id <= MAXIMUM_PACKAGE_ID;
 }
 
 FPackage &FPackage::SetPackageID(const uint32_t id) {
@@ -155,10 +155,10 @@ void FPackage::LoadConfig(const YAML::Node &config) {
         return;
 
     if (!config["package"]["magic"].IsNull())
-        SetPackageMagic(config["package"]["magic"].as<int>());
+        SetPackageMagic(config["package"]["magic"].as<uint32_t>());
 
     if (!config["package"]["version"].IsNull())
-        SetPackageVersion(config["package"]["version"].as<int>());
+        SetPackageVersion(config["package"]["version"].as<uint32_t>());
 
 
     if (!config["package"]["method"].IsNull())
