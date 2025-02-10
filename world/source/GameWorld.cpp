@@ -303,7 +303,7 @@ awaitable<void> UGameWorld::WaitForConnect() {
 
                 static std::random_device sRandomDevice;
                 static std::mt19937 sGenerator(sRandomDevice());
-                static std::uniform_int_distribution<> sDistribution(100, 999);
+                static std::uniform_int_distribution sDistribution(100, 999);
 
                 do {
                     key = fmt::format("{}-{}-{}", addr.to_string(), utils::UnixTime(), sDistribution(sGenerator));
@@ -320,17 +320,9 @@ awaitable<void> UGameWorld::WaitForConnect() {
                 spdlog::info("Accept Connection From: {}", addr.to_string());
 
                 conn->SetKey(key);
-
-                // if (mConnectionFilter)
-                //     std::invoke(mConnectionFilter, conn);
-                //
-                // if (!conn->HasCodecSet())
                 conn->SetPackageCodec<UPackageCodecImpl>();
-                server_->SetConnectionHandler(conn);
 
-                // if (!conn->HasHandlerSet()) {
-                //     spdlog::warn("Connection handler is not set - [{}]", key);
-                // }
+                server_->SetConnectionHandler(conn);
 
                 conn->ConnectToClient();
 
