@@ -16,7 +16,7 @@ class BASE_API IBasePlayer : public Actor, public std::enable_shared_from_this<I
     class IBaseScene *owner_;
 
     ConnectionPointer conn_;
-    FPlayerID pid_;
+    PlayerID pid_;
 
     TimePoint enterTime_;
     TimePoint leaveTime_;
@@ -45,7 +45,7 @@ public:
 
     [[nodiscard]] int32_t GetLocalID() const;
     [[nodiscard]] int32_t GetCrossID() const;
-    [[nodiscard]] const FPlayerID &GetPlayerID() const;
+    [[nodiscard]] const PlayerID &GetPlayerID() const;
     [[nodiscard]] int64_t GetFullID() const;
 
     [[nodiscard]] IPackage *BuildPackage() const;

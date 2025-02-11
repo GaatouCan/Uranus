@@ -15,7 +15,7 @@ LoginHandler::LoginHandler(LoginAuthenticator *owner)
     : ILoginHandler(owner) {
 }
 
-awaitable<std::shared_ptr<IBasePlayer>> LoginHandler::OnPlayerLogin(const std::shared_ptr<Connection> &conn, const FLoginInfo &info) {
+awaitable<std::shared_ptr<IBasePlayer>> LoginHandler::OnPlayerLogin(const std::shared_ptr<Connection> &conn, const LoginInfo &info) {
     // if (const auto sys = GetWorld()->GetSystem<UManagerSystem>(); sys == nullptr) {
     //     spdlog::critical("{} - Manager System is null", __FUNCTION__);
     //     GetWorld()->Shutdown();
@@ -37,17 +37,17 @@ awaitable<std::shared_ptr<IBasePlayer>> LoginHandler::OnPlayerLogin(const std::s
     }
 }
 
-awaitable<FLoginInfo> LoginHandler::ParseLoginInfo(IPackage *pkg) {
+awaitable<LoginInfo> LoginHandler::ParseLoginInfo(IPackage *pkg) {
     try {
         const auto tmp = dynamic_cast<Package *>(pkg);
 
         if (pkg->GetPackageID() != static_cast<int32_t>(protocol::ProtoType::C2W_LoginRequest))
-            co_return FLoginInfo{};
+            co_return LoginInfo{};
 
         Login::C2W_LoginRequest request;
         request.ParseFromString(tmp->ToString());
 
-        FLoginInfo info;
+        LoginInfo info;
 
         info.pid.FromUInt64(request.player_id());
         info.token = request.token();
@@ -55,6 +55,6 @@ awaitable<FLoginInfo> LoginHandler::ParseLoginInfo(IPackage *pkg) {
         co_return info;
     } catch (std::exception &e) {
         spdlog::warn("{} - {}", __FUNCTION__, e.what());
-        co_return FLoginInfo{};
+        co_return LoginInfo{};
     }
 }

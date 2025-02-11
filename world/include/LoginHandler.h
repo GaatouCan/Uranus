@@ -12,8 +12,8 @@ class IBasePlayer;
 
 using asio::awaitable;
 
-struct BASE_API FLoginInfo {
-    FPlayerID pid;
+struct BASE_API LoginInfo {
+    PlayerID pid;
     std::string token;
 };
 
@@ -30,6 +30,6 @@ public:
     [[nodiscard]] LoginAuthenticator *GetOwner() const;
     [[nodiscard]] class GameWorld *GetWorld() const;
 
-    virtual awaitable<FLoginInfo> ParseLoginInfo(class IPackage *) = 0;
-    virtual awaitable<std::shared_ptr<IBasePlayer>> OnPlayerLogin(const std::shared_ptr<Connection>&, const FLoginInfo&) = 0;
+    virtual awaitable<LoginInfo> ParseLoginInfo(class IPackage *) = 0;
+    virtual awaitable<std::shared_ptr<IBasePlayer>> OnPlayerLogin(const std::shared_ptr<Connection>&, const LoginInfo&) = 0;
 };

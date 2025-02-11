@@ -8,7 +8,7 @@
 IBasePlayer::IBasePlayer(ConnectionPointer conn)
     : owner_(nullptr),
       conn_(std::move(conn)),
-      pid_(std::any_cast<FPlayerID>(conn_->GetContext())) {
+      pid_(std::any_cast<PlayerID>(conn_->GetContext())) {
 
 }
 
@@ -19,7 +19,7 @@ IBasePlayer::~IBasePlayer() {
 }
 
 bool IBasePlayer::SetConnection(ConnectionPointer conn) {
-    if (std::any_cast<FPlayerID>(conn_->GetContext()) != pid_) {
+    if (std::any_cast<PlayerID>(conn_->GetContext()) != pid_) {
         return false;
     }
     conn_ = std::move(conn);
@@ -59,7 +59,7 @@ int32_t IBasePlayer::GetCrossID() const {
     return pid_.GetCrossID();
 }
 
-const FPlayerID &IBasePlayer::GetPlayerID() const {
+const PlayerID &IBasePlayer::GetPlayerID() const {
     return pid_;
 }
 

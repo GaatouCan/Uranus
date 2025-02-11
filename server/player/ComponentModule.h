@@ -131,7 +131,7 @@ public:
     void OnLogin();
     void OnLogout();
 
-    [[nodiscard]] FPlayerID GetPlayerID() const;
+    [[nodiscard]] PlayerID GetPlayerID() const;
 
     void SyncCache(FCacheNode *node);
 };

@@ -21,7 +21,7 @@ void ProtocolHandler::Invoke(const ProtoFunctor &func, const std::shared_ptr<Con
         return;
     }
 
-    const auto pid = std::any_cast<FPlayerID>(conn->GetContext());
+    const auto pid = std::any_cast<PlayerID>(conn->GetContext());
     if (const auto plr = mgr->FindPlayer(pid.local); plr != nullptr) {
         try {
             assert(plr->GetConnection() == conn);

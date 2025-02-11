@@ -27,8 +27,8 @@ void UPlayerManager::OnDayChange() {
     }
 }
 
-awaitable<std::shared_ptr<UPlayer> > UPlayerManager::OnPlayerLogin(const std::shared_ptr<Connection> &conn, const FPlayerID &id) {
-    if (conn == nullptr || std::any_cast<FPlayerID>(conn->GetContext()) != id) {
+awaitable<std::shared_ptr<UPlayer> > UPlayerManager::OnPlayerLogin(const std::shared_ptr<Connection> &conn, const PlayerID &id) {
+    if (conn == nullptr || std::any_cast<PlayerID>(conn->GetContext()) != id) {
         spdlog::error("{} - Null Connection Pointer Or Player ID Not Equal.", __FUNCTION__);
         co_return nullptr;
     }
@@ -67,7 +67,7 @@ awaitable<std::shared_ptr<UPlayer> > UPlayerManager::OnPlayerLogin(const std::sh
     co_return plr;
 }
 
-void UPlayerManager::OnPlayerLogout(const FPlayerID pid) {
+void UPlayerManager::OnPlayerLogout(const PlayerID pid) {
     spdlog::info("{} - Player[{}] Logout", __FUNCTION__, pid.ToUInt64());
     if (const auto plr = RemovePlayer(pid.local); plr != nullptr) {
         plr->TryLeaveScene();
@@ -93,7 +93,7 @@ std::shared_ptr<UPlayer> UPlayerManager::RemovePlayer(const uint32_t pid) {
     return nullptr;
 }
 
-void UPlayerManager::SendToList(const std::set<FPlayerID> &players, const int32_t id, const std::string_view data) {
+void UPlayerManager::SendToList(const std::set<PlayerID> &players, const int32_t id, const std::string_view data) {
     if (id <= MINIMUM_PACKAGE_ID || id >= static_cast<int32_t>(protocol::ProtoType::PROTO_TYPE_MAX))
         return;
 
@@ -133,7 +133,7 @@ void UPlayerManager::SyncCache(const FCacheNode &node) {
     spdlog::info("{} - Player[{}] Success.", __FUNCTION__, node.pid.ToUInt64());
 }
 
-awaitable<std::optional<FCacheNode> > UPlayerManager::FindCacheNode(const FPlayerID &pid) {
+awaitable<std::optional<FCacheNode> > UPlayerManager::FindCacheNode(const PlayerID &pid) {
     if (!pid.IsAvailable())
         co_return std::nullopt;
 

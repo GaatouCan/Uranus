@@ -86,7 +86,7 @@ void UComponentModule::OnLogout() {
     }
 }
 
-FPlayerID UComponentModule::GetPlayerID() const {
+PlayerID UComponentModule::GetPlayerID() const {
     if (mOwner)
         return mOwner->GetPlayerID();
     return {};

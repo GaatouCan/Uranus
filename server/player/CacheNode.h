@@ -4,7 +4,7 @@
 #include "utils.h"
 
 struct FCacheNode {
-    FPlayerID pid;
+    PlayerID pid;
     TimePoint lastLoginTime;
     TimePoint lastLogoutTime;
 

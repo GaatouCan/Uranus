@@ -30,7 +30,7 @@ bool LoginAuthenticator::VerifyAddress(const asio::ip::address &addr) {
     return true;
 }
 
-FPlayerID LoginAuthenticator::VerifyToken(FPlayerID pid, const std::string &token) {
+PlayerID LoginAuthenticator::VerifyToken(PlayerID pid, const std::string &token) {
     // TODO
     return pid;
 }
@@ -53,7 +53,7 @@ awaitable<void> LoginAuthenticator::OnLogin(const ConnectionPointer &conn, IPack
 
     spdlog::debug("{} - Player id: {}, token: {}", __FUNCTION__, info.pid.ToInt64(), info.token);
     if (const auto pid = VerifyToken(info.pid, info.token); pid.IsAvailable() && pid.cross == world_->GetServerID()) {
-        conn->SetContext(std::make_any<FPlayerID>(pid));
+        conn->SetContext(std::make_any<PlayerID>(pid));
 
         if (const auto plr = co_await handler_->OnPlayerLogin(conn, info); plr != nullptr) {
             if (const auto manager = world_->GetSceneManager(); manager != nullptr) {

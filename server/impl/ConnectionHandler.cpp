@@ -19,7 +19,7 @@ void ConnectionHandler::OnClosed() {
     if (!conn_->GetContext().has_value())
         return;
 
-    const auto pid = std::any_cast<FPlayerID>(conn_->GetContext());
+    const auto pid = std::any_cast<PlayerID>(conn_->GetContext());
 
     if (const auto mgr = GET_MANAGER(UPlayerManager);mgr != nullptr) {
         mgr->OnPlayerLogout(pid);

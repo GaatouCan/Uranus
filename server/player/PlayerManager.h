@@ -33,20 +33,20 @@ public:
 
     void OnDayChange() override;
 
-    awaitable<std::shared_ptr<UPlayer>> OnPlayerLogin(const std::shared_ptr<Connection> &conn, const FPlayerID &id);
+    awaitable<std::shared_ptr<UPlayer>> OnPlayerLogin(const std::shared_ptr<Connection> &conn, const PlayerID &id);
 
-    void OnPlayerLogout(FPlayerID pid);
+    void OnPlayerLogout(PlayerID pid);
 
     std::shared_ptr<UPlayer> FindPlayer(uint32_t pid);
     std::shared_ptr<UPlayer> RemovePlayer(uint32_t pid);
 
-    void SendToList(const std::set<FPlayerID>& players, int32_t id, std::string_view data);
+    void SendToList(const std::set<PlayerID>& players, int32_t id, std::string_view data);
 
     void SyncCache(const std::shared_ptr<UPlayer> &plr);
     void SyncCache(uint32_t pid);
     void SyncCache(const FCacheNode &node);
 
-    awaitable<std::optional<FCacheNode>> FindCacheNode(const FPlayerID &pid);
+    awaitable<std::optional<FCacheNode>> FindCacheNode(const PlayerID &pid);
 };
 
 #define SEND_TO_PLAYER_SET(mgr, set, proto, data) \
