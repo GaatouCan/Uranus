@@ -26,8 +26,8 @@ class UEventModule final {
     std::mutex mEventMutex;
     mutable std::shared_mutex mSharedMutex;
 
-    std::map<EEvent, std::map<void *, AEventListener>> mListenerMap;
-    std::map<void *, AEventListener> mCurListener;
+    std::map<EEvent, std::map<void *, EventListener>> mListenerMap;
+    std::map<void *, EventListener> mCurListener;
     std::mutex mListenerMutex;
 
 public:
@@ -56,10 +56,10 @@ public:
         });
     }
 
-    void RegisterListener(EEvent event, void *ptr, const AEventListener &listener);
+    void RegisterListener(EEvent event, void *ptr, const EventListener &listener);
     void RemoveListener(EEvent event, void *ptr);
 
-    void Dispatch(EEvent event, IEventParam *param, EDispatchType type = EDispatchType::PUSH_QUEUE);
+    void Dispatch(EEvent event, IEventParam *param, DispatchType type = DispatchType::PUSH_QUEUE);
 
 private:
     asio::awaitable<void> HandleEvent();

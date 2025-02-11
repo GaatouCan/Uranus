@@ -5,21 +5,21 @@
 #include <spdlog/spdlog.h>
 
 
-UConfigManager::UConfigManager()
-    : logicConfigLoader_(nullptr),
-      loggerLoader_(nullptr) {
+ConfigManager::ConfigManager()
+    : logic_config_loader_(nullptr),
+      logger_loader_(nullptr) {
 }
 
-UConfigManager::~UConfigManager() {
-    for (const auto &loader: std::views::values(logicConfigMap_)) {
+ConfigManager::~ConfigManager() {
+    for (const auto &loader: std::views::values(logic_config_map_)) {
         delete loader;
     }
 }
 
-void UConfigManager::Init() {
-    spdlog::info("Using Server Configuration File: {}.", yamlPath_ + SERVER_CONFIG_FILE);
+void ConfigManager::Init() {
+    spdlog::info("Using Server Configuration File: {}.", yaml_path_ + SERVER_CONFIG_FILE);
 
-    config_ = YAML::LoadFile(yamlPath_ + SERVER_CONFIG_FILE);
+    config_ = YAML::LoadFile(yaml_path_ + SERVER_CONFIG_FILE);
 
     assert(!config_.IsNull());
     spdlog::info("Checking Server Configuration File.");
@@ -47,7 +47,7 @@ void UConfigManager::Init() {
 
     spdlog::info("Server Configuration File Check Successfully.");
 
-    const std::string jsonPath = !jsonPath_.empty() ? jsonPath_ : yamlPath_ + SERVER_CONFIG_JSON;
+    const std::string jsonPath = !json_path_.empty() ? json_path_ : yaml_path_ + SERVER_CONFIG_JSON;
 
     utils::TraverseFolder(jsonPath, [this, jsonPath](const std::filesystem::directory_entry &entry) {
         if (entry.path().extension().string() == ".json") {
@@ -66,52 +66,52 @@ void UConfigManager::Init() {
             filepath = utils::StringReplace(filepath, '/', '.');
 #endif
 
-            jsonMap_[filepath] = nlohmann::json::parse(fs);
+            json_map_[filepath] = nlohmann::json::parse(fs);
             spdlog::info("\tLoaded {}.", filepath);
         }
     });
 
-    if (logicConfigLoader_) {
-        std::invoke(logicConfigLoader_, this);
+    if (logic_config_loader_) {
+        std::invoke(logic_config_loader_, this);
     }
 
-    if (loggerLoader_) {
-        std::invoke(loggerLoader_, config_);
+    if (logger_loader_) {
+        std::invoke(logger_loader_, config_);
     }
 
     loaded_ = true;
 }
 
-void UConfigManager::SetYAMLPath(const std::string &path) {
-    yamlPath_ = path;
+void ConfigManager::SetYAMLPath(const std::string &path) {
+    yaml_path_ = path;
 }
 
-void UConfigManager::SetJSONPath(const std::string &path) {
-    jsonPath_ = path;
+void ConfigManager::SetJSONPath(const std::string &path) {
+    json_path_ = path;
 }
 
-void UConfigManager::SetLogicConfigLoader(const ALogicConfigLoader loader) {
-    logicConfigLoader_ = loader;
+void ConfigManager::SetLogicConfigLoader(const LogicConfigLoader loader) {
+    logic_config_loader_ = loader;
 }
 
-void UConfigManager::SetLoggerLoader(const ALoggerLoader loader) {
-    loggerLoader_ = loader;
+void ConfigManager::SetLoggerLoader(const LoggerLoader loader) {
+    logger_loader_ = loader;
 }
 
-void UConfigManager::Abort() const {
-    assert(logicConfigLoader_ != nullptr && loggerLoader_ != nullptr);
+void ConfigManager::Abort() const {
+    assert(logic_config_loader_ != nullptr && logger_loader_ != nullptr);
 }
 
-bool UConfigManager::IsLoaded() const {
+bool ConfigManager::IsLoaded() const {
     return loaded_;
 }
 
-const YAML::Node &UConfigManager::GetServerConfig() const {
+const YAML::Node &ConfigManager::GetServerConfig() const {
     return config_;
 }
 
-std::optional<nlohmann::json> UConfigManager::FindConfig(const std::string &path, const uint64_t id) const {
-    if (const auto it = jsonMap_.find(path); it != jsonMap_.end()) {
+std::optional<nlohmann::json> ConfigManager::FindConfig(const std::string &path, const uint64_t id) const {
+    if (const auto it = json_map_.find(path); it != json_map_.end()) {
         if (it->second.contains(std::to_string(id)))
             return it->second[std::to_string(id)];
     }
@@ -119,11 +119,11 @@ std::optional<nlohmann::json> UConfigManager::FindConfig(const std::string &path
     return std::nullopt;
 }
 
-void UConfigManager::ReloadConfig() {
-    config_ = YAML::LoadFile(yamlPath_ + SERVER_CONFIG_FILE);
+void ConfigManager::ReloadConfig() {
+    config_ = YAML::LoadFile(yaml_path_ + SERVER_CONFIG_FILE);
 
-    jsonMap_.clear();
-    const std::string jsonPath = !jsonPath_.empty() ? jsonPath_ : yamlPath_ + SERVER_CONFIG_JSON;
+    json_map_.clear();
+    const std::string jsonPath = !json_path_.empty() ? json_path_ : yaml_path_ + SERVER_CONFIG_JSON;
 
     utils::TraverseFolder(jsonPath, [this, jsonPath](const std::filesystem::directory_entry &entry) {
         if (entry.path().extension().string() == ".json") {
@@ -142,16 +142,16 @@ void UConfigManager::ReloadConfig() {
             filepath = utils::StringReplace(filepath, '/', '.');
 #endif
 
-            jsonMap_[filepath] = nlohmann::json::parse(fs);
+            json_map_[filepath] = nlohmann::json::parse(fs);
             spdlog::info("\tLoaded {}.", filepath);
         }
     });
 
-    for (auto &[type, cfg]: logicConfigMap_) {
-        if (auto vec = logicLoadMap_.find(type); vec != logicLoadMap_.end()) {
+    for (auto &[type, cfg]: logic_config_map_) {
+        if (auto vec = logic_load_map_.find(type); vec != logic_load_map_.end()) {
             std::vector<nlohmann::json> configs;
             for (const auto &path: vec->second) {
-                if (const auto iter = jsonMap_.find(path); iter != jsonMap_.end()) {
+                if (const auto iter = json_map_.find(path); iter != json_map_.end()) {
                     configs.push_back(iter->second);
                 }
             }

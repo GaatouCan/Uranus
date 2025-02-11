@@ -8,27 +8,27 @@
 #include <shared_mutex>
 
 
-class BASE_API UTimerSystem final : public ISubSystem {
+class BASE_API TimerSystem final : public ISubSystem {
 
-    std::map<FUniqueID, URepeatedTimer *> timerMap_;
+    std::map<UniqueID, RepeatedTimer *> timer_map_;
     mutable std::shared_mutex mutex_;
 
 public:
-    explicit UTimerSystem(UGameWorld *world);
-    ~UTimerSystem() override;
+    explicit TimerSystem(GameWorld *world);
+    ~TimerSystem() override;
 
     GET_SYSTEM_NAME(UTimerSystem)
 
     void Init() override;
 
     template<typename Functor, typename... Args>
-    std::optional<FUniqueID> SetTimer(
+    std::optional<UniqueID> SetTimer(
         const std::chrono::duration<uint32_t> delay,
         const std::chrono::duration<uint32_t> rate,
         const bool repeat,
         Functor &&func, Args &&... args)
     {
-        const auto timer = new URepeatedTimer(GetIOContext());
+        const auto timer = new RepeatedTimer(GetIOContext());
         timer->SetDelay(delay)
             .SetRepeatRate(rate)
             .SetIfRepeat(repeat)
@@ -42,13 +42,13 @@ public:
     }
 
     template<typename Functor, typename Object, typename... Args>
-    std::optional<FUniqueID> SetTimerTo (
+    std::optional<UniqueID> SetTimerTo (
         const std::chrono::duration<uint32_t> delay,
         const std::chrono::duration<uint32_t> rate,
         const bool repeat,
         Functor &&func, Object *obj, Args &&... args)
     {
-        const auto timer = new URepeatedTimer(GetIOContext());
+        const auto timer = new RepeatedTimer(GetIOContext());
         timer->SetDelay(delay)
             .SetRepeatRate(rate)
             .SetIfRepeat(repeat)
@@ -61,12 +61,12 @@ public:
         return tid;
     }
 
-    URepeatedTimer *GetTimer(const FUniqueID &tid);
-    bool StopTimer(const FUniqueID &tid);
+    RepeatedTimer *GetTimer(const UniqueID &tid);
+    bool StopTimer(const UniqueID &tid);
 
     void CleanAllTimers();
 private:
-    std::optional<FUniqueID> EmplaceTimer(URepeatedTimer *timer);
-    bool RemoveTimer(const FUniqueID &tid);
+    std::optional<UniqueID> EmplaceTimer(RepeatedTimer *timer);
+    bool RemoveTimer(const UniqueID &tid);
 };
 

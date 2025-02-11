@@ -11,15 +11,15 @@ class BASE_API ILogicConfig {
 public:
     ILogicConfig() = delete;
 
-    explicit ILogicConfig(std::vector<nlohmann::json> configList)
-        : list_(std::move(configList)) {}
+    explicit ILogicConfig(std::vector<nlohmann::json> config_list)
+        : list_(std::move(config_list)) {}
 
     virtual ~ILogicConfig() = default;
 
     DISABLE_COPY_MOVE(ILogicConfig)
 
-    virtual void OnReload(std::vector<nlohmann::json> configList) {
-        list_ = std::move(configList);
+    virtual void OnReload(std::vector<nlohmann::json> config_list) {
+        list_ = std::move(config_list);
     }
 
     virtual void Init() {}
@@ -29,4 +29,4 @@ protected:
 };
 
 template<typename T>
-concept LOGIC_CONFIG_TYPE = std::derived_from<T, ILogicConfig>;
+concept LogicConfigType = std::derived_from<T, ILogicConfig>;

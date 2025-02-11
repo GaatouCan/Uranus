@@ -11,7 +11,7 @@
 
 
 class UPlayer;
-class UConnection;
+class Connection;
 
 class UPlayerManager final : public IBaseManager {
 
@@ -24,7 +24,7 @@ class UPlayerManager final : public IBaseManager {
     mutable std::shared_mutex mCacheSharedMutex;
 
 public:
-    explicit UPlayerManager(UManagerSystem *owner);
+    explicit UPlayerManager(ManagerSystem *owner);
     ~UPlayerManager() override;
 
     void Init() override;
@@ -33,7 +33,7 @@ public:
 
     void OnDayChange() override;
 
-    awaitable<std::shared_ptr<UPlayer>> OnPlayerLogin(const std::shared_ptr<UConnection> &conn, const FPlayerID &id);
+    awaitable<std::shared_ptr<UPlayer>> OnPlayerLogin(const std::shared_ptr<Connection> &conn, const FPlayerID &id);
 
     void OnPlayerLogout(FPlayerID pid);
 

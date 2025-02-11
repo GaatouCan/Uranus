@@ -11,11 +11,11 @@
 #include <spdlog/spdlog.h>
 
 
-ULoginHandlerImpl::ULoginHandlerImpl(ULoginAuthenticator *owner)
+ULoginHandlerImpl::ULoginHandlerImpl(LoginAuthenticator *owner)
     : ILoginHandler(owner) {
 }
 
-awaitable<std::shared_ptr<IBasePlayer>> ULoginHandlerImpl::OnPlayerLogin(const std::shared_ptr<UConnection> &conn, const FLoginInfo &info) {
+awaitable<std::shared_ptr<IBasePlayer>> ULoginHandlerImpl::OnPlayerLogin(const std::shared_ptr<Connection> &conn, const FLoginInfo &info) {
     // if (const auto sys = GetWorld()->GetSystem<UManagerSystem>(); sys == nullptr) {
     //     spdlog::critical("{} - Manager System is null", __FUNCTION__);
     //     GetWorld()->Shutdown();
@@ -39,7 +39,7 @@ awaitable<std::shared_ptr<IBasePlayer>> ULoginHandlerImpl::OnPlayerLogin(const s
 
 awaitable<FLoginInfo> ULoginHandlerImpl::ParseLoginInfo(IPackage *pkg) {
     try {
-        const auto tmp = dynamic_cast<FPackage *>(pkg);
+        const auto tmp = dynamic_cast<Package *>(pkg);
 
         if (pkg->GetPackageID() != static_cast<int32_t>(protocol::EProtoType::C2W_LoginRequest))
             co_return FLoginInfo{};

@@ -1,4 +1,4 @@
-#include "../../include/impl/PackageCodecImpl.h"
+#include "../../include/impl/PackageCodec.h"
 #include "../../include/impl/Package.h"
 #include "../../include/Connection.h"
 
@@ -10,21 +10,21 @@
 #endif
 
 
-UPackageCodecImpl::UPackageCodecImpl(UConnection *conn)
+PackageCodec::PackageCodec(Connection *conn)
     : TPackageCodec(conn) {
 }
 
-awaitable<void> UPackageCodecImpl::EncodeT(FPackage *pkg) {
-    FPackage::FHeader header{};
+awaitable<void> PackageCodec::EncodeT(Package *pkg) {
+    Package::Header header{};
 
     header.magic = htonl(pkg->header_.magic);
     header.version = htonl(pkg->header_.version);
-    header.method = static_cast<ECodecMethod>(htons(static_cast<uint16_t>(pkg->header_.method)));
+    header.method = static_cast<CodecMethod>(htons(static_cast<uint16_t>(pkg->header_.method)));
 
     header.id = htonl(pkg->header_.id);
     header.length = htonll(pkg->header_.length);
 
-    if (const auto len = co_await async_write(conn_->GetSocket(), asio::buffer(&header, FPackage::PACKAGE_HEADER_SIZE)); len == 0) {
+    if (const auto len = co_await async_write(conn_->GetSocket(), asio::buffer(&header, Package::PACKAGE_HEADER_SIZE)); len == 0) {
         spdlog::warn("{} - Write package header length equal zero", __FUNCTION__);
         pkg->Invalid();
         co_return;
@@ -36,8 +36,8 @@ awaitable<void> UPackageCodecImpl::EncodeT(FPackage *pkg) {
     co_await async_write(conn_->GetSocket(), asio::buffer(pkg->RawByteArray().GetRawRef()));
 }
 
-awaitable<void> UPackageCodecImpl::DecodeT(FPackage *pkg) {
-    if (const auto len = co_await async_read(conn_->GetSocket(), asio::buffer(&pkg->header_, FPackage::PACKAGE_HEADER_SIZE)); len == 0) {
+awaitable<void> PackageCodec::DecodeT(Package *pkg) {
+    if (const auto len = co_await async_read(conn_->GetSocket(), asio::buffer(&pkg->header_, Package::PACKAGE_HEADER_SIZE)); len == 0) {
         spdlog::warn("{} - Read package header length equal zero", __FUNCTION__);
         pkg->Invalid();
         co_return;
@@ -45,7 +45,7 @@ awaitable<void> UPackageCodecImpl::DecodeT(FPackage *pkg) {
 
     pkg->header_.magic = ntohl(pkg->header_.magic);
     pkg->header_.version = ntohl(pkg->header_.version);
-    pkg->header_.method = static_cast<ECodecMethod>(ntohs(static_cast<uint16_t>(pkg->header_.method)));
+    pkg->header_.method = static_cast<CodecMethod>(ntohs(static_cast<uint16_t>(pkg->header_.method)));
 
     pkg->header_.id = ntohl(pkg->header_.id);
     pkg->header_.length = ntohll(pkg->header_.length);

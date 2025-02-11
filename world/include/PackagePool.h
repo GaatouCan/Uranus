@@ -10,8 +10,8 @@
 
 class IPackage;
 
-typedef IPackage*(*APackageCreator)();
-typedef void(*APackageInitializer)(IPackage*);
+typedef IPackage*(*PackageCreator)();
+typedef void(*PackageInitializer)(IPackage*);
 
 // using APackageCreator = std::function<IPackage*()>;
 // using APackageInitializer = std::function<void(IPackage*)>;
@@ -19,16 +19,16 @@ typedef void(*APackageInitializer)(IPackage*);
 /**
  * 数据包池
  */
-class UPackagePool final {
+class PackagePool final {
 
-    friend class UMainScene;
+    friend class MainScene;
     // friend class UCrossRoute;
 
-    explicit UPackagePool(size_t capacity = kDefaultCapacity);
-    ~UPackagePool();
+    explicit PackagePool(size_t capacity = default_capacity_);
+    ~PackagePool();
 
 public:
-    DISABLE_COPY_MOVE(UPackagePool)
+    DISABLE_COPY_MOVE(PackagePool)
 
     [[nodiscard]] size_t Capacity() const;
 
@@ -59,8 +59,8 @@ public:
     static void SetCollectRate(float rate);
     static void SetCollectScale(float scale);
 
-    static void SetPackageBuilder(const APackageCreator& func);
-    static void SetPackageInitializer(const APackageInitializer& func);
+    static void SetPackageBuilder(const PackageCreator& func);
+    static void SetPackageInitializer(const PackageInitializer& func);
 
     static bool InitPackage(IPackage *pkg);
 
@@ -71,7 +71,7 @@ private:
 private:
     std::queue<IPackage *> queue_;
     std::set<IPackage *> set_;
-    std::atomic<ATimePoint> collectTime_;
+    std::atomic<TimePoint> collect_time_;
 
     // std::mutex mMutex;
     mutable std::shared_mutex mutex_;
@@ -79,15 +79,15 @@ private:
     // 扩容和收缩临界点和比例
     // 每个线程下的数据包池行为目前设计为一致
 
-    static size_t kDefaultCapacity;
-    static size_t kMinCapacity;
+    static size_t default_capacity_;
+    static size_t min_capacity_;
 
-    static float kExpanseRate;
-    static float kExpanseScale;
+    static float expanse_rate_;
+    static float expanse_scale_;
 
-    static float kCollectRate;
-    static float kCollectScale;
+    static float collect_rate_;
+    static float collect_scale_;
 
-    static APackageCreator kCreatePackage;
-    static APackageInitializer kInitPackage;
+    static PackageCreator create_package_;
+    static PackageInitializer init_package_;
 };

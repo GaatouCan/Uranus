@@ -6,36 +6,36 @@
 
 #include <typeindex>
 
-class UManagerSystem final : public ISubSystem {
+class ManagerSystem final : public ISubSystem {
 
-    std::unordered_map<std::type_index, IBaseManager *> managerMap_;
-    FUniqueID timerId_;
+    std::unordered_map<std::type_index, IBaseManager *> manager_map_;
+    UniqueID timer_id_;
 
 public:
-    explicit UManagerSystem(UGameWorld *world);
-    ~UManagerSystem() override;
+    explicit ManagerSystem(GameWorld *world);
+    ~ManagerSystem() override;
 
     GET_SYSTEM_NAME(UManagerSystem)
 
     void Init() override;
 
-    template<MANAGER_TYPE T>
+    template<ManagerType T>
     T* CreateManager() {
         auto mgr = new T(this);
-        managerMap_[typeid(T)] = mgr;
+        manager_map_[typeid(T)] = mgr;
         return mgr;
     }
 
-    template<MANAGER_TYPE T>
+    template<ManagerType T>
     T *GetManager() {
-        if (const auto it = managerMap_.find(typeid(T)); it != managerMap_.end()) {
+        if (const auto it = manager_map_.find(typeid(T)); it != manager_map_.end()) {
             return dynamic_cast<T *>(it->second);
         }
         return nullptr;
     }
 
 private:
-    void OnTick(ATimePoint now);
+    void OnTick(TimePoint now);
 };
 
 #define REGISTER_MANAGER(mgr) sys->CreateManager<mgr>();

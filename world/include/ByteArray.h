@@ -7,15 +7,15 @@
 
 using byte = unsigned char;
 
-class BASE_API FByteArray final {
+class BASE_API ByteArray final {
 
     std::vector<byte> bytes_;
 
 public:
-    FByteArray() = default;
+    ByteArray() = default;
 
-    explicit FByteArray(size_t size);
-    explicit FByteArray(const std::vector<byte> &bytes);
+    explicit ByteArray(size_t size);
+    explicit ByteArray(const std::vector<byte> &bytes);
 
     explicit operator std::vector<byte>() const;
 
@@ -66,15 +66,15 @@ public:
 
     template<typename T>
     requires CheckPODType<T>
-    static FByteArray FromData(T data) {
-        FByteArray bytes;
+    static ByteArray FromData(T data) {
+        ByteArray bytes;
         bytes.CastFromData(std::forward<T>(data));
         return bytes;
     }
 };
 
 template<typename T>
-requires FByteArray::CheckPODType<T>
+requires ByteArray::CheckPODType<T>
 std::vector<byte> BASE_API DataToByteArray(T data) {
     std::vector<byte> bytes;
 
@@ -91,7 +91,7 @@ std::vector<byte> BASE_API DataToByteArray(T data) {
 }
 
 template<typename T>
-requires FByteArray::CheckPODType<T>
+requires ByteArray::CheckPODType<T>
 bool BASE_API ByteArrayToData(const std::vector<byte> &bytes, T *data) {
     const bool ret = bytes.size() >= sizeof(std::remove_pointer_t<T>);
     const auto size = ret ? sizeof(std::remove_pointer_t<T>) : bytes.size();

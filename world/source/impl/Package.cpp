@@ -1,18 +1,18 @@
 #include "../../include/impl/Package.h"
 
-uint32_t FPackage::kPackageMagic = 20250122;
-uint32_t FPackage::kPackageVersion = 1001;
-std::string FPackage::kPackageMethod = "PROTOBUF";
+uint32_t Package::package_magic_ = 20250122;
+uint32_t Package::package_version_ = 1001;
+std::string Package::package_method_ = "PROTOBUF";
 
 
-FPackage::FPackage()
+Package::Package()
     : header_() {
     memset(&header_, 0, sizeof(header_));
 }
 
-FPackage::~FPackage() = default;
+Package::~Package() = default;
 
-FPackage::FPackage(const FPackage &rhs) : FPackage() {
+Package::Package(const Package &rhs) : Package() {
     if (this != &rhs) {
         memcpy(&header_, &rhs.header_, sizeof(header_));
 
@@ -21,7 +21,7 @@ FPackage::FPackage(const FPackage &rhs) : FPackage() {
     }
 }
 
-FPackage::FPackage(FPackage &&rhs) noexcept : FPackage() {
+Package::Package(Package &&rhs) noexcept : Package() {
     if (this != &rhs) {
         memcpy(&header_, &rhs.header_, sizeof(header_));
 
@@ -30,7 +30,7 @@ FPackage::FPackage(FPackage &&rhs) noexcept : FPackage() {
     }
 }
 
-FPackage &FPackage::operator=(const FPackage &rhs) {
+Package &Package::operator=(const Package &rhs) {
     if (this != &rhs) {
         memcpy(&header_, &rhs.header_, sizeof(header_));
 
@@ -40,7 +40,7 @@ FPackage &FPackage::operator=(const FPackage &rhs) {
     return *this;
 }
 
-FPackage &FPackage::operator=(FPackage &&rhs) noexcept {
+Package &Package::operator=(Package &&rhs) noexcept {
     if (this != &rhs) {
         memcpy(&header_, &rhs.header_, sizeof(header_));
 
@@ -50,107 +50,107 @@ FPackage &FPackage::operator=(FPackage &&rhs) noexcept {
     return *this;
 }
 
-FPackage::FPackage(const uint32_t id, const std::string_view str)
-    : FPackage() {
+Package::Package(const uint32_t id, const std::string_view str)
+    : Package() {
     header_.id = id;
     SetData(str);
 }
 
-FPackage::FPackage(const uint32_t id, const std::stringstream &ss)
-    : FPackage(id, ss.str()) {
+Package::Package(const uint32_t id, const std::stringstream &ss)
+    : Package(id, ss.str()) {
 }
 
-void FPackage::Reset() {
+void Package::Reset() {
     memset(&header_, 0, sizeof(header_));
     data_.Reset();
 }
 
-void FPackage::Invalid() {
+void Package::Invalid() {
     header_.id = MINIMUM_PACKAGE_ID - 1;
 }
 
-bool FPackage::IsAvailable() const {
+bool Package::IsAvailable() const {
     return header_.id >= MINIMUM_PACKAGE_ID && header_.id <= MAXIMUM_PACKAGE_ID;
 }
 
-FPackage &FPackage::SetPackageID(const uint32_t id) {
+Package &Package::SetPackageID(const uint32_t id) {
     header_.id = id;
     return *this;
 }
 
-FPackage &FPackage::SetData(const std::string_view str) {
+Package &Package::SetData(const std::string_view str) {
     data_.Resize(str.size());
     memcpy(data_.Data(), str.data(), str.size());
     header_.length = static_cast<int64_t>(str.size());
     return *this;
 }
 
-FPackage &FPackage::SetData(const std::stringstream &ss) {
+Package &Package::SetData(const std::stringstream &ss) {
     return SetData(ss.str());
 }
 
-FPackage &FPackage::SetMagic(const uint32_t magic) {
+Package &Package::SetMagic(const uint32_t magic) {
     header_.magic = magic;
     return *this;
 }
 
-FPackage &FPackage::SetVersion(const uint32_t version) {
+Package &Package::SetVersion(const uint32_t version) {
     header_.version = version;
     return *this;
 }
 
-uint32_t FPackage::GetMagic() const {
+uint32_t Package::GetMagic() const {
     return header_.magic;
 }
 
-uint32_t FPackage::GetVersion() const {
+uint32_t Package::GetVersion() const {
     return header_.version;
 }
 
-FPackage &FPackage::SetMethod(const ECodecMethod method) {
+Package &Package::SetMethod(const CodecMethod method) {
     header_.method = method;
     return *this;
 }
 
-ECodecMethod FPackage::GetMethod() const {
+CodecMethod Package::GetMethod() const {
     return header_.method;
 }
 
-uint32_t FPackage::GetPackageID() const {
+uint32_t Package::GetPackageID() const {
     return header_.id;
 }
 
-void FPackage::CopyFrom(IPackage *other) {
-    if (const auto tmp = dynamic_cast<FPackage *>(other); tmp != nullptr && tmp != this) {
+void Package::CopyFrom(IPackage *other) {
+    if (const auto tmp = dynamic_cast<Package *>(other); tmp != nullptr && tmp != this) {
         *this = *tmp;
     }
 }
 
-size_t FPackage::GetDataLength() const {
+size_t Package::GetDataLength() const {
     return data_.Size();
 }
 
-std::string FPackage::ToString() const {
+std::string Package::ToString() const {
     return {data_.Begin(), data_.End()};
 }
 
-const FByteArray &FPackage::GetByteArray() const {
+const ByteArray &Package::GetByteArray() const {
     return data_;
 }
 
-void FPackage::SetPackageMagic(const uint32_t magic) {
-    kPackageMagic = magic;
+void Package::SetPackageMagic(const uint32_t magic) {
+    package_magic_ = magic;
 }
 
-void FPackage::SetPackageVersion(const uint32_t version) {
-    kPackageVersion = version;
+void Package::SetPackageVersion(const uint32_t version) {
+    package_version_ = version;
 }
 
-void FPackage::SetPackageMethod(const std::string &method) {
-    kPackageMethod = method;
+void Package::SetPackageMethod(const std::string &method) {
+    package_method_ = method;
 }
 
-void FPackage::LoadConfig(const YAML::Node &config) {
+void Package::LoadConfig(const YAML::Node &config) {
     if (config["package"].IsNull())
         return;
 
@@ -165,24 +165,24 @@ void FPackage::LoadConfig(const YAML::Node &config) {
         SetPackageMethod(config["package"]["method"].as<std::string>());
 }
 
-IPackage * FPackage::CreatePackage() {
-    return new FPackage();
+IPackage * Package::CreatePackage() {
+    return new Package();
 }
 
-void FPackage::InitPackage(IPackage *pkg) {
-    const auto temp = dynamic_cast<FPackage *>(pkg);
+void Package::InitPackage(IPackage *pkg) {
+    const auto temp = dynamic_cast<Package *>(pkg);
     if (temp == nullptr)
         return;
 
-    temp->SetMagic(kPackageMagic);
-    temp->SetVersion(kPackageVersion);
+    temp->SetMagic(package_magic_);
+    temp->SetVersion(package_version_);
 
-    if (kPackageMethod == "LineBased")
-        temp->SetMethod(ECodecMethod::BASE_LINE);
-    if (kPackageMethod == "Protobuf")
-        temp->SetMethod(ECodecMethod::PROTOBUF);
+    if (package_method_ == "LineBased")
+        temp->SetMethod(CodecMethod::BASE_LINE);
+    if (package_method_ == "Protobuf")
+        temp->SetMethod(CodecMethod::PROTOBUF);
 }
 
-FByteArray &FPackage::RawByteArray() {
+ByteArray &Package::RawByteArray() {
     return data_;
 }

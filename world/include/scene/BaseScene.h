@@ -8,36 +8,36 @@
 
 class IBasePlayer;
 
-class BASE_API IAbstractScene {
+class BASE_API IBaseScene {
 
-    class USceneManager* owner_;
+    class SceneManager* owner_;
     const int32_t id_;
 
-    std::map<int32_t, std::shared_ptr<IBasePlayer>> playerMap_;
+    std::map<int32_t, std::shared_ptr<IBasePlayer>> player_map_;
     mutable std::shared_mutex mutex_;
 
 public:
-    IAbstractScene() = delete;
+    IBaseScene() = delete;
 
-    IAbstractScene(USceneManager *owner, int32_t id);
-    virtual ~IAbstractScene();
+    IBaseScene(SceneManager *owner, int32_t id);
+    virtual ~IBaseScene();
 
     [[nodiscard]] int32_t GetSceneID() const;
-    [[nodiscard]] USceneManager* GetOwner() const;
-    [[nodiscard]] class UGameWorld *GetWorld() const;
+    [[nodiscard]] SceneManager* GetOwner() const;
+    [[nodiscard]] class GameWorld *GetWorld() const;
 
     void PlayerEnterScene(const std::shared_ptr<IBasePlayer> &player);
-    void PlayerLeaveScene(const std::shared_ptr<IBasePlayer> &player, bool bChange = false);
+    void PlayerLeaveScene(const std::shared_ptr<IBasePlayer> &player, bool is_change = false);
 
     std::shared_ptr<IBasePlayer> GetPlayer(int32_t pid) const;
 
     void RunInThread(const std::function<awaitable<void>()> &func) const;
     void RunInThread(std::function<awaitable<void>()> &&func) const;
 
-    template<typename FUNC, typename... ARGS>
-    void PushTask(FUNC &&func, ARGS &&... args)
+    template<typename Functor, typename... Args>
+    void PushTask(Functor &&func, Args &&... args)
     {
-        this->RunInThread([func = std::forward<FUNC>(func), ...args = std::forward<ARGS>(args)]() -> awaitable<void> {
+        this->RunInThread([func = std::forward<Functor>(func), ...args = std::forward<Args>(args)]() -> awaitable<void> {
             try {
                 std::invoke(func, args...);
             } catch (std::exception &e) {

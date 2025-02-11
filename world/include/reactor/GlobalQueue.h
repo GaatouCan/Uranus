@@ -9,46 +9,46 @@
 #include <vector>
 
 
-class UReactor;
-class UTaskQueue;
+class IReactor;
+class TaskQueue;
 
-struct FWeakPointerRawAddressCompare {
+struct WeakPointerRawAddressCompare {
     template <typename T>
     bool operator()(const std::weak_ptr<T>& lhs, const std::weak_ptr<T>& rhs) const {
         return lhs.lock().get() < rhs.lock().get();
     }
 };
 
-class UGlobalQueue final {
+class GlobalQueue final {
 
-    friend class UGameWorld;
+    friend class GameWorld;
 
-    explicit UGlobalQueue(UGameWorld *world);
-    ~UGlobalQueue();
+    explicit GlobalQueue(GameWorld *world);
+    ~GlobalQueue();
 
 public:
-    UGlobalQueue() = delete;
+    GlobalQueue() = delete;
 
-    DISABLE_COPY_MOVE(UGlobalQueue)
+    DISABLE_COPY_MOVE(GlobalQueue)
 
     void Init();
 
-    std::shared_ptr<UTaskQueue> RegisterReactor(UReactor *reactor);
-    std::shared_ptr<UTaskQueue> FindByReactor(const UReactor *reactor) const;
+    std::shared_ptr<TaskQueue> RegisterReactor(IReactor *reactor);
+    std::shared_ptr<TaskQueue> FindByReactor(const IReactor *reactor) const;
 
-    void RemoveReactor(const UReactor *reactor);
+    void RemoveReactor(const IReactor *reactor);
 
-    void OnPushTask(const std::shared_ptr<UTaskQueue> &queue);
+    void OnPushTask(const std::shared_ptr<TaskQueue> &queue);
 
 private:
-    UGameWorld *world_;
+    GameWorld *world_;
 
-    TThreadSafeDeque<std::shared_ptr<UTaskQueue>> queue_;
-    std::vector<std::thread> workerVec_;
+    ThreadSafeDeque<std::shared_ptr<TaskQueue>> queue_;
+    std::vector<std::thread> worker_vec_;
 
-    std::map<UReactor *, std::weak_ptr<UTaskQueue>> reactorMap_;
-    mutable std::shared_mutex reactorMutex_;
+    std::map<IReactor *, std::weak_ptr<TaskQueue>> reactor_map_;
+    mutable std::shared_mutex reactor_mutex_;
 
-    std::set<std::weak_ptr<UTaskQueue>, FWeakPointerRawAddressCompare> emptySet_;
-    mutable std::shared_mutex emptyMutex_;
+    std::set<std::weak_ptr<TaskQueue>, WeakPointerRawAddressCompare> empty_set_;
+    mutable std::shared_mutex empty_mutex_;
 };

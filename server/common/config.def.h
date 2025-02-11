@@ -4,6 +4,6 @@
 
 // #include "../config/AvatarLogicConfig.h"
 
-inline void LoadLogicConfig(UConfigManager *mgr) {
+inline void LoadLogicConfig(ConfigManager *mgr) {
     // REGISTER_LOGIC_CONFIG(UAvatarLogicConfig, "appearance.avatar")
 }

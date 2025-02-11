@@ -8,36 +8,36 @@
 #include "../common.h"
 
 
-class UGlobalQueue;
-class UReactor;
-using AReactorTask = std::function<void(UReactor*)>;
+class GlobalQueue;
+class IReactor;
+using ReactorTask = std::function<void(IReactor*)>;
 
-class UTaskQueue final : public std::enable_shared_from_this<UTaskQueue> {
+class TaskQueue final : public std::enable_shared_from_this<TaskQueue> {
 
-    UGlobalQueue *global_;
-    UReactor *reactor_;
+    GlobalQueue *global_;
+    IReactor *reactor_;
 
-    std::queue<AReactorTask> curQueue_;
-    std::queue<AReactorTask> waitQueue_;
+    std::queue<ReactorTask> cur_queue_;
+    std::queue<ReactorTask> wait_queue_;
 
     // std::mutex mMutex;
     mutable std::shared_mutex mutex_;
 
     std::atomic_bool running_;
-    std::atomic_bool inGlobal_;
+    std::atomic_bool in_global_;
     std::atomic_bool removed_;
 
 public:
-    UTaskQueue() = delete;
+    TaskQueue() = delete;
 
-    UTaskQueue(UGlobalQueue *global, UReactor *reactor);
+    TaskQueue(GlobalQueue *global, IReactor *reactor);
 
-    DISABLE_COPY_MOVE(UTaskQueue)
+    DISABLE_COPY_MOVE(TaskQueue)
 
-    [[nodiscard]] UReactor *GetReactor() const;
+    [[nodiscard]] IReactor *GetReactor() const;
 
-    void PushTask(const AReactorTask &task);
-    void PushTask(AReactorTask &&task);
+    void PushTask(const ReactorTask &task);
+    void PushTask(ReactorTask &&task);
 
     [[nodiscard]] bool IsEmpty() const;
     [[nodiscard]] bool IsRunning() const;

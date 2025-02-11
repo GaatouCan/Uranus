@@ -1,11 +1,11 @@
 #include "../../include/scene/BasePlayer.h"
-#include "scene/AbstractScene.h"
+#include "scene/BaseScene.h"
 // #include "../../CrossRoute.h"
 
 #include <utility>
 #include <ranges>
 
-IBasePlayer::IBasePlayer(AConnectionPointer conn)
+IBasePlayer::IBasePlayer(ConnectionPointer conn)
     : owner_(nullptr),
       conn_(std::move(conn)),
       pid_(std::any_cast<FPlayerID>(conn_->GetContext())) {
@@ -18,7 +18,7 @@ IBasePlayer::~IBasePlayer() {
     }
 }
 
-bool IBasePlayer::SetConnection(AConnectionPointer conn) {
+bool IBasePlayer::SetConnection(ConnectionPointer conn) {
     if (std::any_cast<FPlayerID>(conn_->GetContext()) != pid_) {
         return false;
     }
@@ -26,11 +26,11 @@ bool IBasePlayer::SetConnection(AConnectionPointer conn) {
     return true;
 }
 
-AConnectionPointer IBasePlayer::GetConnection() const {
+ConnectionPointer IBasePlayer::GetConnection() const {
     return conn_;
 }
 
-ATcpSocket &IBasePlayer::GetSocket() const {
+TcpSocket &IBasePlayer::GetSocket() const {
     return conn_->GetSocket();
 }
 
@@ -39,11 +39,11 @@ asio::io_context &IBasePlayer::GetIOContext() const {
     return *const_cast<asio::io_context *>(ctx);
 }
 
-UGameWorld * IBasePlayer::GetWorld() const {
+GameWorld * IBasePlayer::GetWorld() const {
     return conn_->GetWorld();
 }
 
-AThreadID IBasePlayer::GetThreadID() const {
+ThreadID IBasePlayer::GetThreadID() const {
     return conn_->GetThreadID();
 }
 
@@ -80,7 +80,7 @@ void IBasePlayer::SendPackage(IPackage *pkg) const {
     conn_->Send(pkg);
 }
 
-void IBasePlayer::OnEnterScene(IAbstractScene *scene) {
+void IBasePlayer::OnEnterScene(IBaseScene *scene) {
     if (owner_ != nullptr) {
         // TODO
     }
@@ -88,7 +88,7 @@ void IBasePlayer::OnEnterScene(IAbstractScene *scene) {
     enterTime_ = NowTimePoint();
 }
 
-void IBasePlayer::OnLeaveScene(IAbstractScene *scene) {
+void IBasePlayer::OnLeaveScene(IBaseScene *scene) {
     if (owner_ == nullptr)
         return;
 
@@ -120,27 +120,27 @@ int32_t IBasePlayer::GetCurrentSceneID() const {
     return owner_->GetSceneID();
 }
 
-IAbstractScene *IBasePlayer::GetCurrentScene() const {
+IBaseScene *IBasePlayer::GetCurrentScene() const {
     return owner_;
 }
 
-ATimePoint IBasePlayer::GetEnterSceneTime() const {
+TimePoint IBasePlayer::GetEnterSceneTime() const {
     return enterTime_;
 }
 
-ATimePoint IBasePlayer::GetLeaveSceneTime() const {
+TimePoint IBasePlayer::GetLeaveSceneTime() const {
     return leaveTime_;
 }
 
-void IBasePlayer::SetPlatformInfo(const FPlatformInfo &platform) {
+void IBasePlayer::SetPlatformInfo(const PlatformInfo &platform) {
     platform_ = platform;
 }
 
-const FPlatformInfo &IBasePlayer::GetPlatformInfo() const {
+const PlatformInfo &IBasePlayer::GetPlatformInfo() const {
     return platform_;
 }
 
-bool IBasePlayer::StopTimer(const FUniqueID &tid) {
+bool IBasePlayer::StopTimer(const UniqueID &tid) {
     const auto timer = GetTimer(tid);
     if (timer == nullptr)
         return false;
@@ -156,7 +156,7 @@ void IBasePlayer::CleanAllTimer() {
     }
 }
 
-URepeatedTimer *IBasePlayer::GetTimer(const FUniqueID &tid) {
+RepeatedTimer *IBasePlayer::GetTimer(const UniqueID &tid) {
     std::shared_lock lock(timerMutex_);
     if (const auto it = timerMap_.find(tid); it != timerMap_.end()) {
         return it->second;
@@ -164,16 +164,16 @@ URepeatedTimer *IBasePlayer::GetTimer(const FUniqueID &tid) {
     return nullptr;
 }
 
-std::optional<FUniqueID> IBasePlayer::AddTimer(URepeatedTimer *timer) {
+std::optional<UniqueID> IBasePlayer::AddTimer(RepeatedTimer *timer) {
     if (timer == nullptr)
         return std::nullopt;
 
-    FUniqueID timerID = FUniqueID::RandomGenerate();
+    UniqueID timerID = UniqueID::RandomGenerate();
 
     {
         std::shared_lock lock(timerMutex_);
         while (timerMap_.contains(timerID)) {
-            timerID = FUniqueID::RandomGenerate();
+            timerID = UniqueID::RandomGenerate();
         }
     }
 
@@ -182,7 +182,7 @@ std::optional<FUniqueID> IBasePlayer::AddTimer(URepeatedTimer *timer) {
         timerMap_[timerID] = timer;
     }
 
-    timer->SetTimerID(timerID).SetCompleteCallback([weak = weak_from_this()](const FUniqueID &tid) mutable {
+    timer->SetTimerID(timerID).SetCompleteCallback([weak = weak_from_this()](const UniqueID &tid) mutable {
         if (const auto self = weak.lock()) {
             self->RemoveTimer(tid);
         }
@@ -190,7 +190,7 @@ std::optional<FUniqueID> IBasePlayer::AddTimer(URepeatedTimer *timer) {
     return timerID;
 }
 
-bool IBasePlayer::RemoveTimer(const FUniqueID &tid) {
+bool IBasePlayer::RemoveTimer(const UniqueID &tid) {
     std::unique_lock lock(timerMutex_);
     if (const auto it = timerMap_.find(tid); it != timerMap_.end()) {
         const auto timer = it->second;

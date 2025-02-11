@@ -16,7 +16,7 @@
 #include "common/manager.def.h"
 
 
-UGameServer::UGameServer(UGameWorld *world)
+UGameServer::UGameServer(GameWorld *world)
     : IServerLogic(world) {
 }
 
@@ -38,17 +38,17 @@ void UGameServer::InitGameWorld() {
 
     GetWorld()->GetLoginAuthenticator()->SetHandler<ULoginHandlerImpl>();
 
-    if (const auto sys = GetWorld()->GetSystem<UManagerSystem>(); sys != nullptr)
+    if (const auto sys = GetWorld()->GetSystem<ManagerSystem>(); sys != nullptr)
         RegisterManager(sys);
 }
 
-void UGameServer::SetConnectionHandler(const std::shared_ptr<UConnection> &conn) {
+void UGameServer::SetConnectionHandler(const std::shared_ptr<Connection> &conn) {
     if (conn != nullptr)
         conn->SetHandler<UConnectionHandlerImpl>();
 }
 
 
-extern "C" SERVER_API IServerLogic *CreateServer(UGameWorld *world) {
+extern "C" SERVER_API IServerLogic *CreateServer(GameWorld *world) {
     return new UGameServer(world);
 }
 

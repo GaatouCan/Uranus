@@ -17,18 +17,18 @@ struct FEP_PlayerLogout final : IEventParam {
 
 class UPlayer final : public IBasePlayer {
 
-    ATimePoint mLoginTime;
-    ATimePoint mLogoutTime;
+    TimePoint mLoginTime;
+    TimePoint mLogoutTime;
 
     UComponentModule mComponentModule;
     UEventModule mEventModule;
 
-    FPlatformInfo mPlatform;
+    PlatformInfo mPlatform;
 
 public:
     UPlayer() = delete;
 
-    explicit UPlayer(AConnectionPointer conn);
+    explicit UPlayer(ConnectionPointer conn);
     ~UPlayer() override;
 
     UComponentModule &GetComponentModule();
@@ -46,7 +46,7 @@ public:
 
     void SyncCache(FCacheNode *node);
 
-    void DispatchEvent(EEvent event, IEventParam *param, EDispatchType type = EDispatchType::PUSH_QUEUE);
+    void DispatchEvent(EEvent event, IEventParam *param, DispatchType type = DispatchType::PUSH_QUEUE);
 };
 
 #define SEND_PACKAGE(sender, proto, data) \

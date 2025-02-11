@@ -10,35 +10,35 @@
 static constexpr int32_t kNormalSceneIDBegin = 1000;
 
 
-class IAbstractScene;
+class IBaseScene;
 
-class BASE_API USceneManager final
+class BASE_API SceneManager final
 {
-    friend class UGameWorld;
+    friend class GameWorld;
 
-    explicit USceneManager(UGameWorld *world);
-    ~USceneManager();
+    explicit SceneManager(GameWorld *world);
+    ~SceneManager();
 
 public:
-    USceneManager() = delete;
+    SceneManager() = delete;
 
-    DISABLE_COPY_MOVE(USceneManager)
+    DISABLE_COPY_MOVE(SceneManager)
 
     void Init();
 
-    UGameWorld *GetWorld() const;
-    IAbstractScene *GetNextMainScene();
+    GameWorld *GetWorld() const;
+    IBaseScene *GetNextMainScene();
 
-    IAbstractScene *GetScene(int32_t sid) const;
+    IBaseScene *GetScene(int32_t sid) const;
 
 private:
-    UGameWorld *world_;
+    GameWorld *world_;
 
-    std::vector<IAbstractScene *> mainSceneVec_;
-    std::vector<asio::io_context::work> workVec_;
-    std::vector<std::thread> threadVec_;
+    std::vector<IBaseScene *> main_scene_vec_;
+    std::vector<asio::io_context::work> worker_vec_;
+    std::vector<std::thread> thread_vec_;
 
-    std::atomic_size_t nextIndex_;
+    std::atomic_size_t next_main_index_;
 
-    std::unordered_map<int32_t, IAbstractScene *> sceneMap_;
+    std::unordered_map<int32_t, IBaseScene *> scene_map_;
 };

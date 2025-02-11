@@ -4,27 +4,28 @@
 #include <spdlog/fmt/fmt.h>
 #include <random>
 
-std::string FUniqueID::ToString() const {
+std::string UniqueID::ToString() const {
     return fmt::format("{}-{}", time, random);
 }
 
-FUniqueID & FUniqueID::FromString(const std::string &str) {
+UniqueID & UniqueID::FromString(const std::string &str) {
     const std::vector<std::string> res = utils::SplitString(str, '-');
 
     if (res.size() < 2)
         return *this;
 
     time = std::stoll(res[0]);
-    random = std::stoull(res[1]);
+    random = std::stoll(res[1]);
+
     return *this;
 }
 
-FUniqueID FUniqueID::RandomGenerate() {
-    std::random_device RandomDevice;
-    std::mt19937 Generator(RandomDevice());
-    std::uniform_int_distribution Distribution(100000, 999999);
+UniqueID UniqueID::RandomGenerate() {
+    std::random_device random_device;
+    std::mt19937 generator(random_device());
+    std::uniform_int_distribution distribution(100000, 999999);
 
-    const int64_t number = Distribution(Generator);
+    const int64_t number = distribution(generator);
 
     return {
         utils::UnixTime(),
@@ -32,7 +33,7 @@ FUniqueID FUniqueID::RandomGenerate() {
     };
 }
 
-bool FUniqueID::operator<(const FUniqueID &other) const {
+bool UniqueID::operator<(const UniqueID &other) const {
     if (time < other.time) {
         return true;
     }
@@ -42,10 +43,10 @@ bool FUniqueID::operator<(const FUniqueID &other) const {
     return false;
 }
 
-bool FUniqueID::operator==(const FUniqueID &other) const {
+bool UniqueID::operator==(const UniqueID &other) const {
     return time == other.time && random == other.random;
 }
 
-bool FUniqueID::operator!=(const FUniqueID &other) const {
+bool UniqueID::operator!=(const UniqueID &other) const {
     return !(*this == other);
 }

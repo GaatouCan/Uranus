@@ -6,60 +6,60 @@
 #include <yaml-cpp/yaml.h>
 #include <nlohmann/json.hpp>
 
-class UConfigManager;
+class ConfigManager;
 
-typedef void(*ALogicConfigLoader)(UConfigManager *);
-typedef void(*ALoggerLoader)(const YAML::Node&);
+typedef void(*LogicConfigLoader)(ConfigManager *);
+typedef void(*LoggerLoader)(const YAML::Node&);
 
 constexpr auto SERVER_CONFIG_FILE = "/server.yaml";
 constexpr auto SERVER_CONFIG_JSON = "/json";
 
 
-class BASE_API UConfigManager final {
+class BASE_API ConfigManager final {
 
-    std::string yamlPath_;
-    std::string jsonPath_;
+    std::string yaml_path_;
+    std::string json_path_;
 
     YAML::Node config_;
-    std::unordered_map<std::string, nlohmann::json> jsonMap_;
+    std::unordered_map<std::string, nlohmann::json> json_map_;
 
-    std::unordered_map<std::type_index, std::vector<std::string>> logicLoadMap_;
-    std::unordered_map<std::type_index, ILogicConfig *> logicConfigMap_;
+    std::unordered_map<std::type_index, std::vector<std::string>> logic_load_map_;
+    std::unordered_map<std::type_index, ILogicConfig *> logic_config_map_;
 
-    ALogicConfigLoader logicConfigLoader_;
-    ALoggerLoader loggerLoader_;
+    LogicConfigLoader logic_config_loader_;
+    LoggerLoader logger_loader_;
 
     bool loaded_ = false;
 
 public:
-    UConfigManager();
-    ~UConfigManager();
+    ConfigManager();
+    ~ConfigManager();
 
     void Init();
 
     void SetYAMLPath(const std::string &path);
     void SetJSONPath(const std::string &path);
 
-    void SetLogicConfigLoader(ALogicConfigLoader loader);
-    void SetLoggerLoader(ALoggerLoader loader);
+    void SetLogicConfigLoader(LogicConfigLoader loader);
+    void SetLoggerLoader(LoggerLoader loader);
 
     void Abort() const;
 
-    template<LOGIC_CONFIG_TYPE T>
-    void CreateLogicConfig(const std::vector<std::string> &pathList) {
-        logicLoadMap_[typeid(T)] = pathList;
+    template<LogicConfigType T>
+    void CreateLogicConfig(const std::vector<std::string> &path_list) {
+        logic_load_map_[typeid(T)] = path_list;
         std::vector<nlohmann::json> configs;
-        for (const auto &path : pathList) {
-            if (const auto iter = jsonMap_.find(path); iter != jsonMap_.end()) {
+        for (const auto &path : path_list) {
+            if (const auto iter = json_map_.find(path); iter != json_map_.end()) {
                 configs.push_back(iter->second);
             }
         }
-        logicConfigMap_.insert_or_assign(typeid(T), new T(configs));
+        logic_config_map_.insert_or_assign(typeid(T), new T(configs));
     }
 
-    template<LOGIC_CONFIG_TYPE T>
+    template<LogicConfigType T>
     T *FindLogicConfig() {
-        if (const auto iter = logicConfigMap_.find(typeid(T)); iter != logicConfigMap_.end()) {
+        if (const auto iter = logic_config_map_.find(typeid(T)); iter != logic_config_map_.end()) {
             return dynamic_cast<T *>(iter->second);
         }
         return nullptr;

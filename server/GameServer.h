@@ -5,11 +5,11 @@
 
 class SERVER_API UGameServer final : public IServerLogic {
 public:
-    explicit UGameServer(UGameWorld *world);
+    explicit UGameServer(GameWorld *world);
     ~UGameServer() override;
 
     void InitGameWorld() override;
 
-    void SetConnectionHandler(const std::shared_ptr<class UConnection> &conn) override;
+    void SetConnectionHandler(const std::shared_ptr<class Connection> &conn) override;
 };
 

@@ -1,5 +1,5 @@
 #pragma once
 
 
-struct FPlatformInfo final {
+struct PlatformInfo final {
 };

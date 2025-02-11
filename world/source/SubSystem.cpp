@@ -2,12 +2,12 @@
 
 #include "../include/GameWorld.h"
 
-ISubSystem::ISubSystem(UGameWorld *world)
+ISubSystem::ISubSystem(GameWorld *world)
     : world_(world) {
 
 }
 
-UGameWorld *ISubSystem::GetWorld() const {
+GameWorld *ISubSystem::GetWorld() const {
     return world_;
 }
 

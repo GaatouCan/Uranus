@@ -1,22 +1,22 @@
 #pragma once
 
-#include "AbstractScene.h"
+#include "BaseScene.h"
 
 
-class BASE_API UMainScene final : public IAbstractScene {
+class BASE_API MainScene final : public IBaseScene {
 
-    class UPackagePool* pool_;
+    class PackagePool* pool_;
 
     asio::io_context ctx_;
-    AThreadID tid_;
+    ThreadID tid_;
 
 public:
-    UMainScene(USceneManager *owner, int32_t id);
-    ~UMainScene() override;
+    MainScene(SceneManager *owner, int32_t id);
+    ~MainScene() override;
 
-    void SetThreadID(AThreadID tid);
-    [[nodiscard]] AThreadID GetThreadID() const;
+    void SetThreadID(ThreadID tid);
+    [[nodiscard]] ThreadID GetThreadID() const;
 
     asio::io_context& GetIOContext();
-    [[nodiscard]] UPackagePool* GetPackagePool() const;
+    [[nodiscard]] PackagePool* GetPackagePool() const;
 };

@@ -4,14 +4,14 @@
 #include "../../utils.h"
 
 
-class BASE_API IBaseManager : public UReactor {
+class BASE_API IBaseManager : public IReactor {
 
-    class UManagerSystem *owner_;
+    class ManagerSystem *owner_;
 
 public:
     IBaseManager() = delete;
 
-    explicit IBaseManager(UManagerSystem *owner);
+    explicit IBaseManager(ManagerSystem *owner);
     ~IBaseManager() override;
 
     DISABLE_COPY_MOVE(IBaseManager)
@@ -19,10 +19,10 @@ public:
     virtual void Init() = 0;
     [[nodiscard]] virtual const char *GetManagerName() const = 0;
 
-    [[nodiscard]] UManagerSystem *GetOwner() const;
-    [[nodiscard]] class UGameWorld *GetWorld() const;
+    [[nodiscard]] ManagerSystem *GetOwner() const;
+    [[nodiscard]] class GameWorld *GetWorld() const;
 
-    virtual void OnTick(ATimePoint now);
+    virtual void OnTick(TimePoint now);
     virtual void OnDayChange();
 
 public:
@@ -30,7 +30,7 @@ public:
 };
 
 template<typename T>
-concept MANAGER_TYPE = std::derived_from<T, IBaseManager>;
+concept ManagerType = std::derived_from<T, IBaseManager>;
 
 #define GET_MANAGER_NAME(mgr) \
 [[nodiscard]] constexpr const char * GetManagerName() const override { \
@@ -40,7 +40,7 @@ concept MANAGER_TYPE = std::derived_from<T, IBaseManager>;
 
 #define MANAGER_IMPL(mgr) \
 mgr *mgr::Instance() { \
-    if (const auto sys = UManagerSystem::Instance(); sys != nullptr) { \
+    if (const auto sys = ManagerSystem::Instance(); sys != nullptr) { \
         return sys->GetManager<mgr>(); \
     } \
     spdlog::critical("{} - Failed to get manager system.", __FUNCTION__); \
@@ -48,4 +48,4 @@ mgr *mgr::Instance() { \
     exit(-1); \
 }
 
-#define GET_MANAGER(mgr) GetWorld()->GetSystem<UManagerSystem>()->GetManager<mgr>()
+#define GET_MANAGER(mgr) GetWorld()->GetSystem<ManagerSystem>()->GetManager<mgr>()

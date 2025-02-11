@@ -18,7 +18,7 @@ public:
     [[nodiscard]] IComponentContext *GetComponentContext() const;
     [[nodiscard]] class UComponentModule *GetModule() const;
     [[nodiscard]] class UPlayer *GetOwner() const;
-    [[nodiscard]] class UGameWorld *GetWorld() const;
+    [[nodiscard]] class GameWorld *GetWorld() const;
 
     virtual void OnLogin();
     virtual void OnLogout();

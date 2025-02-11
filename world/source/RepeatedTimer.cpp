@@ -3,7 +3,7 @@
 #include <spdlog/spdlog.h>
 
 
-URepeatedTimer::URepeatedTimer(asio::io_context &ctx)
+RepeatedTimer::RepeatedTimer(asio::io_context &ctx)
     : ctx_(ctx),
       timer_(ctx),
       id_(),
@@ -13,57 +13,57 @@ URepeatedTimer::URepeatedTimer(asio::io_context &ctx)
       running_(false) {
 }
 
-URepeatedTimer::~URepeatedTimer() {
+RepeatedTimer::~RepeatedTimer() {
     Stop();
 }
 
-URepeatedTimer &URepeatedTimer::SetTimerID(const FUniqueID id) {
+RepeatedTimer &RepeatedTimer::SetTimerID(const UniqueID id) {
     id_ = id;
     return *this;
 }
 
-FUniqueID URepeatedTimer::GetTimerID() const {
+UniqueID RepeatedTimer::GetTimerID() const {
     return id_;
 }
 
-URepeatedTimer & URepeatedTimer::SetDelay(std::chrono::duration<uint32_t> delay) {
+RepeatedTimer & RepeatedTimer::SetDelay(std::chrono::duration<uint32_t> delay) {
     delay_ = delay;
     return *this;
 }
 
-URepeatedTimer &URepeatedTimer::SetRepeatRate(const std::chrono::duration<uint32_t> rate) {
+RepeatedTimer &RepeatedTimer::SetRepeatRate(const std::chrono::duration<uint32_t> rate) {
     repeatRate_ = rate;
     return *this;
 }
 
-URepeatedTimer &URepeatedTimer::SetIfRepeat(const bool repeat) {
+RepeatedTimer &RepeatedTimer::SetIfRepeat(const bool repeat) {
     is_repeat_ = repeat;
     return *this;
 }
 
-bool URepeatedTimer::IsRepeated() const {
+bool RepeatedTimer::IsRepeated() const {
     return is_repeat_;
 }
 
-bool URepeatedTimer::IsRunning() const {
+bool RepeatedTimer::IsRunning() const {
     return running_;
 }
 
-bool URepeatedTimer::IsLooping() const {
+bool RepeatedTimer::IsLooping() const {
     return is_repeat_ && running_;
 }
 
-URepeatedTimer &URepeatedTimer::SetCompleteCallback(const std::function<void(const FUniqueID &)> &func) {
-    completeFunctor_ = func;
+RepeatedTimer &RepeatedTimer::SetCompleteCallback(const std::function<void(const UniqueID &)> &func) {
+    complete_functor_ = func;
     return *this;
 }
 
-URepeatedTimer & URepeatedTimer::SetCompleteCallback(std::function<void(const FUniqueID &)> &&func) {
-    completeFunctor_ = std::move(func);
+RepeatedTimer & RepeatedTimer::SetCompleteCallback(std::function<void(const UniqueID &)> &&func) {
+    complete_functor_ = std::move(func);
     return *this;
 }
 
-URepeatedTimer &URepeatedTimer::Start() {
+RepeatedTimer &RepeatedTimer::Start() {
     if (repeatRate_.count() == 0)
         return *this;
 
@@ -90,8 +90,8 @@ URepeatedTimer &URepeatedTimer::Start() {
 
             running_ = false;
 
-            if (completeFunctor_)
-                std::invoke(completeFunctor_, id_);
+            if (complete_functor_)
+                std::invoke(complete_functor_, id_);
 
         } catch (std::exception &e) {
             spdlog::warn("RepeatedTimer::start: {}", e.what());
@@ -101,7 +101,7 @@ URepeatedTimer &URepeatedTimer::Start() {
     return *this;
 }
 
-URepeatedTimer &URepeatedTimer::Stop() {
+RepeatedTimer &RepeatedTimer::Stop() {
     if (!running_)
         return *this;
 

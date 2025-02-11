@@ -10,32 +10,32 @@
 
 #include <spdlog/spdlog.h>
 
-ULoginAuthenticator::ULoginAuthenticator(UGameWorld *world)
+LoginAuthenticator::LoginAuthenticator(GameWorld *world)
     : world_(world) {
 }
 
-ULoginAuthenticator::~ULoginAuthenticator() {
+LoginAuthenticator::~LoginAuthenticator() {
 
 }
 
-void ULoginAuthenticator::Init() {
+void LoginAuthenticator::Init() {
 }
 
-UGameWorld * ULoginAuthenticator::GetWorld() const {
+GameWorld * LoginAuthenticator::GetWorld() const {
     return world_;
 }
 
-bool ULoginAuthenticator::VerifyAddress(const asio::ip::address &addr) {
+bool LoginAuthenticator::VerifyAddress(const asio::ip::address &addr) {
     // TODO
     return true;
 }
 
-FPlayerID ULoginAuthenticator::VerifyToken(FPlayerID pid, const std::string &token) {
+FPlayerID LoginAuthenticator::VerifyToken(FPlayerID pid, const std::string &token) {
     // TODO
     return pid;
 }
 
-awaitable<void> ULoginAuthenticator::OnLogin(const AConnectionPointer &conn, IPackage *pkg) {
+awaitable<void> LoginAuthenticator::OnLogin(const ConnectionPointer &conn, IPackage *pkg) {
     if (conn == nullptr || pkg == nullptr)
         co_return;
 
@@ -72,6 +72,6 @@ awaitable<void> ULoginAuthenticator::OnLogin(const AConnectionPointer &conn, IPa
     conn->Disconnect();
 }
 
-void ULoginAuthenticator::AbortHandler() const {
+void LoginAuthenticator::AbortHandler() const {
     assert(handler_ != nullptr);
 }

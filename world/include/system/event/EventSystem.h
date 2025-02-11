@@ -13,47 +13,46 @@
 
 using asio::awaitable;
 
-enum class EDispatchType {
+enum class DispatchType {
     PUSH_QUEUE,
     DIRECT
 };
 
-class BASE_API UEventSystem final : public ISubSystem {
+class BASE_API EventSystem final : public ISubSystem {
 
-    struct FEventNode {
+    struct EventNode {
         uint32_t event = 0;
         IEventParam *param = nullptr;
     };
 
-    std::queue<FEventNode> eventQueue_;
-    // std::mutex mEventMutex;
-    mutable std::shared_mutex eventMutex_;
+    std::queue<EventNode> event_queue_;
+    mutable std::shared_mutex event_mutex_;
 
-    using AListenerMap = std::map<void *, AEventListener>;
+    using ListenerMap = std::map<void *, EventListener>;
 
-    std::map<uint32_t, AListenerMap> listenerMap_;
-    AListenerMap currentListener_;
-    std::mutex listenerMutex_;
+    std::map<uint32_t, ListenerMap> listener_map_;
+    ListenerMap cur_listener_;
+    std::mutex listener_mutex_;
 
 public:
-    explicit UEventSystem(UGameWorld *world);
-    ~UEventSystem() override;
+    explicit EventSystem(GameWorld *world);
+    ~EventSystem() override;
 
     GET_SYSTEM_NAME(UEventSystem)
 
     void Init() override;
 
-    void Dispatch(uint32_t event, IEventParam *param, EDispatchType type = EDispatchType::PUSH_QUEUE);
+    void Dispatch(uint32_t event, IEventParam *param, DispatchType type = DispatchType::PUSH_QUEUE);
 
-    template<typename TARGET, typename CALLABLE>
-    void RegisterListenerT(const uint32_t event, void *ptr, void *target, CALLABLE &&func) {
+    template<typename TargetType, typename Callable>
+    void RegisterListenerT(const uint32_t event, void *ptr, void *target, Callable &&func) {
         if (ptr == nullptr || target == nullptr)
             return;
 
-        this->RegisterListener(event, ptr, [target, func = std::forward<CALLABLE>(func)](IEventParam *param) {
+        this->RegisterListener(event, ptr, [target, func = std::forward<Callable>(func)](IEventParam *param) {
             try {
                 if (target != nullptr) {
-                    std::invoke(func, static_cast<TARGET *>(target), param);
+                    std::invoke(func, static_cast<TargetType *>(target), param);
                 }
             } catch (std::exception &e) {
                 spdlog::warn("Event Listener - {}", e.what());
@@ -61,7 +60,7 @@ public:
         });
     }
 
-    void RegisterListener(uint32_t event, void *ptr, const AEventListener &listener);
+    void RegisterListener(uint32_t event, void *ptr, const EventListener &listener);
 
     void RemoveListener(uint32_t event, void *ptr);
 

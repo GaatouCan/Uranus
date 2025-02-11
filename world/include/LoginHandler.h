@@ -7,7 +7,7 @@
 #include <asio/awaitable.hpp>
 
 
-class UConnection;
+class Connection;
 class IBasePlayer;
 
 using asio::awaitable;
@@ -19,17 +19,17 @@ struct BASE_API FLoginInfo {
 
 class BASE_API ILoginHandler {
 
-    class ULoginAuthenticator *owner_;
+    class LoginAuthenticator *owner_;
 
 public:
     ILoginHandler() = delete;
 
-    explicit ILoginHandler(ULoginAuthenticator *owner);
+    explicit ILoginHandler(LoginAuthenticator *owner);
     virtual ~ILoginHandler() = default;
 
-    [[nodiscard]] ULoginAuthenticator *GetOwner() const;
-    [[nodiscard]] class UGameWorld *GetWorld() const;
+    [[nodiscard]] LoginAuthenticator *GetOwner() const;
+    [[nodiscard]] class GameWorld *GetWorld() const;
 
     virtual awaitable<FLoginInfo> ParseLoginInfo(class IPackage *) = 0;
-    virtual awaitable<std::shared_ptr<IBasePlayer>> OnPlayerLogin(const std::shared_ptr<UConnection>&, const FLoginInfo&) = 0;
+    virtual awaitable<std::shared_ptr<IBasePlayer>> OnPlayerLogin(const std::shared_ptr<Connection>&, const FLoginInfo&) = 0;
 };

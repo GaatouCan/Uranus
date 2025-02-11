@@ -7,12 +7,12 @@
 
 constexpr auto kPluginDirectory = "plugins";
 
-UPluginSystem::UPluginSystem(UGameWorld *world)
+PluginSystem::PluginSystem(GameWorld *world)
     : ISubSystem(world) {
 }
 
-UPluginSystem::~UPluginSystem() {
-    for (const auto &[module, destroyer, plugin] : pluginMap_ | std::views::values) {
+PluginSystem::~PluginSystem() {
+    for (const auto &[module, destroyer, plugin] : plugin_map_ | std::views::values) {
         if (destroyer) {
             destroyer(plugin);
 #if defined(_WIN32) || defined(_WIN64)
@@ -24,7 +24,7 @@ UPluginSystem::~UPluginSystem() {
     }
 }
 
-void UPluginSystem::Init() {
+void PluginSystem::Init() {
     if (!std::filesystem::exists(kPluginDirectory)) {
         try {
             std::filesystem::create_directory(kPluginDirectory);
@@ -43,17 +43,17 @@ void UPluginSystem::Init() {
     }
 }
 
-UPluginSystem::FPluginNode UPluginSystem::FindPlugin(const std::string &name) {
+PluginSystem::PluginNode PluginSystem::FindPlugin(const std::string &name) {
     std::shared_lock lock(mutex_);
-    if (const auto it = pluginMap_.find(name); it != pluginMap_.end()) {
+    if (const auto it = plugin_map_.find(name); it != plugin_map_.end()) {
         return it->second;
     }
     return {nullptr, nullptr, nullptr};
 }
 
-bool UPluginSystem::LoadPlugin(const std::string_view path) {
+bool PluginSystem::LoadPlugin(const std::string_view path) {
 #if defined(_WIN32) || defined(_WIN64)
-    const AModuleHandle hModule = LoadLibrary(path.data());
+    const ModuleHandle hModule = LoadLibrary(path.data());
 #else
     const AModuleHandle hModule = dlopen(path.data(), RTLD_LAZY);
 #endif
@@ -64,8 +64,8 @@ bool UPluginSystem::LoadPlugin(const std::string_view path) {
     }
 
 #if defined(_WIN32) || defined(_WIN64)
-    const auto creator = reinterpret_cast<APluginCreator>(GetProcAddress(hModule, "CreatePlugin"));
-    const auto destroyer = reinterpret_cast<APluginDestroyer>(GetProcAddress(hModule, "DestroyPlugin"));
+    const auto creator = reinterpret_cast<PluginCreator>(GetProcAddress(hModule, "CreatePlugin"));
+    const auto destroyer = reinterpret_cast<PluginDestroyer>(GetProcAddress(hModule, "DestroyPlugin"));
 #else
     const auto creator = reinterpret_cast<APluginCreator>(dlsym(hModule, "CreatePlugin"));
     const auto destroyer = reinterpret_cast<APluginDestroyer>(dlsym(hModule, "DestroyPlugin"));
@@ -94,7 +94,7 @@ bool UPluginSystem::LoadPlugin(const std::string_view path) {
 
     {
         std::shared_lock lock(mutex_);
-        if (pluginMap_.contains(plugin->GetPluginName())) {
+        if (plugin_map_.contains(plugin->GetPluginName())) {
             spdlog::warn("{} - Plugin {} already exists", __FUNCTION__, plugin->GetPluginName());
             destroyer(plugin);
 #if defined(_WIN32) || defined(_WIN64)
@@ -106,16 +106,16 @@ bool UPluginSystem::LoadPlugin(const std::string_view path) {
         }
     }
 
-    FPluginNode node{ hModule, destroyer, plugin };
+    PluginNode node{ hModule, destroyer, plugin };
 
     std::unique_lock lock(mutex_);
-    pluginMap_.insert_or_assign(plugin->GetPluginName(), node);
+    plugin_map_.insert_or_assign(plugin->GetPluginName(), node);
     spdlog::info("{} - Load {} Success.", __FUNCTION__, plugin->GetPluginName());
 
     return true;
 }
 
-bool UPluginSystem::UnloadPlugin(const std::string &name) {
+bool PluginSystem::UnloadPlugin(const std::string &name) {
     const auto [module, destroyer, plugin] = FindPlugin(name);
     if (plugin == nullptr || destroyer == nullptr || module == nullptr) {
         spdlog::error("{} - Failed to find plugin {}", __FUNCTION__, name.data());
@@ -124,7 +124,7 @@ bool UPluginSystem::UnloadPlugin(const std::string &name) {
 
     {
         std::unique_lock lock(mutex_);
-        pluginMap_.erase(name);
+        plugin_map_.erase(name);
     }
 
     destroyer(plugin);

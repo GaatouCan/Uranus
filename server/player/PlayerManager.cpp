@@ -8,7 +8,7 @@
 #include "system/manager/ManagerSystem.h"
 
 
-UPlayerManager::UPlayerManager(UManagerSystem *owner)
+UPlayerManager::UPlayerManager(ManagerSystem *owner)
     : IBaseManager(owner) {
 }
 
@@ -27,7 +27,7 @@ void UPlayerManager::OnDayChange() {
     }
 }
 
-awaitable<std::shared_ptr<UPlayer> > UPlayerManager::OnPlayerLogin(const std::shared_ptr<UConnection> &conn, const FPlayerID &id) {
+awaitable<std::shared_ptr<UPlayer> > UPlayerManager::OnPlayerLogin(const std::shared_ptr<Connection> &conn, const FPlayerID &id) {
     if (conn == nullptr || std::any_cast<FPlayerID>(conn->GetContext()) != id) {
         spdlog::error("{} - Null Connection Pointer Or Player ID Not Equal.", __FUNCTION__);
         co_return nullptr;
@@ -99,7 +99,7 @@ void UPlayerManager::SendToList(const std::set<FPlayerID> &players, const int32_
 
     for (const auto [localID, crossID]: players) {
         if (const auto plr = FindPlayer(localID); plr != nullptr && plr->IsOnline()) {
-            const auto pkg = dynamic_cast<FPackage *>(plr->GetConnection()->BuildPackage());
+            const auto pkg = dynamic_cast<Package *>(plr->GetConnection()->BuildPackage());
             pkg->SetPackageID(id).SetData(data);
             plr->SendPackage(pkg);
         }

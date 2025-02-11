@@ -5,11 +5,11 @@
 
 struct FCacheNode {
     FPlayerID pid;
-    ATimePoint lastLoginTime;
-    ATimePoint lastLogoutTime;
+    TimePoint lastLoginTime;
+    TimePoint lastLogoutTime;
 
     [[nodiscard]] bool IsOnline() const {
-        constexpr auto zeroPoint = ATimePoint();
+        constexpr auto zeroPoint = TimePoint();
         const auto now = NowTimePoint();
 
         return lastLoginTime > zeroPoint && lastLoginTime <= now

@@ -2,22 +2,22 @@
 #include "../../../include/system/manager/ManagerSystem.h"
 
 
-IBaseManager::IBaseManager(UManagerSystem *owner)
+IBaseManager::IBaseManager(ManagerSystem *owner)
     : owner_(owner), tick_(false) {
 }
 
 IBaseManager::~IBaseManager() {
 }
 
-UManagerSystem * IBaseManager::GetOwner() const {
+ManagerSystem * IBaseManager::GetOwner() const {
     return owner_;
 }
 
-UGameWorld * IBaseManager::GetWorld() const {
+GameWorld * IBaseManager::GetWorld() const {
     return owner_->GetWorld();
 }
 
-void IBaseManager::OnTick(ATimePoint now) {
+void IBaseManager::OnTick(TimePoint now) {
 }
 
 void IBaseManager::OnDayChange() {

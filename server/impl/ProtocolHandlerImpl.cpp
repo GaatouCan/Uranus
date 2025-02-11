@@ -10,11 +10,11 @@
 #include <spdlog/spdlog.h>
 
 
-UProtocolHandlerImpl::UProtocolHandlerImpl(UProtocolRoute *route)
+UProtocolHandlerImpl::UProtocolHandlerImpl(ProtocolRoute *route)
     : IProtocolHandler(route) {
 }
 
-void UProtocolHandlerImpl::Invoke(const AProtoFunctor &func, const std::shared_ptr<UConnection> &conn, IPackage *pkg) {
+void UProtocolHandlerImpl::Invoke(const ProtoFunctor &func, const std::shared_ptr<Connection> &conn, IPackage *pkg) {
     const auto mgr = GET_MANAGER(UPlayerManager);
     if (mgr == nullptr) {
         spdlog::critical("{} - PlayerManager not found", __FUNCTION__);

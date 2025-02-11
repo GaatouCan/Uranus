@@ -4,29 +4,29 @@
 #include <ranges>
 
 
-UTimerSystem::UTimerSystem(UGameWorld *world)
+TimerSystem::TimerSystem(GameWorld *world)
     : ISubSystem(world) {
 }
 
-UTimerSystem::~UTimerSystem() {
-    for (const auto timer: timerMap_ | std::views::values) {
+TimerSystem::~TimerSystem() {
+    for (const auto timer: timer_map_ | std::views::values) {
         delete timer;
     }
 }
 
-void UTimerSystem::Init() {
+void TimerSystem::Init() {
 }
 
 
-URepeatedTimer *UTimerSystem::GetTimer(const FUniqueID &tid) {
+RepeatedTimer *TimerSystem::GetTimer(const UniqueID &tid) {
     std::shared_lock lock(mutex_);
-    if (const auto it = timerMap_.find(tid); it != timerMap_.end()) {
+    if (const auto it = timer_map_.find(tid); it != timer_map_.end()) {
         return it->second;
     }
     return nullptr;
 }
 
-bool UTimerSystem::StopTimer(const FUniqueID &tid) {
+bool TimerSystem::StopTimer(const UniqueID &tid) {
     const auto timer = GetTimer(tid);
     if (timer == nullptr)
         return false;
@@ -35,32 +35,32 @@ bool UTimerSystem::StopTimer(const FUniqueID &tid) {
     return true;
 }
 
-void UTimerSystem::CleanAllTimers() {
+void TimerSystem::CleanAllTimers() {
     std::unique_lock lock(mutex_);
-    for (const auto timer: timerMap_ | std::views::values) {
+    for (const auto timer: timer_map_ | std::views::values) {
         delete timer;
     }
 }
 
-std::optional<FUniqueID> UTimerSystem::EmplaceTimer(URepeatedTimer *timer) {
+std::optional<UniqueID> TimerSystem::EmplaceTimer(RepeatedTimer *timer) {
     if (timer == nullptr)
         return std::nullopt;
 
-    FUniqueID timerID = FUniqueID::RandomGenerate();
+    UniqueID timerID = UniqueID::RandomGenerate();
 
     {
         std::shared_lock lock(mutex_);
-        while (timerMap_.contains(timerID)) {
-            timerID = FUniqueID::RandomGenerate();
+        while (timer_map_.contains(timerID)) {
+            timerID = UniqueID::RandomGenerate();
         }
     }
 
     {
         std::unique_lock lock(mutex_);
-        timerMap_[timerID] = timer;
+        timer_map_[timerID] = timer;
     }
 
-    timer->SetTimerID(timerID).SetCompleteCallback([self = this](const FUniqueID &id) mutable {
+    timer->SetTimerID(timerID).SetCompleteCallback([self = this](const UniqueID &id) mutable {
         if (self != nullptr) {
             self->RemoveTimer(id);
         }
@@ -69,11 +69,11 @@ std::optional<FUniqueID> UTimerSystem::EmplaceTimer(URepeatedTimer *timer) {
     return timerID;
 }
 
-bool UTimerSystem::RemoveTimer(const FUniqueID &tid) {
+bool TimerSystem::RemoveTimer(const UniqueID &tid) {
     std::unique_lock lock(mutex_);
-    if (const auto it = timerMap_.find(tid); it != timerMap_.end()) {
+    if (const auto it = timer_map_.find(tid); it != timer_map_.end()) {
         const auto timer = it->second;
-        timerMap_.erase(it);
+        timer_map_.erase(it);
 
         if (timer != nullptr) {
             delete timer;

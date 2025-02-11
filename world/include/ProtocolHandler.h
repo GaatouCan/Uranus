@@ -5,27 +5,27 @@
 #include <memory>
 
 
-class UProtocolRoute;
+class ProtocolRoute;
 class IPackage;
-class UConnection;
+class Connection;
 class IBasePlayer;
 
-using AProtoFunctor = void(*)(const std::shared_ptr<IBasePlayer> &, IPackage *);
+using ProtoFunctor = void(*)(const std::shared_ptr<IBasePlayer> &, IPackage *);
 // using ACrossFunctor = awaitable<void>(*)(IPackage *);
 
 class BASE_API IProtocolHandler {
 
-    UProtocolRoute *owner_;
+    ProtocolRoute *owner_;
 
 public:
     IProtocolHandler() = delete;
 
-    explicit IProtocolHandler(UProtocolRoute *route);
+    explicit IProtocolHandler(ProtocolRoute *route);
     virtual ~IProtocolHandler() = default;
 
-    [[nodiscard]] UProtocolRoute *GetOwner() const;
-    [[nodiscard]] class UGameWorld *GetWorld() const;
+    [[nodiscard]] ProtocolRoute *GetOwner() const;
+    [[nodiscard]] class GameWorld *GetWorld() const;
 
-    virtual void Invoke(const AProtoFunctor&, const std::shared_ptr<UConnection>&, IPackage *) = 0;
+    virtual void Invoke(const ProtoFunctor&, const std::shared_ptr<Connection>&, IPackage *) = 0;
     // virtual awaitable<void> InvokeCross(const ACrossFunctor&, IPackage *) = 0;
 };

@@ -7,7 +7,7 @@
 #include "../common/ProtoType.h"
 #include "../player/PlayerManager.h"
 
-UConnectionHandlerImpl::UConnectionHandlerImpl(UConnection *conn)
+UConnectionHandlerImpl::UConnectionHandlerImpl(Connection *conn)
     : IConnectionHandler(conn){
 
 }

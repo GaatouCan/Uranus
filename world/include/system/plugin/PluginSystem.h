@@ -8,29 +8,29 @@
 
 class IAbstractPlugin;
 
-class BASE_API UPluginSystem final : public ISubSystem {
+class BASE_API PluginSystem final : public ISubSystem {
 
-    typedef IAbstractPlugin* (*APluginCreator)(UPluginSystem *);
-    typedef void (*APluginDestroyer)(IAbstractPlugin *);
+    typedef IAbstractPlugin* (*PluginCreator)(PluginSystem *);
+    typedef void (*PluginDestroyer)(IAbstractPlugin *);
 
-    struct FPluginNode {
-        AModuleHandle module;
-        APluginDestroyer destroyer;
+    struct PluginNode {
+        ModuleHandle module;
+        PluginDestroyer destroyer;
         IAbstractPlugin *plugin;
     };
 
-    std::unordered_map<std::string, FPluginNode> pluginMap_;
+    std::unordered_map<std::string, PluginNode> plugin_map_;
     mutable std::shared_mutex mutex_;
 
 public:
-    explicit UPluginSystem(UGameWorld *world);
-    ~UPluginSystem() override;
+    explicit PluginSystem(GameWorld *world);
+    ~PluginSystem() override;
 
     GET_SYSTEM_NAME(UPluginSystem)
 
     void Init() override;
 
-    FPluginNode FindPlugin(const std::string &name);
+    PluginNode FindPlugin(const std::string &name);
 
     bool LoadPlugin(std::string_view path);
     bool UnloadPlugin(const std::string &name);

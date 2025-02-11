@@ -6,19 +6,19 @@
 
 class BASE_API IServerLogic {
 
-    class UGameWorld* world_;
+    class GameWorld* world_;
 
 public:
     IServerLogic() = delete;
 
-    explicit IServerLogic(UGameWorld* world);
+    explicit IServerLogic(GameWorld* world);
     virtual ~IServerLogic();
 
     DISABLE_COPY_MOVE(IServerLogic)
 
-    [[nodiscard]] UGameWorld* GetWorld() const;
+    [[nodiscard]] GameWorld* GetWorld() const;
 
     virtual void InitGameWorld() = 0;
 
-    virtual void SetConnectionHandler(const std::shared_ptr<class UConnection> &conn) = 0;
+    virtual void SetConnectionHandler(const std::shared_ptr<class Connection> &conn) = 0;
 };

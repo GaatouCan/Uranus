@@ -8,12 +8,12 @@
 
 class BASE_API ISubSystem {
 
-    class UGameWorld *world_;
+    class GameWorld *world_;
 
 public:
     ISubSystem() = delete;
 
-    explicit ISubSystem(UGameWorld *world);
+    explicit ISubSystem(GameWorld *world);
     virtual ~ISubSystem() = default;
 
     DISABLE_COPY_MOVE(ISubSystem)
@@ -22,12 +22,12 @@ public:
 
     [[nodiscard]] virtual const char *GetSystemName() const = 0;
 
-    [[nodiscard]] UGameWorld *GetWorld() const;
+    [[nodiscard]] GameWorld *GetWorld() const;
     [[nodiscard]] asio::io_context &GetIOContext() const;
 };
 
 template<class T>
-concept SYSTEM_TYPE = std::derived_from<T, ISubSystem>;
+concept SystemType = std::derived_from<T, ISubSystem>;
 
 #define GET_SYSTEM_NAME(sys) \
 [[nodiscard]] constexpr const char *GetSystemName() const noexcept override { \

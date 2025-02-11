@@ -22,7 +22,7 @@ UPlayer * IPlayerComponent::GetOwner() const {
     return mContext->GetModule()->GetOwner();
 }
 
-UGameWorld * IPlayerComponent::GetWorld() const {
+GameWorld * IPlayerComponent::GetWorld() const {
     return GetOwner()->GetWorld();
 }
 

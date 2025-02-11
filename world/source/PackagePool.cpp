@@ -4,23 +4,23 @@
 #include <spdlog/spdlog.h>
 
 
-size_t UPackagePool::kDefaultCapacity = 64;
-size_t UPackagePool::kMinCapacity = 16;
+size_t PackagePool::default_capacity_ = 64;
+size_t PackagePool::min_capacity_ = 16;
 
-float UPackagePool::kExpanseRate = 0.3f;
-float UPackagePool::kExpanseScale = 1.f;
+float PackagePool::expanse_rate_ = 0.3f;
+float PackagePool::expanse_scale_ = 1.f;
 
-float UPackagePool::kCollectRate = 1.f;
-float UPackagePool::kCollectScale = 0.7f;
+float PackagePool::collect_rate_ = 1.f;
+float PackagePool::collect_scale_ = 0.7f;
 
-APackageCreator UPackagePool::kCreatePackage = nullptr;
-APackageInitializer UPackagePool::kInitPackage = nullptr;
+PackageCreator PackagePool::create_package_ = nullptr;
+PackageInitializer PackagePool::init_package_ = nullptr;
 
 
-UPackagePool::UPackagePool(const size_t capacity) {
+PackagePool::PackagePool(const size_t capacity) {
     for (size_t i = 0; i < capacity; i++) {
         IPackage *pkg = nullptr;
-        pkg = kCreatePackage();
+        pkg = create_package_();
 
         if (pkg != nullptr) {
             queue_.push(pkg);
@@ -28,7 +28,7 @@ UPackagePool::UPackagePool(const size_t capacity) {
     }
 }
 
-UPackagePool::~UPackagePool() {
+PackagePool::~PackagePool() {
     for (const auto it : set_) {
         delete it;
     }
@@ -39,12 +39,12 @@ UPackagePool::~UPackagePool() {
     }
 }
 
-size_t UPackagePool::Capacity() const {
+size_t PackagePool::Capacity() const {
     std::shared_lock lock(mutex_);
     return queue_.size() + set_.size();
 }
 
-IPackage *UPackagePool::Acquire() {
+IPackage *PackagePool::Acquire() {
     Expanse();
 
     IPackage *pkg = nullptr;
@@ -63,7 +63,7 @@ IPackage *UPackagePool::Acquire() {
     return nullptr;
 }
 
-void UPackagePool::Recycle(IPackage *pkg) {
+void PackagePool::Recycle(IPackage *pkg) {
     if (pkg == nullptr)
         return;
 
@@ -86,7 +86,7 @@ void UPackagePool::Recycle(IPackage *pkg) {
     Collect();
 }
 
-void UPackagePool::LoadConfig(const YAML::Node &cfg) {
+void PackagePool::LoadConfig(const YAML::Node &cfg) {
     if (cfg["package"].IsNull() && cfg["package"]["pool"].IsNull())
         return;
 
@@ -111,60 +111,60 @@ void UPackagePool::LoadConfig(const YAML::Node &cfg) {
     spdlog::info("Package Pool Configuration Loaded Successfully.");
 }
 
-void UPackagePool::SetDefaultCapacity(const size_t capacity) {
-    kDefaultCapacity = capacity;
+void PackagePool::SetDefaultCapacity(const size_t capacity) {
+    default_capacity_ = capacity;
 }
 
-void UPackagePool::SetMinimumCapacity(const size_t capacity) {
-    kMinCapacity = capacity;
+void PackagePool::SetMinimumCapacity(const size_t capacity) {
+    min_capacity_ = capacity;
 }
 
-void UPackagePool::SetExpanseRate(const float rate) {
-    kExpanseRate = rate;
+void PackagePool::SetExpanseRate(const float rate) {
+    expanse_rate_ = rate;
 }
 
-void UPackagePool::SetExpanseScale(const float scale) {
-    kExpanseScale = scale;
+void PackagePool::SetExpanseScale(const float scale) {
+    expanse_scale_ = scale;
 }
 
-void UPackagePool::SetCollectRate(const float rate) {
-    kCollectRate = rate;
+void PackagePool::SetCollectRate(const float rate) {
+    collect_rate_ = rate;
 }
 
-void UPackagePool::SetCollectScale(const float scale) {
-    kCollectScale = scale;
+void PackagePool::SetCollectScale(const float scale) {
+    collect_scale_ = scale;
 }
 
-void UPackagePool::SetPackageBuilder(const APackageCreator& func) {
-    kCreatePackage = func;
+void PackagePool::SetPackageBuilder(const PackageCreator& func) {
+    create_package_ = func;
 }
 
-void UPackagePool::SetPackageInitializer(const APackageInitializer& func) {
-    kInitPackage = func;
+void PackagePool::SetPackageInitializer(const PackageInitializer& func) {
+    init_package_ = func;
 }
 
-bool UPackagePool::InitPackage(IPackage *pkg) {
+bool PackagePool::InitPackage(IPackage *pkg) {
     if (pkg == nullptr)
         return false;
 
-    kInitPackage(pkg);
+    init_package_(pkg);
     return true;
 }
 
-void UPackagePool::Expanse() {
+void PackagePool::Expanse() {
     if (set_.empty() && !queue_.empty())
         return;
 
-    if (std::floor(queue_.size() / Capacity()) <= kExpanseRate)
+    if (std::floor(queue_.size() / Capacity()) <= expanse_rate_)
         return;
 
-    const auto num = static_cast<size_t>(std::ceil(static_cast<float>(Capacity()) * kExpanseScale));
+    const auto num = static_cast<size_t>(std::ceil(static_cast<float>(Capacity()) * expanse_scale_));
     spdlog::trace("{} - Pool Rest[{}], Current Using[{}], Expand Number[{}].", __FUNCTION__, queue_.size(), set_.size(), num);
 
     std::unique_lock lock(mutex_);
     for (size_t i = 0; i < num; i++) {
         IPackage *pkg = nullptr;
-        pkg = kCreatePackage();
+        pkg = create_package_();
 
         if (pkg != nullptr) {
             queue_.push(pkg);
@@ -173,11 +173,11 @@ void UPackagePool::Expanse() {
     spdlog::trace("{} - Pool Rest[{}], Current Using[{}].", __FUNCTION__, queue_.size(), set_.size());
 }
 
-void UPackagePool::Collect() {
+void PackagePool::Collect() {
     const auto now = NowTimePoint();
 
     // 不要太频繁
-    if (now - collectTime_.load() < std::chrono::seconds(3))
+    if (now - collect_time_.load() < std::chrono::seconds(3))
         return;
 
     {
@@ -192,16 +192,16 @@ void UPackagePool::Collect() {
         }
     }
 
-    if (queue_.size() <= kMinCapacity || std::floor(queue_.size() / Capacity()) < kCollectRate)
+    if (queue_.size() <= min_capacity_ || std::floor(queue_.size() / Capacity()) < collect_rate_)
         return;
 
-    collectTime_ = now;
+    collect_time_ = now;
 
-    const auto num = static_cast<size_t>(std::floor(static_cast<float>(Capacity()) * kCollectScale));
+    const auto num = static_cast<size_t>(std::floor(static_cast<float>(Capacity()) * collect_scale_));
     spdlog::trace("{} - Pool Rest[{}], Current Using[{}], collect Number[{}].", __FUNCTION__, queue_.size(), set_.size(), num);
 
     std::unique_lock lock(mutex_);
-    for (size_t i = 0; i < num && queue_.size() > kMinCapacity; i++) {
+    for (size_t i = 0; i < num && queue_.size() > min_capacity_; i++) {
         const auto pkg = queue_.front();
         queue_.pop();
         delete pkg;

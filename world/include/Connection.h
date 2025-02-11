@@ -12,52 +12,52 @@ using namespace std::literals::chrono_literals;
 using namespace asio::experimental::awaitable_operators;
 
 
-class BASE_API UConnection final : public std::enable_shared_from_this<UConnection> {
+class BASE_API Connection final : public std::enable_shared_from_this<Connection> {
 
-    ATcpSocket socket_;
-    class UMainScene *scene_;
+    TcpSocket socket_;
+    class MainScene *scene_;
 
     std::unique_ptr<IPackageCodec> codec_ = nullptr;
     std::unique_ptr<IConnectionHandler> handler_ = nullptr;
 
-    TThreadSafeDeque<IPackage *> output_;
+    ThreadSafeDeque<IPackage *> output_;
 
     std::string key_;
 
-    ASystemTimer watchdogTimer_;
-    ATimePoint deadline_;
+    SystemTimer watchdog_timer_;
+    TimePoint deadline_;
 
     std::any ctx_;
-    uint32_t contextNullCount_ = 0;
+    uint32_t context_null_count_ = 0;
 
-    static std::chrono::duration<uint32_t> kExpireTime;
-    static std::chrono::duration<uint32_t> kWriteTimeout;
-    static std::chrono::duration<uint32_t> kReadTimeout;
+    static std::chrono::duration<uint32_t> expire_time_;
+    static std::chrono::duration<uint32_t> write_timeout_;
+    static std::chrono::duration<uint32_t> read_timeout_;
 
     static constexpr int NULL_CONTEXT_MAX_COUNT = 3;
 
 public:
-    UConnection() = delete;
+    Connection() = delete;
 
-    UConnection(ATcpSocket socket, UMainScene *scene);
-    ~UConnection();
+    Connection(TcpSocket socket, MainScene *scene);
+    ~Connection();
 
-    DISABLE_COPY_MOVE(UConnection)
+    DISABLE_COPY_MOVE(Connection)
 
     void ConnectToClient();
     void Disconnect();
 
     [[nodiscard]] int32_t GetSceneID() const;
-    [[nodiscard]] AThreadID GetThreadID() const;
-    [[nodiscard]] class UPackagePool *GetPackagePool() const;
+    [[nodiscard]] ThreadID GetThreadID() const;
+    [[nodiscard]] class PackagePool *GetPackagePool() const;
 
-    [[nodiscard]] UMainScene *GetMainScene() const;
-    [[nodiscard]] class UGameWorld *GetWorld() const;
+    [[nodiscard]] MainScene *GetMainScene() const;
+    [[nodiscard]] class GameWorld *GetWorld() const;
 
-    UConnection &SetContext(const std::any &ctx);
-    UConnection &ResetContext();
+    Connection &SetContext(const std::any &ctx);
+    Connection &ResetContext();
 
-    UConnection &SetKey(const std::string &key);
+    Connection &SetKey(const std::string &key);
 
     static void SetWatchdogTimeout(uint32_t sec);
     static void SetWriteTimeout(uint32_t sec);
@@ -67,7 +67,7 @@ public:
 
     template<typename T>
     requires std::derived_from<T, IPackageCodec>
-    UConnection &SetPackageCodec() {
+    Connection &SetPackageCodec() {
         if (codec_ != nullptr)
             codec_.reset();
 
@@ -77,7 +77,7 @@ public:
 
     template<typename T>
     requires std::derived_from<T, IConnectionHandler>
-    UConnection &SetHandler() {
+    Connection &SetHandler() {
         if (handler_ != nullptr)
             handler_.reset();
 
@@ -92,7 +92,7 @@ public:
     [[nodiscard]] bool IsConnected() const { return socket_.is_open(); }
 
     [[nodiscard]] std::string GetKey() const { return key_; }
-    [[nodiscard]] ATcpSocket &GetSocket() { return socket_; }
+    [[nodiscard]] TcpSocket &GetSocket() { return socket_; }
 
     [[nodiscard]] const std::any &GetContext() const { return ctx_; }
     [[nodiscard]] std::any GetMutableContext() const { return ctx_; }
@@ -108,4 +108,4 @@ private:
     static awaitable<void> Timeout(std::chrono::duration<uint32_t> expire);
 };
 
-using AConnectionPointer = std::shared_ptr<UConnection>;
+using ConnectionPointer = std::shared_ptr<Connection>;

@@ -6,42 +6,42 @@
 #include <spdlog/spdlog.h>
 
 
-USceneManager::USceneManager(UGameWorld* world)
+SceneManager::SceneManager(GameWorld* world)
     : world_(world),
-      nextIndex_(0)
+      next_main_index_(0)
 {
 }
 
-USceneManager::~USceneManager()
+SceneManager::~SceneManager()
 {
-    for (const auto it : sceneMap_ | std::views::values)
+    for (const auto it : scene_map_ | std::views::values)
         delete it;
 
-    workVec_.clear();
-    for (const auto it : mainSceneVec_)
+    worker_vec_.clear();
+    for (const auto it : main_scene_vec_)
         delete it;
 
-    for (auto& th : threadVec_)
+    for (auto& th : thread_vec_)
     {
         if (th.joinable())
             th.join();
     }
 }
 
-void USceneManager::Init()
+void SceneManager::Init()
 {
     const auto &cfg = world_->GetServerConfig();
     const auto num = cfg["server"]["io_thread"].as<int32_t>();
 
     for (int32_t idx = 0; idx < num; ++idx)
-        mainSceneVec_.emplace_back(new UMainScene(this, idx));
+        main_scene_vec_.emplace_back(new MainScene(this, idx));
 
-    for (const auto val : mainSceneVec_)
+    for (const auto val : main_scene_vec_)
     {
-        if (const auto scene = dynamic_cast<UMainScene*>(val); scene != nullptr)
+        if (const auto scene = dynamic_cast<MainScene*>(val); scene != nullptr)
         {
-            workVec_.emplace_back(scene->GetIOContext());
-            threadVec_.emplace_back([this, scene]
+            worker_vec_.emplace_back(scene->GetIOContext());
+            thread_vec_.emplace_back([this, scene]
             {
                 asio::signal_set signals(scene->GetIOContext(), SIGINT, SIGTERM);
                 signals.async_wait([scene](auto, auto) {
@@ -58,36 +58,36 @@ void USceneManager::Init()
     spdlog::info("Started With {} Thread(s).", num);
 }
 
-UGameWorld* USceneManager::GetWorld() const
+GameWorld* SceneManager::GetWorld() const
 {
     return world_;
 }
 
-IAbstractScene* USceneManager::GetNextMainScene()
+IBaseScene* SceneManager::GetNextMainScene()
 {
-    if (mainSceneVec_.empty())
+    if (main_scene_vec_.empty())
         throw std::runtime_error("No context node available");
 
-    const auto res = mainSceneVec_[nextIndex_++];
-    nextIndex_ = nextIndex_ % mainSceneVec_.size();
+    const auto res = main_scene_vec_[next_main_index_++];
+    next_main_index_ = next_main_index_ % main_scene_vec_.size();
 
     return res;
 }
 
-IAbstractScene* USceneManager::GetScene(const int32_t sid) const
+IBaseScene* SceneManager::GetScene(const int32_t sid) const
 {
     if (sid < 0)
         return nullptr;
 
     if (sid < kNormalSceneIDBegin)
     {
-        if (sid >= mainSceneVec_.size())
+        if (sid >= main_scene_vec_.size())
             return nullptr;
 
-        return mainSceneVec_[sid];
+        return main_scene_vec_[sid];
     }
 
-    if (const auto it = sceneMap_.find(sid); it != sceneMap_.end())
+    if (const auto it = scene_map_.find(sid); it != scene_map_.end())
         return it->second;
 
     return nullptr;

@@ -10,7 +10,7 @@
 #include <login.pb.h>
 
 
-UPlayer::UPlayer(AConnectionPointer conn)
+UPlayer::UPlayer(ConnectionPointer conn)
     : IBasePlayer(std::move(conn)),
       mComponentModule(this),
       mEventModule(this) {
@@ -86,7 +86,7 @@ void UPlayer::OnLogout(const bool bForce, const std::string &otherAddress) {
 }
 
 bool UPlayer::IsOnline() const {
-    constexpr ATimePoint zeroTimePoint{};
+    constexpr TimePoint zeroTimePoint{};
     const auto now = NowTimePoint();
 
     return mLoginTime > zeroTimePoint && mLoginTime < now
@@ -96,7 +96,7 @@ bool UPlayer::IsOnline() const {
 
 
 void UPlayer::Send(const int32_t id, const std::string_view data) const {
-    const auto pkg = dynamic_cast<FPackage *>(BuildPackage());
+    const auto pkg = dynamic_cast<Package *>(BuildPackage());
     pkg->SetPackageID(id).SetData(data);
 
     spdlog::trace("{} - [{}]", __FUNCTION__, ProtoTypeToString(static_cast<protocol::EProtoType>(id)));
@@ -104,7 +104,7 @@ void UPlayer::Send(const int32_t id, const std::string_view data) const {
 }
 
 void UPlayer::Send(const int32_t id, const std::stringstream &ss) const {
-    const auto pkg = dynamic_cast<FPackage *>(BuildPackage());
+    const auto pkg = dynamic_cast<Package *>(BuildPackage());
     pkg->SetPackageID(id).SetData(ss.str());
 
     spdlog::trace("{} - [{}]", __FUNCTION__, ProtoTypeToString(static_cast<protocol::EProtoType>(id)));
@@ -115,6 +115,6 @@ void UPlayer::SyncCache(FCacheNode *node) {
     mComponentModule.SyncCache(node);
 }
 
-void UPlayer::DispatchEvent(const EEvent event, IEventParam *param, const EDispatchType type) {
+void UPlayer::DispatchEvent(const EEvent event, IEventParam *param, const DispatchType type) {
     mEventModule.Dispatch(event, param, type);
 }

@@ -8,10 +8,10 @@
 
 
 template<typename T>
-class BASE_API TThreadSafeDeque {
+class BASE_API ThreadSafeDeque {
 public:
-    TThreadSafeDeque() = default;
-    ~TThreadSafeDeque() = default;
+    ThreadSafeDeque() = default;
+    ~ThreadSafeDeque() = default;
 
     T &Front() {
         std::shared_lock lock(mutex_);

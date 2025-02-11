@@ -5,29 +5,29 @@
 #include <asio.hpp>
 
 
-class UConnection;
-using AConnectionPointer = std::shared_ptr<UConnection>;
+class Connection;
+using ConnectionPointer = std::shared_ptr<Connection>;
 
-class ULoginAuthenticator final {
+class LoginAuthenticator final {
 
-    friend class UGameWorld;
+    friend class GameWorld;
 
-    explicit ULoginAuthenticator(UGameWorld *world);
-    ~ULoginAuthenticator();
+    explicit LoginAuthenticator(GameWorld *world);
+    ~LoginAuthenticator();
 
 public:
-    ULoginAuthenticator() = delete;
+    LoginAuthenticator() = delete;
 
-    DISABLE_COPY_MOVE(ULoginAuthenticator)
+    DISABLE_COPY_MOVE(LoginAuthenticator)
 
     void Init();
-    [[nodiscard]] UGameWorld *GetWorld() const;
+    [[nodiscard]] GameWorld *GetWorld() const;
 
     bool VerifyAddress(const asio::ip::address &addr);
 
     FPlayerID VerifyToken(FPlayerID pid, const std::string &token);
 
-    awaitable<void> OnLogin(const AConnectionPointer &conn, class IPackage *pkg);
+    awaitable<void> OnLogin(const ConnectionPointer &conn, class IPackage *pkg);
 
     template<typename T>
     requires std::derived_from<T, ILoginHandler>
@@ -41,6 +41,6 @@ public:
     void AbortHandler() const;
 
 private:
-    UGameWorld* world_;
+    GameWorld* world_;
     std::unique_ptr<ILoginHandler> handler_;
 };

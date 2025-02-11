@@ -5,7 +5,7 @@
 #include "../player/PlayerManager.h"
 // #include "../world/manager/chat/ChatManager.h"
 
-inline void RegisterManager(UManagerSystem *sys) {
+inline void RegisterManager(ManagerSystem *sys) {
     if (sys == nullptr)
         return;
 

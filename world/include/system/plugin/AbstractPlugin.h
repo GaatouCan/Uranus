@@ -3,7 +3,7 @@
 #include "../../common.h"
 
 
-enum class EPluginType {
+enum class PluginType {
     INITIALIZE,
     RUNTIME,
     RECEIVE_DATA,
@@ -15,6 +15,6 @@ class BASE_API IAbstractPlugin {
 public:
     virtual ~IAbstractPlugin() = default;
 
-    [[nodiscard]] virtual EPluginType GetType() const = 0;
+    [[nodiscard]] virtual PluginType GetType() const = 0;
     [[nodiscard]] virtual const char* GetPluginName() const = 0;
 };

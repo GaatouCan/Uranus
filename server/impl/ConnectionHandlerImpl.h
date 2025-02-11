@@ -5,7 +5,7 @@
 
 class UConnectionHandlerImpl final : public IConnectionHandler {
 public:
-    explicit UConnectionHandlerImpl(UConnection *conn);
+    explicit UConnectionHandlerImpl(Connection *conn);
 
     void OnConnected() override;
     void OnClosed() override;
