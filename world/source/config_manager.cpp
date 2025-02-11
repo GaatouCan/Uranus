@@ -6,48 +6,48 @@
 
 
 ConfigManager::ConfigManager()
-    : logic_config_loader_(nullptr),
-      logger_loader_(nullptr) {
+    : mLogicConfigLoader(nullptr),
+      mLoggerLoader(nullptr) {
 }
 
 ConfigManager::~ConfigManager() {
-    for (const auto &loader: std::views::values(logic_config_map_)) {
+    for (const auto &loader: std::views::values(mLogicConfigMap)) {
         delete loader;
     }
 }
 
 void ConfigManager::Init() {
-    spdlog::info("Using Server Configuration File: {}.", yaml_path_ + SERVER_CONFIG_FILE);
+    spdlog::info("Using Server Configuration File: {}.", mYAMLPath + SERVER_CONFIG_FILE);
 
-    config_ = YAML::LoadFile(yaml_path_ + SERVER_CONFIG_FILE);
+    mConfig = YAML::LoadFile(mYAMLPath + SERVER_CONFIG_FILE);
 
-    assert(!config_.IsNull());
+    assert(!mConfig.IsNull());
     spdlog::info("Checking Server Configuration File.");
 
-    assert(!config_["server"].IsNull());
-    assert(!config_["server"]["port"].IsNull());
-    assert(!config_["server"]["io_thread"].IsNull());
-    assert(!config_["server"]["work_thread"].IsNull());
-    assert(!config_["server"]["cross_id"].IsNull());
+    assert(!mConfig["server"].IsNull());
+    assert(!mConfig["server"]["port"].IsNull());
+    assert(!mConfig["server"]["io_thread"].IsNull());
+    assert(!mConfig["server"]["work_thread"].IsNull());
+    assert(!mConfig["server"]["cross_id"].IsNull());
 
-    assert(!config_["log_dir"].IsNull());
+    assert(!mConfig["log_dir"].IsNull());
 
-    assert(!config_["package"].IsNull());
-    assert(!config_["package"]["magic"].IsNull());
-    assert(!config_["package"]["version"].IsNull());
-    assert(!config_["package"]["method"].IsNull());
+    assert(!mConfig["package"].IsNull());
+    assert(!mConfig["package"]["magic"].IsNull());
+    assert(!mConfig["package"]["version"].IsNull());
+    assert(!mConfig["package"]["method"].IsNull());
 
-    assert(!config_["package"]["pool"].IsNull());
-    assert(!config_["package"]["pool"]["default_capacity"].IsNull());
-    assert(!config_["package"]["pool"]["minimum_capacity"].IsNull());
-    assert(!config_["package"]["pool"]["expanse_rate"].IsNull());
-    assert(!config_["package"]["pool"]["expanse_scale"].IsNull());
-    assert(!config_["package"]["pool"]["collect_rate"].IsNull());
-    assert(!config_["package"]["pool"]["collect_scale"].IsNull());
+    assert(!mConfig["package"]["pool"].IsNull());
+    assert(!mConfig["package"]["pool"]["default_capacity"].IsNull());
+    assert(!mConfig["package"]["pool"]["minimum_capacity"].IsNull());
+    assert(!mConfig["package"]["pool"]["expanse_rate"].IsNull());
+    assert(!mConfig["package"]["pool"]["expanse_scale"].IsNull());
+    assert(!mConfig["package"]["pool"]["collect_rate"].IsNull());
+    assert(!mConfig["package"]["pool"]["collect_scale"].IsNull());
 
     spdlog::info("Server Configuration File Check Successfully.");
 
-    const std::string jsonPath = !json_path_.empty() ? json_path_ : yaml_path_ + SERVER_CONFIG_JSON;
+    const std::string jsonPath = !mJSONPath.empty() ? mJSONPath : mYAMLPath + SERVER_CONFIG_JSON;
 
     utils::TraverseFolder(jsonPath, [this, jsonPath](const std::filesystem::directory_entry &entry) {
         if (entry.path().extension().string() == ".json") {
@@ -66,52 +66,52 @@ void ConfigManager::Init() {
             filepath = utils::StringReplace(filepath, '/', '.');
 #endif
 
-            json_map_[filepath] = nlohmann::json::parse(fs);
+            mJSONMap[filepath] = nlohmann::json::parse(fs);
             spdlog::info("\tLoaded {}.", filepath);
         }
     });
 
-    if (logic_config_loader_) {
-        std::invoke(logic_config_loader_, this);
+    if (mLogicConfigLoader) {
+        std::invoke(mLogicConfigLoader, this);
     }
 
-    if (logger_loader_) {
-        std::invoke(logger_loader_, config_);
+    if (mLoggerLoader) {
+        std::invoke(mLoggerLoader, mConfig);
     }
 
-    loaded_ = true;
+    bLoaded = true;
 }
 
 void ConfigManager::SetYAMLPath(const std::string &path) {
-    yaml_path_ = path;
+    mYAMLPath = path;
 }
 
 void ConfigManager::SetJSONPath(const std::string &path) {
-    json_path_ = path;
+    mJSONPath = path;
 }
 
 void ConfigManager::SetLogicConfigLoader(const LogicConfigLoader loader) {
-    logic_config_loader_ = loader;
+    mLogicConfigLoader = loader;
 }
 
 void ConfigManager::SetLoggerLoader(const LoggerLoader loader) {
-    logger_loader_ = loader;
+    mLoggerLoader = loader;
 }
 
 void ConfigManager::Abort() const {
-    assert(logic_config_loader_ != nullptr && logger_loader_ != nullptr);
+    assert(mLogicConfigLoader != nullptr && mLoggerLoader != nullptr);
 }
 
 bool ConfigManager::IsLoaded() const {
-    return loaded_;
+    return bLoaded;
 }
 
 const YAML::Node &ConfigManager::GetServerConfig() const {
-    return config_;
+    return mConfig;
 }
 
 std::optional<nlohmann::json> ConfigManager::FindConfig(const std::string &path, const uint64_t id) const {
-    if (const auto it = json_map_.find(path); it != json_map_.end()) {
+    if (const auto it = mJSONMap.find(path); it != mJSONMap.end()) {
         if (it->second.contains(std::to_string(id)))
             return it->second[std::to_string(id)];
     }
@@ -120,10 +120,10 @@ std::optional<nlohmann::json> ConfigManager::FindConfig(const std::string &path,
 }
 
 void ConfigManager::ReloadConfig() {
-    config_ = YAML::LoadFile(yaml_path_ + SERVER_CONFIG_FILE);
+    mConfig = YAML::LoadFile(mYAMLPath + SERVER_CONFIG_FILE);
 
-    json_map_.clear();
-    const std::string jsonPath = !json_path_.empty() ? json_path_ : yaml_path_ + SERVER_CONFIG_JSON;
+    mJSONMap.clear();
+    const std::string jsonPath = !mJSONPath.empty() ? mJSONPath : mYAMLPath + SERVER_CONFIG_JSON;
 
     utils::TraverseFolder(jsonPath, [this, jsonPath](const std::filesystem::directory_entry &entry) {
         if (entry.path().extension().string() == ".json") {
@@ -142,16 +142,16 @@ void ConfigManager::ReloadConfig() {
             filepath = utils::StringReplace(filepath, '/', '.');
 #endif
 
-            json_map_[filepath] = nlohmann::json::parse(fs);
+            mJSONMap[filepath] = nlohmann::json::parse(fs);
             spdlog::info("\tLoaded {}.", filepath);
         }
     });
 
-    for (auto &[type, cfg]: logic_config_map_) {
-        if (auto vec = logic_load_map_.find(type); vec != logic_load_map_.end()) {
+    for (auto &[type, cfg]: mLogicConfigMap) {
+        if (auto vec = mLogicLoadMap.find(type); vec != mLogicLoadMap.end()) {
             std::vector<nlohmann::json> configs;
             for (const auto &path: vec->second) {
-                if (const auto iter = json_map_.find(path); iter != json_map_.end()) {
+                if (const auto iter = mJSONMap.find(path); iter != mJSONMap.end()) {
                     configs.push_back(iter->second);
                 }
             }
