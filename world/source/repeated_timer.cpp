@@ -1,16 +1,16 @@
-#include "../include/RepeatedTimer.h"
+#include "../include/repeated_timer.h"
 
 #include <spdlog/spdlog.h>
 
 
 RepeatedTimer::RepeatedTimer(asio::io_context &ctx)
-    : ctx_(ctx),
-      timer_(ctx),
-      id_(),
-      delay_(0),
-      repeatRate_(0),
-      is_repeat_(false),
-      running_(false) {
+    : mContext(ctx),
+      mTimer(ctx),
+      mID(),
+      mDelay(0),
+      mRepeatRate(0),
+      bRepeat(false),
+      bRunning(false) {
 }
 
 RepeatedTimer::~RepeatedTimer() {
@@ -18,80 +18,80 @@ RepeatedTimer::~RepeatedTimer() {
 }
 
 RepeatedTimer &RepeatedTimer::SetTimerID(const UniqueID id) {
-    id_ = id;
+    mID = id;
     return *this;
 }
 
 UniqueID RepeatedTimer::GetTimerID() const {
-    return id_;
+    return mID;
 }
 
 RepeatedTimer & RepeatedTimer::SetDelay(std::chrono::duration<uint32_t> delay) {
-    delay_ = delay;
+    mDelay = delay;
     return *this;
 }
 
 RepeatedTimer &RepeatedTimer::SetRepeatRate(const std::chrono::duration<uint32_t> rate) {
-    repeatRate_ = rate;
+    mRepeatRate = rate;
     return *this;
 }
 
 RepeatedTimer &RepeatedTimer::SetIfRepeat(const bool repeat) {
-    is_repeat_ = repeat;
+    bRepeat = repeat;
     return *this;
 }
 
 bool RepeatedTimer::IsRepeated() const {
-    return is_repeat_;
+    return bRepeat;
 }
 
 bool RepeatedTimer::IsRunning() const {
-    return running_;
+    return bRunning;
 }
 
 bool RepeatedTimer::IsLooping() const {
-    return is_repeat_ && running_;
+    return bRepeat && bRunning;
 }
 
 RepeatedTimer &RepeatedTimer::SetCompleteCallback(const std::function<void(const UniqueID &)> &func) {
-    complete_functor_ = func;
+    mCompleteFunctor = func;
     return *this;
 }
 
 RepeatedTimer & RepeatedTimer::SetCompleteCallback(std::function<void(const UniqueID &)> &&func) {
-    complete_functor_ = std::move(func);
+    mCompleteFunctor = std::move(func);
     return *this;
 }
 
 RepeatedTimer &RepeatedTimer::Start() {
-    if (repeatRate_.count() == 0)
+    if (mRepeatRate.count() == 0)
         return *this;
 
-    if (running_)
+    if (bRunning)
         return *this;
 
-    if (!functor_)
+    if (!mFunctor)
         return *this;
 
-    co_spawn(ctx_, [this]() mutable -> awaitable<void> {
+    co_spawn(mContext, [this]() mutable -> awaitable<void> {
         try {
-            running_ = true;
-            auto point = NowTimePoint() + delay_;
+            bRunning = true;
+            auto point = NowTimePoint() + mDelay;
 
             do {
-                timer_.expires_at(point);
-                point += repeatRate_;
+                mTimer.expires_at(point);
+                point += mRepeatRate;
 
-                co_await timer_.async_wait();
+                co_await mTimer.async_wait();
 
-                if (running_)
-                    std::invoke(functor_, point);
-            } while (running_ && is_repeat_);
+                if (bRunning)
+                    mFunctor(point);
+            } while (bRunning && bRepeat);
 
-            running_ = false;
+            bRunning = false;
 
-            if (complete_functor_)
-                std::invoke(complete_functor_, id_);
+            if (mCompleteFunctor)
+                mCompleteFunctor(mID);
 
         } catch (std::exception &e) {
             spdlog::warn("RepeatedTimer::start: {}", e.what());
@@ -102,10 +102,10 @@ RepeatedTimer &RepeatedTimer::Start() {
 }
 
 RepeatedTimer &RepeatedTimer::Stop() {
-    if (!running_)
+    if (!bRunning)
         return *this;
 
-    running_ = false;
-    timer_.cancel();
+    bRunning = false;
+    mTimer.cancel();
     return *this;
 }

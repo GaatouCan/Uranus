@@ -1,10 +1,10 @@
 ﻿#pragma once
 
-#include "../PlayerID.h"
+#include "../player_id.h"
 #include "../actor.h"
-#include "../Connection.h"
-#include "../RepeatedTimer.h"
-#include "../PlatformInfo.h"
+#include "../connection.h"
+#include "../repeated_timer.h"
+#include "../platform_info.h"
 
 #include <map>
 #include <shared_mutex>
@@ -13,18 +13,18 @@
 
 class BASE_API IBasePlayer : public Actor, public std::enable_shared_from_this<IBasePlayer> {
 
-    class IBaseScene *owner_;
+    class IBaseScene *mOwner;
 
-    ConnectionPointer conn_;
-    PlayerID pid_;
+    ConnectionPointer mConn;
+    PlayerID mPlayerID;
 
-    TimePoint enterTime_;
-    TimePoint leaveTime_;
+    TimePoint mEnterTime;
+    TimePoint mLeaveTime;
 
-    PlatformInfo platform_;
+    PlatformInfo mPlatform;
 
-    std::map<UniqueID, RepeatedTimer *> timerMap_;
-    mutable std::shared_mutex timerMutex_;
+    std::map<UniqueID, RepeatedTimer *> mTimerMap;
+    mutable std::shared_mutex mTimerMutex;
 
 public:
     IBasePlayer() = delete;
@@ -72,7 +72,7 @@ public:
 
     template<typename Functor, typename... Args>
     void RunInThread(Functor &&func, Args &&... args) {
-        co_spawn(conn_->GetSocket().get_executor(), [func = std::forward<Functor>(func), ...args = std::forward<Args>(args)]() mutable -> awaitable<void> {
+        co_spawn(mConn->GetSocket().get_executor(), [func = std::forward<Functor>(func), ...args = std::forward<Args>(args)]() mutable -> awaitable<void> {
             try {
                 std::invoke(func, args...);
             } catch (std::exception &e) {

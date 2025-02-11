@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../DefaultCodec.h"
-#include "Package.h"
+#include "../package_codec.h"
+#include "package.h"
 
 class DefaultCodec final : public TPackageCodec<Package> {
 public:

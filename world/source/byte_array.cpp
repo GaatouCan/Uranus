@@ -1,50 +1,54 @@
 #include "../include/byte_array.h"
 
 ByteArray::ByteArray(const size_t size)
-    : bytes_(size) {
+    : mData(size) {
 }
 
-ByteArray::ByteArray(const std::vector<byte> &bytes)
-    : bytes_(bytes) {
+ByteArray::ByteArray(const std::vector<uint8_t> &bytes)
+    : mData(bytes) {
 }
 
 ByteArray::operator std::vector<unsigned char>() const {
-    return bytes_;
+    return mData;
 }
 
 void ByteArray::Reset() {
-    bytes_.clear();
-    bytes_.shrink_to_fit();
+    mData.clear();
+    mData.shrink_to_fit();
 }
 
 size_t ByteArray::Size() const {
-    return bytes_.size();
+    return mData.size();
 }
 
 void ByteArray::Resize(const size_t size) {
-    bytes_.resize(size);
+    mData.resize(size);
 }
 
-byte * ByteArray::Data() {
-    return bytes_.data();
+uint8_t * ByteArray::Data() {
+    return mData.data();
 }
 
-std::vector<byte> & ByteArray::GetRawRef() {
-    return bytes_;
+std::vector<uint8_t> & ByteArray::GetRawRef() {
+    return mData;
 }
 
-auto ByteArray::Begin() -> decltype(bytes_)::iterator {
-    return bytes_.begin();
+auto ByteArray::Begin() -> decltype(mData)::iterator {
+    return mData.begin();
 }
 
-auto ByteArray::End() -> decltype(bytes_)::iterator {
-    return bytes_.end();
+auto ByteArray::End() -> decltype(mData)::iterator {
+    return mData.end();
 }
 
-auto ByteArray::Begin() const -> decltype(bytes_)::const_iterator {
-    return bytes_.begin();
+auto ByteArray::Begin() const -> decltype(mData)::const_iterator {
+    return mData.begin();
 }
 
-auto ByteArray::End() const -> decltype(bytes_)::const_iterator {
-    return bytes_.end();
+auto ByteArray::End() const -> decltype(mData)::const_iterator {
+    return mData.end();
+}
+
+uint8_t ByteArray::operator[](const size_t pos) const noexcept {
+    return mData[pos];
 }

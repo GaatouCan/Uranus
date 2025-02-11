@@ -1,26 +1,26 @@
-#include "../../include/scene/BaseScene.h"
-#include "../../include/scene/SceneManager.h"
-#include "../../include/scene/BasePlayer.h"
-#include "../../include/GameWorld.h"
+#include "../../include/scene/base_scene.h"
+#include "../../include/scene/scene_manager.h"
+#include "../../include/scene/base_player.h"
+#include "../../include/game_world.h"
 
 IBaseScene::IBaseScene(SceneManager *owner, const int32_t id)
-    : owner_(owner),
-      id_(id) {
+    : mOwner(owner),
+      mSceneID(id) {
 }
 
 IBaseScene::~IBaseScene() {
 }
 
 int32_t IBaseScene::GetSceneID() const {
-    return id_;
+    return mSceneID;
 }
 
 SceneManager *IBaseScene::GetOwner() const {
-    return owner_;
+    return mOwner;
 }
 
 GameWorld *IBaseScene::GetWorld() const {
-    return owner_->GetWorld();
+    return mOwner->GetWorld();
 }
 
 void IBaseScene::PlayerEnterScene(const std::shared_ptr<IBasePlayer> &player) {
@@ -28,22 +28,22 @@ void IBaseScene::PlayerEnterScene(const std::shared_ptr<IBasePlayer> &player) {
         return;
 
     {
-        std::shared_lock lock(mutex_);
-        if (player_map_.contains(player->GetLocalID()))
+        std::shared_lock lock(mMutex);
+        if (mPlayerMap.contains(player->GetLocalID()))
             return;
     }
 
     // Change Scene From Other Scene
-    if (const auto sid = player->GetCurrentSceneID(); sid >= 0 && sid != id_) {
-        if (const auto scene = owner_->GetScene(sid); scene != nullptr && scene != this) {
+    if (const auto sid = player->GetCurrentSceneID(); sid >= 0 && sid != mSceneID) {
+        if (const auto scene = mOwner->GetScene(sid); scene != nullptr && scene != this) {
             scene->PlayerLeaveScene(player, true);
         }
     }
 
     {
-        std::unique_lock lock(mutex_);
-        player_map_[player->GetLocalID()] = player;
-        spdlog::info("{} - Player[{}] Enter Scene[{}].", __FUNCTION__, player->GetFullID(), id_);
+        std::unique_lock lock(mMutex);
+        mPlayerMap[player->GetLocalID()] = player;
+        spdlog::info("{} - Player[{}] Enter Scene[{}].", __FUNCTION__, player->GetFullID(), mSceneID);
     }
 
     player->OnEnterScene(this);
@@ -54,13 +54,13 @@ void IBaseScene::PlayerLeaveScene(const std::shared_ptr<IBasePlayer> &player, co
         return;
 
     {
-        std::unique_lock lock(mutex_);
+        std::unique_lock lock(mMutex);
 
-        if (!player_map_.contains(player->GetLocalID()))
+        if (!mPlayerMap.contains(player->GetLocalID()))
             return;
 
-        player_map_.erase(player->GetLocalID());
-        spdlog::info("{} - Player[{}] Leave Scene[{}].", __FUNCTION__, player->GetFullID(), id_);
+        mPlayerMap.erase(player->GetLocalID());
+        spdlog::info("{} - Player[{}] Leave Scene[{}].", __FUNCTION__, player->GetFullID(), mSceneID);
     }
 
     if (!is_change)
@@ -71,19 +71,19 @@ std::shared_ptr<IBasePlayer> IBaseScene::GetPlayer(const int32_t pid) const {
     if (pid < PLAYER_LOCAL_ID_BEGIN || pid > PLAYER_LOCAL_ID_END)
         return nullptr;
 
-    std::shared_lock lock(mutex_);
-    if (const auto it = player_map_.find(pid); it != player_map_.end()) {
+    std::shared_lock lock(mMutex);
+    if (const auto it = mPlayerMap.find(pid); it != mPlayerMap.end()) {
         return it->second;
     }
     return nullptr;
 }
 
 void IBaseScene::RunInThread(const std::function<awaitable<void>()> &func) const {
-    auto &ctx = owner_->GetWorld()->GetIOContext();
+    auto &ctx = mOwner->GetWorld()->GetIOContext();
     co_spawn(ctx, func, detached);
 }
 
 void IBaseScene::RunInThread(std::function<awaitable<void>()> &&func) const {
-    auto &ctx = owner_->GetWorld()->GetIOContext();
+    auto &ctx = mOwner->GetWorld()->GetIOContext();
     co_spawn(ctx, std::move(func), detached);
 }

@@ -7,7 +7,7 @@
 #include "../common.h"
 
 
-static constexpr int32_t kNormalSceneIDBegin = 1000;
+static constexpr int32_t NORMAL_SCENE_ID_BEGIN = 1000;
 
 
 class IBaseScene;
@@ -32,13 +32,13 @@ public:
     IBaseScene *GetScene(int32_t sid) const;
 
 private:
-    GameWorld *world_;
+    GameWorld *mWorld;
 
-    std::vector<IBaseScene *> main_scene_vec_;
-    std::vector<asio::io_context::work> worker_vec_;
-    std::vector<std::thread> thread_vec_;
+    std::vector<IBaseScene *> mMainSceneList;
+    std::vector<asio::io_context::work> mWorkList;
+    std::vector<std::thread> mThreadList;
 
-    std::atomic_size_t next_main_index_;
+    std::atomic_size_t mNextMainIndex;
 
-    std::unordered_map<int32_t, IBaseScene *> scene_map_;
+    std::unordered_map<int32_t, IBaseScene *> mSceneMap;
 };

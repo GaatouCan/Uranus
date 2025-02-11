@@ -13,8 +13,6 @@ class IPackage;
 typedef IPackage*(*PackageCreator)();
 typedef void(*PackageInitializer)(IPackage*);
 
-// using APackageCreator = std::function<IPackage*()>;
-// using APackageInitializer = std::function<void(IPackage*)>;
 
 /**
  * 数据包池
@@ -22,9 +20,8 @@ typedef void(*PackageInitializer)(IPackage*);
 class PackagePool final {
 
     friend class MainScene;
-    // friend class UCrossRoute;
 
-    explicit PackagePool(size_t capacity = default_capacity_);
+    explicit PackagePool(size_t capacity = kDefaultCapacity);
     ~PackagePool();
 
 public:
@@ -69,25 +66,25 @@ private:
     void Collect();
 
 private:
-    std::queue<IPackage *> queue_;
-    std::set<IPackage *> set_;
-    std::atomic<TimePoint> collect_time_;
+    std::queue<IPackage *> mQueue;
+    std::set<IPackage *> mSet;
+    std::atomic<TimePoint> mCollectTime;
 
     // std::mutex mMutex;
-    mutable std::shared_mutex mutex_;
+    mutable std::shared_mutex mMutex;
 
     // 扩容和收缩临界点和比例
     // 每个线程下的数据包池行为目前设计为一致
 
-    static size_t default_capacity_;
-    static size_t min_capacity_;
+    static size_t kDefaultCapacity;
+    static size_t kMinCapacity;
 
-    static float expanse_rate_;
-    static float expanse_scale_;
+    static float kExpanseRate;
+    static float kExpanseScale;
 
-    static float collect_rate_;
-    static float collect_scale_;
+    static float kCollectRate;
+    static float kCollectScale;
 
-    static PackageCreator create_package_;
-    static PackageInitializer init_package_;
+    static PackageCreator kCreatePackage;
+    static PackageInitializer kInitPackage;
 };

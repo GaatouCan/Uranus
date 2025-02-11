@@ -1,27 +1,27 @@
-#include "../../include/scene/SceneManager.h"
-#include "../../include/scene/MainScene.h"
-#include "../../include/GameWorld.h"
+#include "../../include/scene/scene_manager.h"
+#include "../../include/scene/main_scene.h"
+#include "../../include/game_world.h"
 
 #include <ranges>
 #include <spdlog/spdlog.h>
 
 
 SceneManager::SceneManager(GameWorld* world)
-    : world_(world),
-      next_main_index_(0)
+    : mWorld(world),
+      mNextMainIndex(0)
 {
 }
 
 SceneManager::~SceneManager()
 {
-    for (const auto it : scene_map_ | std::views::values)
+    for (const auto it : mSceneMap | std::views::values)
         delete it;
 
-    worker_vec_.clear();
-    for (const auto it : main_scene_vec_)
+    mWorkList.clear();
+    for (const auto it : mMainSceneList)
         delete it;
 
-    for (auto& th : thread_vec_)
+    for (auto& th : mThreadList)
     {
         if (th.joinable())
             th.join();
@@ -30,18 +30,18 @@ SceneManager::~SceneManager()
 
 void SceneManager::Init()
 {
-    const auto &cfg = world_->GetServerConfig();
+    const auto &cfg = mWorld->GetServerConfig();
     const auto num = cfg["server"]["io_thread"].as<int32_t>();
 
     for (int32_t idx = 0; idx < num; ++idx)
-        main_scene_vec_.emplace_back(new MainScene(this, idx));
+        mMainSceneList.emplace_back(new MainScene(this, idx));
 
-    for (const auto val : main_scene_vec_)
+    for (const auto val : mMainSceneList)
     {
-        if (const auto scene = dynamic_cast<MainScene*>(val); scene != nullptr)
+        if (const auto scene = dynamic_cast<MainScene *>(val); scene != nullptr)
         {
-            worker_vec_.emplace_back(scene->GetIOContext());
-            thread_vec_.emplace_back([this, scene]
+            mWorkList.emplace_back(scene->GetIOContext());
+            mThreadList.emplace_back([this, scene]
             {
                 asio::signal_set signals(scene->GetIOContext(), SIGINT, SIGTERM);
                 signals.async_wait([scene](auto, auto) {
@@ -60,16 +60,16 @@ void SceneManager::Init()
 
 GameWorld* SceneManager::GetWorld() const
 {
-    return world_;
+    return mWorld;
 }
 
 IBaseScene* SceneManager::GetNextMainScene()
 {
-    if (main_scene_vec_.empty())
+    if (mMainSceneList.empty())
         throw std::runtime_error("No context node available");
 
-    const auto res = main_scene_vec_[next_main_index_++];
-    next_main_index_ = next_main_index_ % main_scene_vec_.size();
+    const auto res = mMainSceneList[mNextMainIndex++];
+    mNextMainIndex = mNextMainIndex % mMainSceneList.size();
 
     return res;
 }
@@ -79,15 +79,15 @@ IBaseScene* SceneManager::GetScene(const int32_t sid) const
     if (sid < 0)
         return nullptr;
 
-    if (sid < kNormalSceneIDBegin)
+    if (sid < NORMAL_SCENE_ID_BEGIN)
     {
-        if (sid >= main_scene_vec_.size())
+        if (sid >= mMainSceneList.size())
             return nullptr;
 
-        return main_scene_vec_[sid];
+        return mMainSceneList[sid];
     }
 
-    if (const auto it = scene_map_.find(sid); it != scene_map_.end())
+    if (const auto it = mSceneMap.find(sid); it != mSceneMap.end())
         return it->second;
 
     return nullptr;

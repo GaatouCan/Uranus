@@ -6,15 +6,16 @@
 #include <shared_mutex>
 #include <spdlog/spdlog.h>
 
+
 class IBasePlayer;
 
 class BASE_API IBaseScene {
 
-    class SceneManager* owner_;
-    const int32_t id_;
+    class SceneManager* mOwner;
+    const int32_t mSceneID;
 
-    std::map<int32_t, std::shared_ptr<IBasePlayer>> player_map_;
-    mutable std::shared_mutex mutex_;
+    std::map<int32_t, std::shared_ptr<IBasePlayer>> mPlayerMap;
+    mutable std::shared_mutex mMutex;
 
 public:
     IBaseScene() = delete;
@@ -27,7 +28,7 @@ public:
     [[nodiscard]] class GameWorld *GetWorld() const;
 
     void PlayerEnterScene(const std::shared_ptr<IBasePlayer> &player);
-    void PlayerLeaveScene(const std::shared_ptr<IBasePlayer> &player, bool is_change = false);
+    void PlayerLeaveScene(const std::shared_ptr<IBasePlayer> &player, bool bChange = false);
 
     std::shared_ptr<IBasePlayer> GetPlayer(int32_t pid) const;
 

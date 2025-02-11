@@ -1,47 +1,47 @@
-﻿#include "../include/PackagePool.h"
-#include "../include/Package.h"
+﻿#include "../include/package_pool.h"
+#include "../include/package.h"
 
 #include <spdlog/spdlog.h>
 
 
-size_t PackagePool::default_capacity_ = 64;
-size_t PackagePool::min_capacity_ = 16;
+size_t PackagePool::kDefaultCapacity = 64;
+size_t PackagePool::kMinCapacity = 16;
 
-float PackagePool::expanse_rate_ = 0.3f;
-float PackagePool::expanse_scale_ = 1.f;
+float PackagePool::kExpanseRate = 0.3f;
+float PackagePool::kExpanseScale = 1.f;
 
-float PackagePool::collect_rate_ = 1.f;
-float PackagePool::collect_scale_ = 0.7f;
+float PackagePool::kCollectRate = 1.f;
+float PackagePool::kCollectScale = 0.7f;
 
-PackageCreator PackagePool::create_package_ = nullptr;
-PackageInitializer PackagePool::init_package_ = nullptr;
+PackageCreator PackagePool::kCreatePackage = nullptr;
+PackageInitializer PackagePool::kInitPackage = nullptr;
 
 
 PackagePool::PackagePool(const size_t capacity) {
     for (size_t i = 0; i < capacity; i++) {
         IPackage *pkg = nullptr;
-        pkg = create_package_();
+        pkg = kCreatePackage();
 
         if (pkg != nullptr) {
-            queue_.push(pkg);
+            mQueue.push(pkg);
         }
     }
 }
 
 PackagePool::~PackagePool() {
-    for (const auto it : set_) {
+    for (const auto it : mSet) {
         delete it;
     }
-    while (!queue_.empty()) {
-        const auto pkg = queue_.front();
-        queue_.pop();
+    while (!mQueue.empty()) {
+        const auto pkg = mQueue.front();
+        mQueue.pop();
         delete pkg;
     }
 }
 
 size_t PackagePool::Capacity() const {
-    std::shared_lock lock(mutex_);
-    return queue_.size() + set_.size();
+    std::shared_lock lock(mMutex);
+    return mQueue.size() + mSet.size();
 }
 
 IPackage *PackagePool::Acquire() {
@@ -50,11 +50,11 @@ IPackage *PackagePool::Acquire() {
     IPackage *pkg = nullptr;
 
     {
-        std::unique_lock lock(mutex_);
-        pkg = queue_.front();
-        queue_.pop();
-        set_.insert(pkg);
-        spdlog::trace("{} - Rest[{}], Current Use[{}]", __FUNCTION__, queue_.size(), set_.size());
+        std::unique_lock lock(mMutex);
+        pkg = mQueue.front();
+        mQueue.pop();
+        mSet.insert(pkg);
+        spdlog::trace("{} - Rest[{}], Current Use[{}]", __FUNCTION__, mQueue.size(), mSet.size());
     }
 
     if (InitPackage(pkg))
@@ -68,19 +68,19 @@ void PackagePool::Recycle(IPackage *pkg) {
         return;
 
     {
-        std::shared_lock lock(mutex_);
-        if (!set_.contains(pkg))
+        std::shared_lock lock(mMutex);
+        if (!mSet.contains(pkg))
             return;
     }
 
     pkg->Reset();
 
     {
-        std::unique_lock lock(mutex_);
+        std::unique_lock lock(mMutex);
 
-        queue_.push(pkg);
-        set_.erase(pkg);
-        spdlog::trace("{} - Rest[{}], Current Use[{}]", __FUNCTION__, queue_.size(), set_.size());
+        mQueue.push(pkg);
+        mSet.erase(pkg);
+        spdlog::trace("{} - Rest[{}], Current Use[{}]", __FUNCTION__, mQueue.size(), mSet.size());
     }
 
     Collect();
@@ -112,100 +112,100 @@ void PackagePool::LoadConfig(const YAML::Node &cfg) {
 }
 
 void PackagePool::SetDefaultCapacity(const size_t capacity) {
-    default_capacity_ = capacity;
+    kDefaultCapacity = capacity;
 }
 
 void PackagePool::SetMinimumCapacity(const size_t capacity) {
-    min_capacity_ = capacity;
+    kMinCapacity = capacity;
 }
 
 void PackagePool::SetExpanseRate(const float rate) {
-    expanse_rate_ = rate;
+    kExpanseRate = rate;
 }
 
 void PackagePool::SetExpanseScale(const float scale) {
-    expanse_scale_ = scale;
+    kExpanseScale = scale;
 }
 
 void PackagePool::SetCollectRate(const float rate) {
-    collect_rate_ = rate;
+    kCollectRate = rate;
 }
 
 void PackagePool::SetCollectScale(const float scale) {
-    collect_scale_ = scale;
+    kCollectScale = scale;
 }
 
 void PackagePool::SetPackageBuilder(const PackageCreator& func) {
-    create_package_ = func;
+    kCreatePackage = func;
 }
 
 void PackagePool::SetPackageInitializer(const PackageInitializer& func) {
-    init_package_ = func;
+    kInitPackage = func;
 }
 
 bool PackagePool::InitPackage(IPackage *pkg) {
     if (pkg == nullptr)
         return false;
 
-    init_package_(pkg);
+    kInitPackage(pkg);
     return true;
 }
 
 void PackagePool::Expanse() {
-    if (set_.empty() && !queue_.empty())
+    if (mSet.empty() && !mQueue.empty())
         return;
 
-    if (std::floor(queue_.size() / Capacity()) <= expanse_rate_)
+    if (std::floor(mQueue.size() / Capacity()) <= kExpanseRate)
         return;
 
-    const auto num = static_cast<size_t>(std::ceil(static_cast<float>(Capacity()) * expanse_scale_));
-    spdlog::trace("{} - Pool Rest[{}], Current Using[{}], Expand Number[{}].", __FUNCTION__, queue_.size(), set_.size(), num);
+    const auto num = static_cast<size_t>(std::ceil(static_cast<float>(Capacity()) * kExpanseScale));
+    spdlog::trace("{} - Pool Rest[{}], Current Using[{}], Expand Number[{}].", __FUNCTION__, mQueue.size(), mSet.size(), num);
 
-    std::unique_lock lock(mutex_);
+    std::unique_lock lock(mMutex);
     for (size_t i = 0; i < num; i++) {
         IPackage *pkg = nullptr;
-        pkg = create_package_();
+        pkg = kCreatePackage();
 
         if (pkg != nullptr) {
-            queue_.push(pkg);
+            mQueue.push(pkg);
         }
     }
-    spdlog::trace("{} - Pool Rest[{}], Current Using[{}].", __FUNCTION__, queue_.size(), set_.size());
+    spdlog::trace("{} - Pool Rest[{}], Current Using[{}].", __FUNCTION__, mQueue.size(), mSet.size());
 }
 
 void PackagePool::Collect() {
     const auto now = NowTimePoint();
 
     // 不要太频繁
-    if (now - collect_time_.load() < std::chrono::seconds(3))
+    if (now - mCollectTime.load() < std::chrono::seconds(3))
         return;
 
     {
-        std::unique_lock lock(mutex_);
-        for (auto it = set_.begin(); it != set_.end();) {
+        std::unique_lock lock(mMutex);
+        for (auto it = mSet.begin(); it != mSet.end();) {
             if (!(*it)->IsAvailable()) {
                 (*it)->Reset();
-                queue_.push(*it);
-                it = set_.erase(it);
+                mQueue.push(*it);
+                it = mSet.erase(it);
             } else
                 ++it;
         }
     }
 
-    if (queue_.size() <= min_capacity_ || std::floor(queue_.size() / Capacity()) < collect_rate_)
+    if (mQueue.size() <= kMinCapacity || std::floor(mQueue.size() / Capacity()) < kCollectRate)
         return;
 
-    collect_time_ = now;
+    mCollectTime = now;
 
-    const auto num = static_cast<size_t>(std::floor(static_cast<float>(Capacity()) * collect_scale_));
-    spdlog::trace("{} - Pool Rest[{}], Current Using[{}], collect Number[{}].", __FUNCTION__, queue_.size(), set_.size(), num);
+    const auto num = static_cast<size_t>(std::floor(static_cast<float>(Capacity()) * kCollectScale));
+    spdlog::trace("{} - Pool Rest[{}], Current Using[{}], collect Number[{}].", __FUNCTION__, mQueue.size(), mSet.size(), num);
 
-    std::unique_lock lock(mutex_);
-    for (size_t i = 0; i < num && queue_.size() > min_capacity_; i++) {
-        const auto pkg = queue_.front();
-        queue_.pop();
+    std::unique_lock lock(mMutex);
+    for (size_t i = 0; i < num && mQueue.size() > kMinCapacity; i++) {
+        const auto pkg = mQueue.front();
+        mQueue.pop();
         delete pkg;
     }
 
-    spdlog::trace("{} - Pool Rest[{}], Current Using[{}].", __FUNCTION__, queue_.size(), set_.size());
+    spdlog::trace("{} - Pool Rest[{}], Current Using[{}].", __FUNCTION__, mQueue.size(), mSet.size());
 }

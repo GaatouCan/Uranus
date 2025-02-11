@@ -1,14 +1,14 @@
 #pragma once
 
-#include "BaseScene.h"
+#include "base_scene.h"
 
 
 class BASE_API MainScene final : public IBaseScene {
 
-    class PackagePool* pool_;
+    class PackagePool* mPool;
 
-    asio::io_context ctx_;
-    ThreadID tid_;
+    asio::io_context mContext;
+    ThreadID mThreadID;
 
 public:
     MainScene(SceneManager *owner, int32_t id);
