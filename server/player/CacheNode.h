@@ -3,7 +3,7 @@
 #include "PlayerID.h"
 #include "utils.h"
 
-struct FCacheNode {
+struct CacheNode {
     PlayerID pid;
     TimePoint lastLoginTime;
     TimePoint lastLogoutTime;

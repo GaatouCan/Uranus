@@ -5,7 +5,7 @@
 
 class IPlayerComponent {
 
-    class IComponentContext *mContext;
+    class IComponentContext *ctx_;
 
 public:
     explicit IPlayerComponent(IComponentContext *ctx);
@@ -16,15 +16,15 @@ public:
     IPlayerComponent() = delete;
 
     [[nodiscard]] IComponentContext *GetComponentContext() const;
-    [[nodiscard]] class UComponentModule *GetModule() const;
-    [[nodiscard]] class UPlayer *GetOwner() const;
+    [[nodiscard]] class ComponentModule *GetModule() const;
+    [[nodiscard]] class Player *GetOwner() const;
     [[nodiscard]] class GameWorld *GetWorld() const;
 
     virtual void OnLogin();
     virtual void OnLogout();
-    virtual void OnDayChange(bool bLogin);
+    virtual void OnDayChange(bool is_login);
 
-    virtual void SyncCache(struct FCacheNode *node);
+    virtual void SyncCache(struct CacheNode *node);
 
     void Send(IPackage *pkg) const;
 

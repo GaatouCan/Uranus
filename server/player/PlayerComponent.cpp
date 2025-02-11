@@ -4,22 +4,22 @@
 
 
 IPlayerComponent::IPlayerComponent(IComponentContext *ctx)
-    : mContext(ctx) {
+    : ctx_(ctx) {
 }
 
 IPlayerComponent::~IPlayerComponent() {
 }
 
 IComponentContext * IPlayerComponent::GetComponentContext() const {
-    return mContext;
+    return ctx_;
 }
 
-UComponentModule * IPlayerComponent::GetModule() const {
-    return mContext->GetModule();
+ComponentModule * IPlayerComponent::GetModule() const {
+    return ctx_->GetModule();
 }
 
-UPlayer * IPlayerComponent::GetOwner() const {
-    return mContext->GetModule()->GetOwner();
+Player * IPlayerComponent::GetOwner() const {
+    return ctx_->GetModule()->GetOwner();
 }
 
 GameWorld * IPlayerComponent::GetWorld() const {
@@ -32,10 +32,10 @@ void IPlayerComponent::OnLogin() {
 void IPlayerComponent::OnLogout() {
 }
 
-void IPlayerComponent::OnDayChange(bool bLogin) {
+void IPlayerComponent::OnDayChange(bool is_login) {
 }
 
-void IPlayerComponent::SyncCache(FCacheNode *node) {
+void IPlayerComponent::SyncCache(CacheNode *node) {
 }
 
 void IPlayerComponent::Send(IPackage *pkg) const {

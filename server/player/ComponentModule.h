@@ -13,13 +13,14 @@
 #include <ranges>
 
 
-class UComponentModule;
+class ComponentModule;
 
 class IComponentContext {
 
 protected:
-    IPlayerComponent* mComponent = nullptr;
-    UComponentModule* mModule = nullptr;
+
+    IPlayerComponent* component_ = nullptr;
+    ComponentModule* module_ = nullptr;
 
 public:
     // using ASerializerVector = std::vector<std::pair<ISerializer *, bool>>;
@@ -27,13 +28,13 @@ public:
 
     IComponentContext() = delete;
 
-    explicit IComponentContext(UComponentModule *module) : mModule(module) {}
+    explicit IComponentContext(ComponentModule *module) : module_(module) {}
     virtual ~IComponentContext() {
-        delete mComponent;
+        delete component_;
     }
 
-    [[nodiscard]] UComponentModule* GetModule() const { return mModule; }
-    [[nodiscard]] IPlayerComponent* GetComponent() const { return mComponent; }
+    [[nodiscard]] ComponentModule* GetModule() const { return module_; }
+    [[nodiscard]] IPlayerComponent* GetComponent() const { return component_; }
 
     // [[nodiscard]] virtual std::vector<std::string> GetTableList() const = 0;
 
@@ -49,8 +50,8 @@ public:
     // using ASerializeFunctor = ISerializer*(Component::*)(bool &) const;
     // using ADeserializeFunctor = void(Component::*)(UDeserializer &);
 
-    explicit TComponentContext(UComponentModule *module) : IComponentContext(module) {
-        mComponent = new Component(this);
+    explicit TComponentContext(ComponentModule *module) : IComponentContext(module) {
+        component_ = new Component(this);
     }
 
     // void RegisterTable(const std::string &table, ASerializeFunctor ser, ADeserializeFunctor deser) {
@@ -89,19 +90,19 @@ private:
 };
 
 
-class UComponentModule final {
+class ComponentModule final {
 
-    UPlayer *mOwner;
+    Player *owner_;
 
-    std::map<std::type_index, IComponentContext *> mComponentMap;
+    std::map<std::type_index, IComponentContext *> component_map_;
 
 public:
-    UComponentModule() = delete;
+    ComponentModule() = delete;
 
-    explicit UComponentModule(UPlayer *plr);
-    ~UComponentModule();
+    explicit ComponentModule(Player *plr);
+    ~ComponentModule();
 
-    [[nodiscard]] UPlayer *GetOwner() const;
+    [[nodiscard]] Player *GetOwner() const;
 
     void OnDayChange();
 
@@ -109,9 +110,9 @@ public:
     requires std::derived_from<T, IPlayerComponent>
     T *CreateComponent() {
         const auto ctx = new TComponentContext<T>(this);
-        mComponentMap.insert_or_assign(typeid(T), ctx);
+        component_map_.insert_or_assign(typeid(T), ctx);
 
-        spdlog::debug("{} - Player[{}] load {}", __FUNCTION__, GetPlayerID().ToUInt64(), ctx->GetComponent()->GetComponentName());
+        spdlog::debug("{} - Player[{}] load {}", __FUNCTION__, GetPlayerID().ToInt64(), ctx->GetComponent()->GetComponentName());
 
         return dynamic_cast<T *>(ctx->GetComponent());
     }
@@ -119,7 +120,7 @@ public:
     template<typename T>
     requires std::derived_from<T, IPlayerComponent>
     T *GetComponent() {
-        if (const auto it = mComponentMap.find(typeid(T)); it != mComponentMap.end()) {
+        if (const auto it = component_map_.find(typeid(T)); it != component_map_.end()) {
             return dynamic_cast<T *>(it->second->GetComponent());
         }
         return nullptr;

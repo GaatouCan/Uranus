@@ -7,32 +7,32 @@
 #include "PlatformInfo.h"
 
 
-struct FEP_PlayerLogin final : IEventParam {
-    uint64_t pid;
+struct EP_PlayerLogin final : IEventParam {
+    int64_t pid;
 };
 
-struct FEP_PlayerLogout final : IEventParam {
-    uint64_t pid;
+struct EP_PlayerLogout final : IEventParam {
+    int64_t pid;
 };
 
-class UPlayer final : public IBasePlayer {
+class Player final : public IBasePlayer {
 
-    TimePoint mLoginTime;
-    TimePoint mLogoutTime;
+    TimePoint login_time_;
+    TimePoint logout_time_;
 
-    UComponentModule mComponentModule;
-    UEventModule mEventModule;
+    ComponentModule component_module_;
+    EventModule event_module_;
 
-    PlatformInfo mPlatform;
+    PlatformInfo platform_;
 
 public:
-    UPlayer() = delete;
+    Player() = delete;
 
-    explicit UPlayer(ConnectionPointer conn);
-    ~UPlayer() override;
+    explicit Player(ConnectionPointer conn);
+    ~Player() override;
 
-    UComponentModule &GetComponentModule();
-    UEventModule &GetEventModule();
+    ComponentModule &GetComponentModule();
+    EventModule &GetEventModule();
 
     void OnDayChange();
 
@@ -44,7 +44,7 @@ public:
     void Send(int32_t id, std::string_view data) const;
     void Send(int32_t id, const std::stringstream &ss) const;
 
-    void SyncCache(FCacheNode *node);
+    void SyncCache(CacheNode *node);
 
     void DispatchEvent(Event event, IEventParam *param, DispatchType type = DispatchType::PUSH_QUEUE);
 };

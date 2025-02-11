@@ -7,24 +7,24 @@
 // #include <system/database/DatabaseSystem.h>
 
 
-UComponentModule::UComponentModule(UPlayer *plr)
-    : mOwner(plr){
+ComponentModule::ComponentModule(Player *plr)
+    : owner_(plr){
 
     // CreateComponent<UAppearanceCT>();
 }
 
-UComponentModule::~UComponentModule() {
-    for (const auto &ctx : std::views::values(mComponentMap)) {
+ComponentModule::~ComponentModule() {
+    for (const auto &ctx : std::views::values(component_map_)) {
         delete ctx;
     }
 }
 
-UPlayer * UComponentModule::GetOwner() const {
-    return mOwner;
+Player * ComponentModule::GetOwner() const {
+    return owner_;
 }
 
-void UComponentModule::OnDayChange() {
-    for (const auto &ctx : mComponentMap | std::views::values) {
+void ComponentModule::OnDayChange() {
+    for (const auto &ctx : component_map_ | std::views::values) {
         ctx->GetComponent()->OnDayChange(false);
     }
 }
@@ -74,26 +74,26 @@ void UComponentModule::OnDayChange() {
 //     }
 // }
 
-void UComponentModule::OnLogin() {
-    for (const auto &ctx: std::views::values(mComponentMap)) {
+void ComponentModule::OnLogin() {
+    for (const auto &ctx: std::views::values(component_map_)) {
         ctx->GetComponent()->OnLogin();
     }
 }
 
-void UComponentModule::OnLogout() {
-    for (const auto &ctx: std::views::values(mComponentMap)) {
+void ComponentModule::OnLogout() {
+    for (const auto &ctx: std::views::values(component_map_)) {
         ctx->GetComponent()->OnLogout();
     }
 }
 
-PlayerID UComponentModule::GetPlayerID() const {
-    if (mOwner)
-        return mOwner->GetPlayerID();
+PlayerID ComponentModule::GetPlayerID() const {
+    if (owner_)
+        return owner_->GetPlayerID();
     return {};
 }
 
-void UComponentModule::SyncCache(FCacheNode *node) {
-    for (const auto &ctx: std::views::values(mComponentMap)) {
+void ComponentModule::SyncCache(CacheNode *node) {
+    for (const auto &ctx: std::views::values(component_map_)) {
         ctx->GetComponent()->SyncCache(node);
     }
 }

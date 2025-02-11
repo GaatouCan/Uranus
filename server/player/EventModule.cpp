@@ -4,68 +4,68 @@
 #include <ranges>
 
 
-UEventModule::UEventModule(UPlayer *plr)
-    : mOwner(plr) {
+EventModule::EventModule(Player *plr)
+    : owner_(plr) {
 }
 
-UEventModule::~UEventModule() {
-    mListenerMap.clear();
-    while (!mQueue.empty()) {
-        auto &[event, param] = mQueue.front();
-        mQueue.pop();
+EventModule::~EventModule() {
+    listener_map_.clear();
+    while (!queue_.empty()) {
+        auto &[event, param] = queue_.front();
+        queue_.pop();
 
         delete param;
     }
 }
 
-UPlayer * UEventModule::GetOwner() const {
-    return mOwner;
+Player * EventModule::GetOwner() const {
+    return owner_;
 }
 
-bool UEventModule::IsQueueEmpty() const {
-    std::shared_lock lock(mSharedMutex);
-    return mQueue.empty();
+bool EventModule::IsQueueEmpty() const {
+    std::shared_lock lock(event_mutex_);
+    return queue_.empty();
 }
 
-void UEventModule::RegisterListener(const Event event, void *ptr, const EventListener &listener) {
+void EventModule::RegisterListener(const Event event, void *ptr, const EventListener &listener) {
     if (event == Event::UNAVAILABLE || ptr == nullptr)
         return;
 
-    std::scoped_lock lock(mListenerMutex);
-    if (!mListenerMap.contains(event))
-        mListenerMap[event] = std::map<void *, EventListener>();
+    std::scoped_lock lock(listener_mutex_);
+    if (!listener_map_.contains(event))
+        listener_map_[event] = std::map<void *, EventListener>();
 
-    mListenerMap[event][ptr] = listener;
+    listener_map_[event][ptr] = listener;
 }
 
-void UEventModule::RemoveListener(const Event event, void *ptr) {
+void EventModule::RemoveListener(const Event event, void *ptr) {
     if (ptr == nullptr)
         return;
 
-    std::scoped_lock lock(mListenerMutex);
+    std::scoped_lock lock(listener_mutex_);
     if (event == Event::UNAVAILABLE) {
-        for (auto &val : std::views::values(mListenerMap)) {
+        for (auto &val : std::views::values(listener_map_)) {
             val.erase(ptr);
         }
     } else {
-        if (const auto iter = mListenerMap.find(event); iter != mListenerMap.end()) {
+        if (const auto iter = listener_map_.find(event); iter != listener_map_.end()) {
             iter->second.erase(ptr);
         }
     }
 }
 
-void UEventModule::Dispatch(Event event, IEventParam *param, DispatchType type) {
-    spdlog::debug("{} - Player[{}] dispatch event[{}]", __FUNCTION__, mOwner->GetFullID(), static_cast<uint32_t>(event));
+void EventModule::Dispatch(Event event, IEventParam *param, DispatchType type) {
+    spdlog::debug("{} - Player[{}] dispatch event[{}]", __FUNCTION__, owner_->GetFullID(), static_cast<uint32_t>(event));
 
     if (type == DispatchType::DIRECT && GetOwner()->IsSameThread()) {
         {
-            std::scoped_lock lock(mListenerMutex);
-            if (const auto iter = mListenerMap.find(event); iter != mListenerMap.end()) {
-                mCurListener = iter->second;
+            std::scoped_lock lock(listener_mutex_);
+            if (const auto iter = listener_map_.find(event); iter != listener_map_.end()) {
+                cur_listener_ = iter->second;
             }
         }
 
-        for (const auto& listener : std::views::values(mCurListener)) {
+        for (const auto& listener : std::views::values(cur_listener_)) {
             std::invoke(listener, param);
         }
 
@@ -76,22 +76,22 @@ void UEventModule::Dispatch(Event event, IEventParam *param, DispatchType type) 
     const bool empty = IsQueueEmpty();
 
     {
-        std::scoped_lock lock(mEventMutex);
-        mQueue.emplace(event, param);
+        std::unique_lock lock(event_mutex_);
+        queue_.emplace(event, param);
     }
 
     if (empty)
-        co_spawn(mOwner->GetConnection()->GetSocket().get_executor(), HandleEvent(), detached);
+        co_spawn(owner_->GetConnection()->GetSocket().get_executor(), HandleEvent(), detached);
 }
 
-awaitable<void> UEventModule::HandleEvent() {
+awaitable<void> EventModule::HandleEvent() {
     while (!IsQueueEmpty()) {
-        FEventNode node;
+        EventNode node;
 
         {
-            std::scoped_lock lock(mEventMutex);
-            node = mQueue.front();
-            mQueue.pop();
+            std::unique_lock lock(event_mutex_);
+            node = queue_.front();
+            queue_.pop();
         }
 
         if (node.event == Event::UNAVAILABLE) {
@@ -99,17 +99,17 @@ awaitable<void> UEventModule::HandleEvent() {
             continue;
         }
 
-        mCurListener.clear();
+        cur_listener_.clear();
 
         // 拷贝一份map 减少锁的范围 可以在调用事件处理函数时修改注册map
         {
-            std::scoped_lock lock(mListenerMutex);
-            if (const auto iter = mListenerMap.find(node.event); iter != mListenerMap.end()) {
-                mCurListener = iter->second;
+            std::scoped_lock lock(listener_mutex_);
+            if (const auto iter = listener_map_.find(node.event); iter != listener_map_.end()) {
+                cur_listener_ = iter->second;
             }
         }
 
-        for (const auto& listener : std::views::values(mCurListener)) {
+        for (const auto& listener : std::views::values(cur_listener_)) {
             std::invoke(listener, node.param);
         }
 

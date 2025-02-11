@@ -27,7 +27,7 @@ void UPlayerManager::OnDayChange() {
     }
 }
 
-awaitable<std::shared_ptr<UPlayer> > UPlayerManager::OnPlayerLogin(const std::shared_ptr<Connection> &conn, const PlayerID &id) {
+awaitable<std::shared_ptr<Player> > UPlayerManager::OnPlayerLogin(const std::shared_ptr<Connection> &conn, const PlayerID &id) {
     if (conn == nullptr || std::any_cast<PlayerID>(conn->GetContext()) != id) {
         spdlog::error("{} - Null Connection Pointer Or Player ID Not Equal.", __FUNCTION__);
         co_return nullptr;
@@ -51,7 +51,7 @@ awaitable<std::shared_ptr<UPlayer> > UPlayerManager::OnPlayerLogin(const std::sh
         }
     }
 
-    const auto plr = std::make_shared<UPlayer>(conn);
+    const auto plr = std::make_shared<Player>(conn);
 
     {
         std::scoped_lock lock(mPlayerMutex);
@@ -75,7 +75,7 @@ void UPlayerManager::OnPlayerLogout(const PlayerID pid) {
     }
 }
 
-std::shared_ptr<UPlayer> UPlayerManager::FindPlayer(const uint32_t pid) {
+std::shared_ptr<Player> UPlayerManager::FindPlayer(const uint32_t pid) {
     std::shared_lock lock(mPlayerSharedMutex);
     if (const auto it = mPlayerMap.find(pid); it != mPlayerMap.end()) {
         return it->second;
@@ -83,7 +83,7 @@ std::shared_ptr<UPlayer> UPlayerManager::FindPlayer(const uint32_t pid) {
     return nullptr;
 }
 
-std::shared_ptr<UPlayer> UPlayerManager::RemovePlayer(const uint32_t pid) {
+std::shared_ptr<Player> UPlayerManager::RemovePlayer(const uint32_t pid) {
     std::scoped_lock lock(mPlayerMutex);
     if (const auto it = mPlayerMap.find(pid); it != mPlayerMap.end()) {
         auto res = it->second;
@@ -106,11 +106,11 @@ void UPlayerManager::SendToList(const std::set<PlayerID> &players, const int32_t
     }
 }
 
-void UPlayerManager::SyncCache(const std::shared_ptr<UPlayer> &plr) {
+void UPlayerManager::SyncCache(const std::shared_ptr<Player> &plr) {
     if (plr == nullptr)
         return;
 
-    FCacheNode node;
+    CacheNode node;
     plr->SyncCache(&node);
 
     SyncCache(node);
@@ -124,7 +124,7 @@ void UPlayerManager::SyncCache(const uint32_t pid) {
     SyncCache(plr);
 }
 
-void UPlayerManager::SyncCache(const FCacheNode &node) {
+void UPlayerManager::SyncCache(const CacheNode &node) {
     if (!node.pid.IsAvailable())
         return;
 
@@ -133,7 +133,7 @@ void UPlayerManager::SyncCache(const FCacheNode &node) {
     spdlog::info("{} - Player[{}] Success.", __FUNCTION__, node.pid.ToUInt64());
 }
 
-awaitable<std::optional<FCacheNode> > UPlayerManager::FindCacheNode(const PlayerID &pid) {
+awaitable<std::optional<CacheNode> > UPlayerManager::FindCacheNode(const PlayerID &pid) {
     if (!pid.IsAvailable())
         co_return std::nullopt;
 

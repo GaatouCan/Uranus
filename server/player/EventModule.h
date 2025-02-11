@@ -13,42 +13,41 @@
 #include <asio.hpp>
 
 
-class UEventModule final {
+class EventModule final {
 
-    class UPlayer *mOwner;
+    class Player *owner_;
 
-    struct FEventNode {
+    struct EventNode {
         Event event = Event::UNAVAILABLE;
         IEventParam *param = nullptr;
     };
 
-    std::queue<FEventNode> mQueue;
-    std::mutex mEventMutex;
-    mutable std::shared_mutex mSharedMutex;
+    std::queue<EventNode> queue_;
+    mutable std::shared_mutex event_mutex_;
 
-    std::map<Event, std::map<void *, EventListener>> mListenerMap;
-    std::map<void *, EventListener> mCurListener;
-    std::mutex mListenerMutex;
+    std::map<Event, std::map<void *, EventListener>> listener_map_;
+    std::map<void *, EventListener> cur_listener_;
+    std::mutex listener_mutex_;
 
 public:
-    UEventModule() = delete;
+    EventModule() = delete;
 
-    explicit UEventModule(UPlayer *plr);
-    ~UEventModule();
+    explicit EventModule(Player *plr);
+    ~EventModule();
 
-    [[nodiscard]] UPlayer *GetOwner() const;
+    [[nodiscard]] Player *GetOwner() const;
 
     [[nodiscard]] bool IsQueueEmpty() const;
 
-    template<typename TARGET, typename CALLABLE>
-    void RegisterListenerT(const Event event, void *ptr, void *target, CALLABLE && func) {
+    template<typename Target, typename Callable>
+    void RegisterListenerT(const Event event, void *ptr, void *target, Callable && func) {
         if (event == Event::UNAVAILABLE || ptr == nullptr || target == nullptr)
             return;
 
-        this->RegisterListener(event, ptr, [target, func = std::forward<CALLABLE>(func)](IEventParam *param) {
+        this->RegisterListener(event, ptr, [target, func = std::forward<Callable>(func)](IEventParam *param) {
             try {
                 if (target != nullptr) {
-                    std::invoke(func, static_cast<TARGET *>(target), param);
+                    std::invoke(func, static_cast<Target *>(target), param);
                 }
             } catch (std::exception &e) {
                 spdlog::warn("Player Event Module - {}", e.what());
