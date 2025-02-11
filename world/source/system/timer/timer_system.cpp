@@ -1,4 +1,4 @@
-#include "../../../include/system/timer/TimerSystem.h"
+#include "../../../include/system/timer/timer_system.h"
 #include "../../../include/utils.h"
 
 #include <ranges>
@@ -9,7 +9,7 @@ TimerSystem::TimerSystem(GameWorld *world)
 }
 
 TimerSystem::~TimerSystem() {
-    for (const auto timer: timer_map_ | std::views::values) {
+    for (const auto timer: mTimerMap | std::views::values) {
         delete timer;
     }
 }
@@ -19,8 +19,8 @@ void TimerSystem::Init() {
 
 
 RepeatedTimer *TimerSystem::GetTimer(const UniqueID &tid) {
-    std::shared_lock lock(mutex_);
-    if (const auto it = timer_map_.find(tid); it != timer_map_.end()) {
+    std::shared_lock lock(mMutex);
+    if (const auto it = mTimerMap.find(tid); it != mTimerMap.end()) {
         return it->second;
     }
     return nullptr;
@@ -36,8 +36,8 @@ bool TimerSystem::StopTimer(const UniqueID &tid) {
 }
 
 void TimerSystem::CleanAllTimers() {
-    std::unique_lock lock(mutex_);
-    for (const auto timer: timer_map_ | std::views::values) {
+    std::unique_lock lock(mMutex);
+    for (const auto timer: mTimerMap | std::views::values) {
         delete timer;
     }
 }
@@ -49,15 +49,15 @@ std::optional<UniqueID> TimerSystem::EmplaceTimer(RepeatedTimer *timer) {
     UniqueID timerID = UniqueID::RandomGenerate();
 
     {
-        std::shared_lock lock(mutex_);
-        while (timer_map_.contains(timerID)) {
+        std::shared_lock lock(mMutex);
+        while (mTimerMap.contains(timerID)) {
             timerID = UniqueID::RandomGenerate();
         }
     }
 
     {
-        std::unique_lock lock(mutex_);
-        timer_map_[timerID] = timer;
+        std::unique_lock lock(mMutex);
+        mTimerMap[timerID] = timer;
     }
 
     timer->SetTimerID(timerID).SetCompleteCallback([self = this](const UniqueID &id) mutable {
@@ -70,10 +70,10 @@ std::optional<UniqueID> TimerSystem::EmplaceTimer(RepeatedTimer *timer) {
 }
 
 bool TimerSystem::RemoveTimer(const UniqueID &tid) {
-    std::unique_lock lock(mutex_);
-    if (const auto it = timer_map_.find(tid); it != timer_map_.end()) {
+    std::unique_lock lock(mMutex);
+    if (const auto it = mTimerMap.find(tid); it != mTimerMap.end()) {
         const auto timer = it->second;
-        timer_map_.erase(it);
+        mTimerMap.erase(it);
 
         if (timer != nullptr) {
             delete timer;

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "PlayerID.h"
+#include "player_id.h"
 
 #include <memory>
 #include <string>
@@ -19,7 +19,7 @@ struct BASE_API LoginInfo {
 
 class BASE_API ILoginHandler {
 
-    class LoginAuthenticator *owner_;
+    class LoginAuthenticator *mOwner;
 
 public:
     ILoginHandler() = delete;

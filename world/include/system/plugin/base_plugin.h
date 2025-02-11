@@ -10,10 +10,10 @@ enum class PluginType {
     PLAYER_LOGIN
 };
 
-class BASE_API IAbstractPlugin {
+class BASE_API IBasePlugin {
 
 public:
-    virtual ~IAbstractPlugin() = default;
+    virtual ~IBasePlugin() = default;
 
     [[nodiscard]] virtual PluginType GetType() const = 0;
     [[nodiscard]] virtual const char* GetPluginName() const = 0;

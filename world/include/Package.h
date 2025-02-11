@@ -42,4 +42,4 @@ public:
 };
 
 template<typename T>
-concept PACKAGE_TYPE = std::derived_from<T, IPackage>;
+concept PackageType = std::derived_from<T, IPackage>;

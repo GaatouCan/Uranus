@@ -1,106 +1,106 @@
-#include "../../include/reactor/TaskQueue.h"
-#include "../../include/reactor/Reactor.h"
-#include "../../include/reactor/GlobalQueue.h"
+#include "../../include/reactor/task_queue.h"
+#include "../../include/reactor/reactor.h"
+#include "../../include/reactor/global_queue.h"
 
 TaskQueue::TaskQueue(GlobalQueue *global, IReactor *reactor)
-    : global_(global),
-      reactor_(reactor),
-      running_(false),
-      in_global_(false),
-      removed_(false) {
+    : mGlobal(global),
+      mReactor(reactor),
+      bRunning(false),
+      bInGlobal(false),
+      bRemoved(false) {
 }
 
 IReactor *TaskQueue::GetReactor() const {
-    return reactor_;
+    return mReactor;
 }
 
 void TaskQueue::PushTask(const ReactorTask &task) {
-    if (running_) {
-        std::unique_lock lock(mutex_);
-        wait_queue_.push(task);
+    if (bRunning) {
+        std::unique_lock lock(mMutex);
+        mWaitQueue.push(task);
         return;
     }
 
     {
-        std::unique_lock lock(mutex_);
-        cur_queue_.push(task);
+        std::unique_lock lock(mMutex);
+        mCurQueue.push(task);
     }
 
-    global_->OnPushTask(shared_from_this());
+    mGlobal->OnPushTask(shared_from_this());
 }
 
 void TaskQueue::PushTask(ReactorTask &&task) {
-    if (running_) {
-        std::unique_lock lock(mutex_);
-        wait_queue_.emplace(std::move(task));
+    if (bRunning) {
+        std::unique_lock lock(mMutex);
+        mWaitQueue.emplace(std::move(task));
         return;
     }
 
     {
-        std::unique_lock lock(mutex_);
-        cur_queue_.emplace(std::move(task));
+        std::unique_lock lock(mMutex);
+        mCurQueue.emplace(std::move(task));
     }
 
-    global_->OnPushTask(shared_from_this());
+    mGlobal->OnPushTask(shared_from_this());
 }
 
 bool TaskQueue::IsEmpty() const {
-    std::shared_lock lock(mutex_);
-    return running_ ? wait_queue_.empty() : cur_queue_.empty();
+    std::shared_lock lock(mMutex);
+    return bRunning ? mWaitQueue.empty() : mCurQueue.empty();
 }
 
 bool TaskQueue::IsRunning() const {
-    return running_;
+    return bRunning;
 }
 
 bool TaskQueue::IsRemoved() const {
-    return removed_;
+    return bRemoved;
 }
 
 void TaskQueue::OnPushToGlobal() {
-    in_global_ = true;
+    bInGlobal = true;
 }
 
 void TaskQueue::OnPopFromGlobal() {
-    in_global_ = false;
+    bInGlobal = false;
 }
 
 bool TaskQueue::IsInGlobal() const {
-    return in_global_;
+    return bInGlobal;
 }
 
 void TaskQueue::HandleTask(const int rate) {
-    int num = std::ceil(cur_queue_.size() * (rate / 10000));
+    int num = std::ceil(mCurQueue.size() * (rate / 10000));
 
-    while (num-- > 0 && !removed_) {
-        if (removed_)
+    while (num-- > 0 && !bRemoved) {
+        if (bRemoved)
             break;
 
-        auto val = cur_queue_.front();
-        cur_queue_.pop();
-        std::invoke(val, reactor_);
+        auto val = mCurQueue.front();
+        mCurQueue.pop();
+        std::invoke(val, mReactor);
     }
 }
 
 void TaskQueue::OnStart() {
-    running_ = true;
+    bRunning = true;
 }
 
 void TaskQueue::OnStop() {
-    running_ = false;
+    bRunning = false;
 
-    std::unique_lock lock(mutex_);
-    while (!wait_queue_.empty()) {
-        cur_queue_.emplace(std::move(wait_queue_.front()));
-        wait_queue_.pop();
+    std::unique_lock lock(mMutex);
+    while (!mWaitQueue.empty()) {
+        mCurQueue.emplace(std::move(mWaitQueue.front()));
+        mWaitQueue.pop();
     }
 }
 
 void TaskQueue::OnRemove() {
-    removed_ = true;
+    bRemoved = true;
 }
 
 void TaskQueue::OnReactorRelease() {
-    global_->RemoveReactor(reactor_);
-    reactor_ = nullptr;
+    mGlobal->RemoveReactor(mReactor);
+    mReactor = nullptr;
 }

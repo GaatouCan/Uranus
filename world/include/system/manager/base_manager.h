@@ -1,12 +1,12 @@
 ﻿#pragma once
 
-#include "../../reactor/Reactor.h"
+#include "../../reactor/reactor.h"
 #include "../../utils.h"
 
 
 class BASE_API IBaseManager : public IReactor {
 
-    class ManagerSystem *owner_;
+    class ManagerSystem *mOwner;
 
 public:
     IBaseManager() = delete;

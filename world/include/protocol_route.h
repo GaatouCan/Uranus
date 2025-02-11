@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ProtocolHandler.h"
+#include "protocol_handler.h"
 
 #include <concepts>
 #include <unordered_map>
@@ -33,10 +33,10 @@ public:
     template<typename T>
     requires std::derived_from<T, IProtocolHandler>
     void SetHandler() {
-        if (handler_ != nullptr)
-            handler_.reset();
+        if (mHandler != nullptr)
+            mHandler.reset();
 
-        handler_ = std::make_unique<T>(this);
+        mHandler = std::make_unique<T>(this);
     }
 
     void OnReadPackage(const std::shared_ptr<Connection> &conn, IPackage *pkg) const;
@@ -44,16 +44,16 @@ public:
 
     void AbortHandler() const;
 private:
-    GameWorld *world_;
+    GameWorld *mWorld;
 
-    std::unordered_map<uint32_t, ProtoFunctor> proto_map_;
+    std::unordered_map<uint32_t, ProtoFunctor> mProtoMap;
     // std::unordered_map<uint32_t, ACrossFunctor> mCrossMap;
 
-    std::unique_ptr<IProtocolHandler> handler_;
+    std::unique_ptr<IProtocolHandler> mHandler;
 };
 
 #define REGISTER_PROTOCOL(proto) \
-    route->RegisterProtocol(static_cast<int32_t>(EProtoType::proto), &proto);
+    route->RegisterProtocol(static_cast<int32_t>(ProtoType::proto), &proto);
 
 #define REGISTER_FROM_CROSS(proto) \
     // route->RegisterCrossProtocol(static_cast<int32_t>(EProtoType::proto), &proto);

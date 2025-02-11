@@ -1,26 +1,26 @@
 #pragma once
 
-#include "../../SubSystem.h"
+#include "../../sub_system.h"
 #include "../../utils.h"
 
 #include <shared_mutex>
 
 
-class IAbstractPlugin;
+class IBasePlugin;
 
 class BASE_API PluginSystem final : public ISubSystem {
 
-    typedef IAbstractPlugin* (*PluginCreator)(PluginSystem *);
-    typedef void (*PluginDestroyer)(IAbstractPlugin *);
+    typedef IBasePlugin* (*PluginCreator)(PluginSystem *);
+    typedef void (*PluginDestroyer)(IBasePlugin *);
 
     struct PluginNode {
         ModuleHandle module;
         PluginDestroyer destroyer;
-        IAbstractPlugin *plugin;
+        IBasePlugin *plugin;
     };
 
-    std::unordered_map<std::string, PluginNode> plugin_map_;
-    mutable std::shared_mutex mutex_;
+    std::unordered_map<std::string, PluginNode> mPluginMap;
+    mutable std::shared_mutex mMutex;
 
 public:
     explicit PluginSystem(GameWorld *world);

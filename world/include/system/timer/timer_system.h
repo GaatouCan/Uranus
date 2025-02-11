@@ -1,17 +1,16 @@
 #pragma once
 
-#include "../../SubSystem.h"
-#include "../../RepeatedTimer.h"
+#include "../../sub_system.h"
+#include "../../repeated_timer.h"
 
 #include <map>
-#include <mutex>
 #include <shared_mutex>
 
 
 class BASE_API TimerSystem final : public ISubSystem {
 
-    std::map<UniqueID, RepeatedTimer *> timer_map_;
-    mutable std::shared_mutex mutex_;
+    std::map<UniqueID, RepeatedTimer *> mTimerMap;
+    mutable std::shared_mutex mMutex;
 
 public:
     explicit TimerSystem(GameWorld *world);

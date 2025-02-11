@@ -1,6 +1,6 @@
 ﻿#pragma once
 
-#include "SubSystem.h"
+#include "sub_system.h"
 #include "utils.h"
 
 #include <queue>
@@ -32,22 +32,22 @@ struct StringViewEqual {
 
 class BASE_API GameWorld final {
 
-    asio::io_context ctx_;
-    TcpAcceptor acceptor_;
+    asio::io_context mContext;
+    TcpAcceptor mAcceptor;
 
-    ModuleHandle module_;
-    IServerLogic *server_;
-    ServerDestroyer server_destroyer_;
+    ModuleHandle mModule;
+    IServerLogic *mServer;
+    ServerDestroyer mDestroyer;
 
-    class ConfigManager *config_manager_;
-    class LoginAuthenticator *login_authenticator_;
-    class SceneManager *scene_manager_;
-    class GlobalQueue *global_queue_;
-    class ProtocolRoute *protocol_route_;
+    class ConfigManager *mConfigManager;
+    class LoginAuthenticator *mLoginAuthenticator;
+    class SceneManager *mSceneManager;
+    class GlobalQueue *mGlobalQueue;
+    class ProtocolRoute *mProtocolRoute;
 
     std::unordered_map<std::string, ConnectionPointer, StringViewHash, StringViewEqual> connection_map_;
 
-    SystemTimer full_timer_;
+    SystemTimer mFullTimer;
 
     struct SystemPriority {
         int priority;
@@ -68,10 +68,10 @@ class BASE_API GameWorld final {
     std::unordered_map<std::type_index, ISubSystem *> system_map_;
     std::unordered_map<std::string, ISubSystem *, StringViewHash, StringViewEqual> name_to_system_;
 
-    ThreadID world_thread_id_;
+    ThreadID mThreadID;
 
-    bool inited_;
-    std::atomic_bool running_;
+    bool bInited;
+    std::atomic_bool bRunning;
 
 public:
     GameWorld();
@@ -79,7 +79,7 @@ public:
 
     DISABLE_COPY_MOVE(GameWorld)
 
-    GameWorld &Init(const std::string &dll_path);
+    GameWorld &Init(const std::string &path);
     GameWorld &Run();
     GameWorld &Shutdown();
 
@@ -115,7 +115,7 @@ private:
 
     template<SystemType T>
     T *CreateSystem(const int priority = 0) {
-        if (inited_)
+        if (bInited)
             return nullptr;
 
         const auto res = new T(this);

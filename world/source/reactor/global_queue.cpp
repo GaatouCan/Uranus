@@ -1,36 +1,36 @@
-#include "../../include/reactor/GlobalQueue.h"
-#include "../../include/GameWorld.h"
-#include "../../include/reactor/Reactor.h"
-#include "../../include/reactor/TaskQueue.h"
+#include "../../include/reactor/global_queue.h"
+#include "../../include/game_world.h"
+#include "../../include/reactor/reactor.h"
+#include "../../include/reactor/task_queue.h"
 
 #include <spdlog/spdlog.h>
 
 GlobalQueue::GlobalQueue(GameWorld *world)
-    : world_(world) {
+    : mWorld(world) {
 }
 
 GlobalQueue::~GlobalQueue() {
-    queue_.Quit();
+    mQueue.Quit();
 
-    for (auto &th: worker_vec_) {
+    for (auto &th: mWorkerVec) {
         if (th.joinable())
             th.join();
     }
 }
 
 void GlobalQueue::Init() {
-    const auto &cfg = world_->GetServerConfig();
+    const auto &cfg = mWorld->GetServerConfig();
     const int num = cfg["server"]["work_thread"].as<int>();
 
     for (int idx = 0; idx < num; idx++) {
-        worker_vec_.emplace_back([this] {
-            while (queue_.IsRunning()) {
-                queue_.Wait();
+        mWorkerVec.emplace_back([this] {
+            while (mQueue.IsRunning()) {
+                mQueue.Wait();
 
-                if (!queue_.IsRunning())
+                if (!mQueue.IsRunning())
                     break;
 
-                auto res = queue_.PopFront();
+                auto res = mQueue.PopFront();
                 if (!res.has_value()) continue;
 
                 auto reactor = res.value();
@@ -50,12 +50,12 @@ void GlobalQueue::Init() {
                 reactor->OnStop();
 
                 if (reactor->IsEmpty()) {
-                    std::unique_lock lock(empty_mutex_);
-                    empty_set_.emplace(reactor);
+                    std::unique_lock lock(mEmptyMutex);
+                    mEmptySet.emplace(reactor);
                     continue;
                 }
 
-                queue_.PushBack(reactor);
+                mQueue.PushBack(reactor);
                 reactor->OnPushToGlobal();
             }
         });
@@ -74,9 +74,9 @@ std::shared_ptr<TaskQueue> GlobalQueue::RegisterReactor(IReactor *reactor) {
     auto queue = std::make_shared<TaskQueue>(this, reactor);
     reactor->SetTaskQueue(queue);
 
-    std::scoped_lock lock(reactor_mutex_, empty_mutex_);
-    reactor_map_[reactor] = queue;
-    empty_set_.emplace(queue->weak_from_this());
+    std::scoped_lock lock(mReactorMutex, mEmptyMutex);
+    mReactorMap[reactor] = queue;
+    mEmptySet.emplace(queue->weak_from_this());
 
     return queue;
 }
@@ -85,8 +85,8 @@ std::shared_ptr<TaskQueue> GlobalQueue::FindByReactor(const IReactor *reactor) c
     if (reactor == nullptr)
         return nullptr;
 
-    std::shared_lock lock(reactor_mutex_);
-    if (const auto it = reactor_map_.find(const_cast<IReactor *>(reactor)); it != reactor_map_.end())
+    std::shared_lock lock(mReactorMutex);
+    if (const auto it = mReactorMap.find(const_cast<IReactor *>(reactor)); it != mReactorMap.end())
         return it->second.expired() ? nullptr : it->second.lock();
 
     return nullptr;
@@ -100,17 +100,17 @@ void GlobalQueue::OnPushTask(const std::shared_ptr<TaskQueue> &queue) {
         return;
 
     {
-        std::shared_lock lock(empty_mutex_);
-        if (!empty_set_.contains(queue->weak_from_this()))
+        std::shared_lock lock(mEmptyMutex);
+        if (!mEmptySet.contains(queue->weak_from_this()))
             return;
     }
 
     {
-        std::unique_lock lock(empty_mutex_);
-        empty_set_.erase(queue->weak_from_this());
+        std::unique_lock lock(mEmptyMutex);
+        mEmptySet.erase(queue->weak_from_this());
     }
 
-    queue_.PushBack(queue);
+    mQueue.PushBack(queue);
     queue->OnPushToGlobal();
 }
 
@@ -121,8 +121,8 @@ void GlobalQueue::RemoveReactor(const IReactor *reactor) {
 
     queue->OnRemove();
 
-    std::scoped_lock lock(reactor_mutex_, empty_mutex_);
+    std::scoped_lock lock(mReactorMutex, mEmptyMutex);
 
-    reactor_map_.erase(const_cast<IReactor *>(reactor));
-    empty_set_.erase(queue->weak_from_this());
+    mReactorMap.erase(const_cast<IReactor *>(reactor));
+    mEmptySet.erase(queue->weak_from_this());
 }

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../Package.h"
+#include "../package.h"
 #include "../byte_array.h"
 
 #include <sstream>
@@ -31,8 +31,8 @@ class BASE_API Package final : public IPackage {
         size_t length;
     };
 
-    Header header_;
-    ByteArray data_;
+    Header mHeader;
+    ByteArray mData;
 
 public:
     Package();
@@ -85,9 +85,9 @@ public:
 
     static constexpr size_t PACKAGE_HEADER_SIZE = sizeof(Header);
 
-    static uint32_t package_magic_;
-    static uint32_t package_version_;
-    static std::string package_method_;
+    static uint32_t kPackageMagic;
+    static uint32_t kPackageVersion;
+    static std::string kPackageMethod;
 
 private:
     [[nodiscard]] ByteArray &RawByteArray();

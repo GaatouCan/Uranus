@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../common.h"
-#include "../ThreadSafeDeque.h"
+#include "../thread_safe_deque.h"
 
 #include <memory>
 #include <set>
@@ -41,14 +41,14 @@ public:
     void OnPushTask(const std::shared_ptr<TaskQueue> &queue);
 
 private:
-    GameWorld *world_;
+    GameWorld *mWorld;
 
-    ThreadSafeDeque<std::shared_ptr<TaskQueue>> queue_;
-    std::vector<std::thread> worker_vec_;
+    ThreadSafeDeque<std::shared_ptr<TaskQueue>> mQueue;
+    std::vector<std::thread> mWorkerVec;
 
-    std::map<IReactor *, std::weak_ptr<TaskQueue>> reactor_map_;
-    mutable std::shared_mutex reactor_mutex_;
+    std::map<IReactor *, std::weak_ptr<TaskQueue>> mReactorMap;
+    mutable std::shared_mutex mReactorMutex;
 
-    std::set<std::weak_ptr<TaskQueue>, WeakPointerRawAddressCompare> empty_set_;
-    mutable std::shared_mutex empty_mutex_;
+    std::set<std::weak_ptr<TaskQueue>, WeakPointerRawAddressCompare> mEmptySet;
+    mutable std::shared_mutex mEmptyMutex;
 };

@@ -1,5 +1,5 @@
-﻿#include "../../../include/system/event/EventSystem.h"
-#include "../../../include/GameWorld.h"
+﻿#include "../../../include/system/event/event_system.h"
+#include "../../../include/game_world.h"
 
 #include <ranges>
 
@@ -8,11 +8,11 @@ EventSystem::EventSystem(GameWorld *world)
 }
 
 EventSystem::~EventSystem() {
-    listener_map_.clear();
+    mListenerMap.clear();
 
-    while (!event_queue_.empty()) {
-        auto &[event, param] = event_queue_.front();
-        event_queue_.pop();
+    while (!mEventQueue.empty()) {
+        auto &[event, param] = mEventQueue.front();
+        mEventQueue.pop();
         delete param;
     }
 }
@@ -26,9 +26,9 @@ awaitable<void> EventSystem::HandleEvent() {
         EventNode node;
 
         {
-            std::unique_lock lock(event_mutex_);
-            node = event_queue_.front();
-            event_queue_.pop();
+            std::unique_lock lock(mEventMutex);
+            node = mEventQueue.front();
+            mEventQueue.pop();
         }
 
         if (node.event == 0) {
@@ -36,19 +36,19 @@ awaitable<void> EventSystem::HandleEvent() {
             continue;
         }
 
-        cur_listener_.clear();
+        mCurListener.clear();
 
         // 拷贝一份map 减少锁的范围 可以在调用事件处理函数时修改注册map
         {
-            std::scoped_lock lock(listener_mutex_);
-            if (const auto iter = listener_map_.find(node.event); iter != listener_map_.end()) {
-                cur_listener_ = iter->second;
+            std::scoped_lock lock(mListenerMutex);
+            if (const auto iter = mListenerMap.find(node.event); iter != mListenerMap.end()) {
+                mCurListener = iter->second;
             }
         }
 
         spdlog::info("{} - Event Type: {}", __FUNCTION__, node.event);
 
-        for (const auto &listener: cur_listener_ | std::views::values) {
+        for (const auto &listener: mCurListener | std::views::values) {
             std::invoke(listener, node.param);
         }
 
@@ -59,20 +59,20 @@ awaitable<void> EventSystem::HandleEvent() {
 }
 
 bool EventSystem::IsQueueEmpty() const {
-    std::shared_lock lock(event_mutex_);
-    return event_queue_.empty();
+    std::shared_lock lock(mEventMutex);
+    return mEventQueue.empty();
 }
 
 void EventSystem::Dispatch(const uint32_t event, IEventParam *param, const DispatchType type) {
    if (type == DispatchType::DIRECT && GetWorld()->IsMainThread()) {
        {
-           std::scoped_lock lock(listener_mutex_);
-           if (const auto iter = listener_map_.find(event); iter != listener_map_.end()) {
-               cur_listener_ = iter->second;
+           std::scoped_lock lock(mListenerMutex);
+           if (const auto iter = mListenerMap.find(event); iter != mListenerMap.end()) {
+               mCurListener = iter->second;
            }
        }
 
-       for (const auto &listener: cur_listener_ | std::views::values) {
+       for (const auto &listener: mCurListener | std::views::values) {
            std::invoke(listener, param);
        }
 
@@ -83,8 +83,8 @@ void EventSystem::Dispatch(const uint32_t event, IEventParam *param, const Dispa
     const bool empty = IsQueueEmpty();
 
     {
-       std::unique_lock lock(event_mutex_);
-       event_queue_.emplace(event, param);
+       std::unique_lock lock(mEventMutex);
+       mEventQueue.emplace(event, param);
     }
 
     if (empty)
@@ -95,24 +95,24 @@ void EventSystem::RegisterListener(const uint32_t event, void *ptr, const EventL
     if (event == 0 || ptr == nullptr)
         return;
 
-    std::scoped_lock lock(listener_mutex_);
-    if (!listener_map_.contains(event))
-        listener_map_[event] = std::map<void *, EventListener>();
+    std::scoped_lock lock(mListenerMutex);
+    if (!mListenerMap.contains(event))
+        mListenerMap[event] = std::map<void *, EventListener>();
 
-    listener_map_[event][ptr] = listener;
+    mListenerMap[event][ptr] = listener;
 }
 
 void EventSystem::RemoveListener(const uint32_t event, void *ptr) {
     if (ptr == nullptr)
         return;
 
-    std::scoped_lock lock(listener_mutex_);
+    std::scoped_lock lock(mListenerMutex);
     if (event == 0) {
-        for (auto &val: listener_map_ | std::views::values)
+        for (auto &val: mListenerMap | std::views::values)
             val.erase(ptr);
     }
     else {
-        if (const auto iter = listener_map_.find(event); iter != listener_map_.end()) {
+        if (const auto iter = mListenerMap.find(event); iter != mListenerMap.end()) {
             iter->second.erase(ptr);
         }
     }

@@ -1,8 +1,8 @@
 #pragma once
 
-#include "DefaultCodec.h"
+#include "package_codec.h"
 #include "connection_handler.h"
-#include "ThreadSafeDeque.h"
+#include "thread_safe_deque.h"
 #include "utils.h"
 
 #include <asio/experimental/awaitable_operators.hpp>
@@ -14,25 +14,25 @@ using namespace asio::experimental::awaitable_operators;
 
 class BASE_API Connection final : public std::enable_shared_from_this<Connection> {
 
-    TcpSocket socket_;
-    class MainScene *scene_;
+    TcpSocket mSocket;
+    class MainScene *mScene;
 
-    std::unique_ptr<IPackageCodec> codec_ = nullptr;
-    std::unique_ptr<IConnectionHandler> handler_ = nullptr;
+    std::unique_ptr<IPackageCodec> mCodec = nullptr;
+    std::unique_ptr<IConnectionHandler> mHandler = nullptr;
 
-    ThreadSafeDeque<IPackage *> output_;
+    ThreadSafeDeque<IPackage *> mOutput;
 
-    std::string key_;
+    std::string mKey;
 
-    SystemTimer watchdog_timer_;
-    TimePoint deadline_;
+    SystemTimer mWatchdogTimer;
+    TimePoint mDeadline;
 
-    std::any ctx_;
-    uint32_t context_null_count_ = 0;
+    std::any mContext;
+    uint32_t mContextNullCount = 0;
 
-    static std::chrono::duration<uint32_t> expire_time_;
-    static std::chrono::duration<uint32_t> write_timeout_;
-    static std::chrono::duration<uint32_t> read_timeout_;
+    static std::chrono::duration<uint32_t> kExpireTime;
+    static std::chrono::duration<uint32_t> kWriteTimeout;
+    static std::chrono::duration<uint32_t> kReadTimeout;
 
     static constexpr int NULL_CONTEXT_MAX_COUNT = 3;
 
@@ -68,20 +68,20 @@ public:
     template<typename T>
     requires std::derived_from<T, IPackageCodec>
     Connection &SetPackageCodec() {
-        if (codec_ != nullptr)
-            codec_.reset();
+        if (mCodec != nullptr)
+            mCodec.reset();
 
-        codec_ = std::make_unique<T>(this);
+        mCodec = std::make_unique<T>(this);
         return *this;
     }
 
     template<typename T>
     requires std::derived_from<T, IConnectionHandler>
     Connection &SetHandler() {
-        if (handler_ != nullptr)
-            handler_.reset();
+        if (mHandler != nullptr)
+            mHandler.reset();
 
-        handler_ = std::make_unique<T>(this);
+        mHandler = std::make_unique<T>(this);
         return *this;
     }
 
@@ -89,13 +89,13 @@ public:
 
     void Send(IPackage *pkg);
 
-    [[nodiscard]] bool IsConnected() const { return socket_.is_open(); }
+    [[nodiscard]] bool IsConnected() const { return mSocket.is_open(); }
 
-    [[nodiscard]] std::string GetKey() const { return key_; }
-    [[nodiscard]] TcpSocket &GetSocket() { return socket_; }
+    [[nodiscard]] std::string GetKey() const { return mKey; }
+    [[nodiscard]] TcpSocket &GetSocket() { return mSocket; }
 
-    [[nodiscard]] const std::any &GetContext() const { return ctx_; }
-    [[nodiscard]] std::any GetMutableContext() const { return ctx_; }
+    [[nodiscard]] const std::any &GetContext() const { return mContext; }
+    [[nodiscard]] std::any GetMutableContext() const { return mContext; }
 
     [[nodiscard]] asio::ip::address RemoteAddress() const;
 

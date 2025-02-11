@@ -1,12 +1,12 @@
-#include "../include/ServerLogic.h"
+#include "../include/server_logic.h"
 
 IServerLogic::IServerLogic(GameWorld *world)
-    : world_(world) {
+    : mWorld(world) {
 }
 
 IServerLogic::~IServerLogic() {
 }
 
 GameWorld *IServerLogic::GetWorld() const {
-    return world_;
+    return mWorld;
 }

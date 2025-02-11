@@ -1,6 +1,6 @@
 #pragma once
 
-#include "LogicConfig.h"
+#include "logic_config.h"
 
 #include <typeindex>
 #include <yaml-cpp/yaml.h>

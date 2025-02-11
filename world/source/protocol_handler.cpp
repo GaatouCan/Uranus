@@ -1,17 +1,17 @@
-#include "../include/ProtocolHandler.h"
-#include "../include/ProtocolRoute.h"
+#include "../include/protocol_handler.h"
+#include "../include/protocol_route.h"
 
 IProtocolHandler::IProtocolHandler(ProtocolRoute *route)
-    : owner_(route) {
+    : mOwner(route) {
 
 }
 
 ProtocolRoute * IProtocolHandler::GetOwner() const {
-    return owner_;
+    return mOwner;
 }
 
 GameWorld * IProtocolHandler::GetWorld() const {
-    return owner_->GetWorld();
+    return mOwner->GetWorld();
 }
 
 

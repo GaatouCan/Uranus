@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../../SubSystem.h"
-#include "EventParam.h"
+#include "../../sub_system.h"
+#include "event_param.h"
 
 #include <queue>
 #include <mutex>
@@ -25,14 +25,14 @@ class BASE_API EventSystem final : public ISubSystem {
         IEventParam *param = nullptr;
     };
 
-    std::queue<EventNode> event_queue_;
-    mutable std::shared_mutex event_mutex_;
+    std::queue<EventNode> mEventQueue;
+    mutable std::shared_mutex mEventMutex;
 
     using ListenerMap = std::map<void *, EventListener>;
 
-    std::map<uint32_t, ListenerMap> listener_map_;
-    ListenerMap cur_listener_;
-    std::mutex listener_mutex_;
+    std::map<uint32_t, ListenerMap> mListenerMap;
+    ListenerMap mCurListener;
+    std::mutex mListenerMutex;
 
 public:
     explicit EventSystem(GameWorld *world);

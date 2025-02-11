@@ -1,18 +1,18 @@
-#include "../../../include/system/plugin/PluginSystem.h"
-#include "../../../include/system/plugin/AbstractPlugin.h"
+#include "../../../include/system/plugin/plugin_system.h"
+#include "../../../include/system/plugin/base_plugin.h"
 
 #include <ranges>
 #include <spdlog/spdlog.h>
 #include <filesystem>
 
-constexpr auto kPluginDirectory = "plugins";
+constexpr auto PLUGIN_DIRECTORY = "plugins";
 
 PluginSystem::PluginSystem(GameWorld *world)
     : ISubSystem(world) {
 }
 
 PluginSystem::~PluginSystem() {
-    for (const auto &[module, destroyer, plugin] : plugin_map_ | std::views::values) {
+    for (const auto &[module, destroyer, plugin] : mPluginMap | std::views::values) {
         if (destroyer) {
             destroyer(plugin);
 #if defined(_WIN32) || defined(_WIN64)
@@ -25,16 +25,16 @@ PluginSystem::~PluginSystem() {
 }
 
 void PluginSystem::Init() {
-    if (!std::filesystem::exists(kPluginDirectory)) {
+    if (!std::filesystem::exists(PLUGIN_DIRECTORY)) {
         try {
-            std::filesystem::create_directory(kPluginDirectory);
+            std::filesystem::create_directory(PLUGIN_DIRECTORY);
         } catch (const std::exception &e) {
             spdlog::error("{} - Failed to create plugin directory {}", __FUNCTION__, e.what());
             return;
         }
     }
 
-    for (const auto &entry : std::filesystem::directory_iterator(kPluginDirectory))
+    for (const auto &entry : std::filesystem::directory_iterator(PLUGIN_DIRECTORY))
     {
         if (entry.is_regular_file() && entry.path().extension() == ".dll")
         {
@@ -44,8 +44,8 @@ void PluginSystem::Init() {
 }
 
 PluginSystem::PluginNode PluginSystem::FindPlugin(const std::string &name) {
-    std::shared_lock lock(mutex_);
-    if (const auto it = plugin_map_.find(name); it != plugin_map_.end()) {
+    std::shared_lock lock(mMutex);
+    if (const auto it = mPluginMap.find(name); it != mPluginMap.end()) {
         return it->second;
     }
     return {nullptr, nullptr, nullptr};
@@ -93,8 +93,8 @@ bool PluginSystem::LoadPlugin(const std::string_view path) {
     }
 
     {
-        std::shared_lock lock(mutex_);
-        if (plugin_map_.contains(plugin->GetPluginName())) {
+        std::shared_lock lock(mMutex);
+        if (mPluginMap.contains(plugin->GetPluginName())) {
             spdlog::warn("{} - Plugin {} already exists", __FUNCTION__, plugin->GetPluginName());
             destroyer(plugin);
 #if defined(_WIN32) || defined(_WIN64)
@@ -108,8 +108,8 @@ bool PluginSystem::LoadPlugin(const std::string_view path) {
 
     PluginNode node{ hModule, destroyer, plugin };
 
-    std::unique_lock lock(mutex_);
-    plugin_map_.insert_or_assign(plugin->GetPluginName(), node);
+    std::unique_lock lock(mMutex);
+    mPluginMap.insert_or_assign(plugin->GetPluginName(), node);
     spdlog::info("{} - Load {} Success.", __FUNCTION__, plugin->GetPluginName());
 
     return true;
@@ -123,8 +123,8 @@ bool PluginSystem::UnloadPlugin(const std::string &name) {
     }
 
     {
-        std::unique_lock lock(mutex_);
-        plugin_map_.erase(name);
+        std::unique_lock lock(mMutex);
+        mPluginMap.erase(name);
     }
 
     destroyer(plugin);

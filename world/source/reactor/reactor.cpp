@@ -1,26 +1,26 @@
-#include "../../include/reactor/Reactor.h"
-#include "../../include/reactor/TaskQueue.h"
+#include "../../include/reactor/reactor.h"
+#include "../../include/reactor/task_queue.h"
 
 
 IReactor::~IReactor() {
-    if (queue_ != nullptr)
-        queue_->OnReactorRelease();
+    if (mQueue != nullptr)
+        mQueue->OnReactorRelease();
 }
 
 void IReactor::SetTaskQueue(const std::shared_ptr<TaskQueue> &queue) {
-    queue_ = queue;
+    mQueue = queue;
 }
 
 std::shared_ptr<TaskQueue> IReactor::GetTaskQueue() const {
-    return queue_;
+    return mQueue;
 }
 
 void IReactor::PushTask(const std::function<void(IReactor *)> &task) const {
-    if (queue_ != nullptr)
-        queue_->PushTask(task);
+    if (mQueue != nullptr)
+        mQueue->PushTask(task);
 }
 
 void IReactor::PushTask(std::function<void(IReactor *)> &&task) const {
-    if (queue_ != nullptr)
-        queue_->PushTask(std::move(task));
+    if (mQueue != nullptr)
+        mQueue->PushTask(std::move(task));
 }

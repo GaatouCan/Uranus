@@ -1,40 +1,40 @@
-﻿#include "../include/GameWorld.h"
-#include "../include/ServerLogic.h"
-#include "../include/impl/Package.h"
-#include "../include/Connection.h"
-#include "../include/PackagePool.h"
-#include "../include/impl/DefaultCodec.h"
+﻿#include "../include/game_world.h"
+#include "../include/server_logic.h"
+#include "../include/impl/package.h"
+#include "../include/connection.h"
+#include "../include/package_pool.h"
+#include "../include/impl/default_codec.h"
 
-#include "../include/scene/SceneManager.h"
-#include "../include/scene/MainScene.h"
-#include "../include/reactor/GlobalQueue.h"
+#include "../include/scene/scene_manager.h"
+#include "../include/scene/main_scene.h"
+#include "../include/reactor/global_queue.h"
 #include "../include/config_manager.h"
-#include "../include/LoginAuthenticator.h"
-#include "../include/ProtocolRoute.h"
+#include "../include/login_authenticator.h"
+#include "../include/protocol_route.h"
 
-#include "../include/system/event/EventSystem.h"
-#include "../include/system/timer/TimerSystem.h"
-#include "../include/system/plugin/PluginSystem.h"
-#include "../include/system/manager/ManagerSystem.h"
+#include "../include/system/event/event_system.h"
+#include "../include/system/timer/timer_system.h"
+#include "../include/system/plugin/plugin_system.h"
+#include "../include/system/manager/manager_system.h"
 
 #include <ranges>
 #include <random>
 
 
 GameWorld::GameWorld()
-    : acceptor_(ctx_),
-      module_(nullptr),
-      server_(nullptr),
-      server_destroyer_(nullptr),
-      full_timer_(ctx_),
-      inited_(false),
-      running_(false) {
+    : mAcceptor(mContext),
+      mModule(nullptr),
+      mServer(nullptr),
+      mDestroyer(nullptr),
+      mFullTimer(mContext),
+      bInited(false),
+      bRunning(false) {
 
-    config_manager_ = new ConfigManager();
-    scene_manager_ = new SceneManager(this);
-    global_queue_ = new GlobalQueue(this);
-    login_authenticator_ = new LoginAuthenticator(this);
-    protocol_route_ = new ProtocolRoute(this);
+    mConfigManager = new ConfigManager();
+    mSceneManager = new SceneManager(this);
+    mGlobalQueue = new GlobalQueue(this);
+    mLoginAuthenticator = new LoginAuthenticator(this);
+    mProtocolRoute = new ProtocolRoute(this);
 
     // Create Sub System
     CreateSystem<TimerSystem>(3);
@@ -65,16 +65,16 @@ GameWorld::~GameWorld() {
         delete sys;
     }
 
-    delete protocol_route_;
-    delete global_queue_;
-    delete scene_manager_;
-    delete login_authenticator_;
-    delete config_manager_;
+    delete mProtocolRoute;
+    delete mGlobalQueue;
+    delete mSceneManager;
+    delete mLoginAuthenticator;
+    delete mConfigManager;
 
-    if (server_ && server_destroyer_) {
-        server_destroyer_(server_);
+    if (mServer && mDestroyer) {
+        mDestroyer(mServer);
 #if defined(_WIN32) || defined(_WIN64)
-        FreeLibrary(module_);
+        FreeLibrary(mModule);
 #else
         dlclose(mModule);
 #endif
@@ -85,16 +85,16 @@ GameWorld::~GameWorld() {
     spdlog::drop_all();
 }
 
-GameWorld &GameWorld::Init(const std::string &dll_path) {
-    if (!LoadServerDLL(dll_path)) {
+GameWorld &GameWorld::Init(const std::string &path) {
+    if (!LoadServerDLL(path)) {
         Shutdown();
         exit(-1);
     }
 
-    world_thread_id_ = std::this_thread::get_id();
+    mThreadID = std::this_thread::get_id();
 
-    config_manager_->Init();
-    assert(config_manager_->IsLoaded());
+    mConfigManager->Init();
+    assert(mConfigManager->IsLoaded());
 
     const auto &config = GetServerConfig();
 
@@ -104,9 +104,9 @@ GameWorld &GameWorld::Init(const std::string &dll_path) {
     PackagePool::SetPackageBuilder(&Package::CreatePackage);
     PackagePool::SetPackageInitializer(&Package::InitPackage);
 
-    scene_manager_->Init();
-    global_queue_->Init();
-    login_authenticator_->Init();
+    mSceneManager->Init();
+    mGlobalQueue->Init();
+    mLoginAuthenticator->Init();
 
     while (!init_priority_.empty()) {
         auto [priority, type] = init_priority_.top();
@@ -120,37 +120,37 @@ GameWorld &GameWorld::Init(const std::string &dll_path) {
         spdlog::info("{} Initialized.", iter->second->GetSystemName());
     }
 
-    inited_ = true;
+    bInited = true;
 
     return *this;
 }
 
 GameWorld &GameWorld::Run() {
-    running_ = true;
+    bRunning = true;
 
-    asio::signal_set signals(ctx_, SIGINT, SIGTERM);
+    asio::signal_set signals(mContext, SIGINT, SIGTERM);
     signals.async_wait([this](auto, auto) {
         Shutdown();
     });
 
-    co_spawn(ctx_, WaitForConnect(), detached);
-    ctx_.run();
+    co_spawn(mContext, WaitForConnect(), detached);
+    mContext.run();
 
     return *this;
 }
 
 GameWorld &GameWorld::Shutdown() {
-    if (!inited_)
+    if (!bInited)
         return *this;
 
-    if (!running_)
+    if (!bRunning)
         return *this;
 
     spdlog::info("Server Shutting Down...");
-    running_ = false;
+    bRunning = false;
 
-    if (!ctx_.stopped())
-        ctx_.stop();
+    if (!mContext.stopped())
+        mContext.stop();
 
     connection_map_.clear();
 
@@ -158,11 +158,11 @@ GameWorld &GameWorld::Shutdown() {
 }
 
 void GameWorld::RemoveConnection(const std::string &key) {
-    if (!running_)
+    if (!bRunning)
         return;
 
-    if (std::this_thread::get_id() != world_thread_id_) {
-        co_spawn(ctx_, [this, key]() mutable -> awaitable<void> {
+    if (std::this_thread::get_id() != mThreadID) {
+        co_spawn(mContext, [this, key]() mutable -> awaitable<void> {
             connection_map_.erase(key);
             co_return;
         }, detached);
@@ -172,24 +172,24 @@ void GameWorld::RemoveConnection(const std::string &key) {
 }
 
 ConfigManager *GameWorld::GetConfigManager() const {
-    return config_manager_;
+    return mConfigManager;
 }
 
 SceneManager *GameWorld::GetSceneManager() const {
-    return scene_manager_;
+    return mSceneManager;
 }
 
 LoginAuthenticator * GameWorld::GetLoginAuthenticator() const {
-    return login_authenticator_;
+    return mLoginAuthenticator;
 }
 
 ProtocolRoute * GameWorld::GetProtocolRoute() const {
-    return protocol_route_;
+    return mProtocolRoute;
 }
 
 GlobalQueue* GameWorld::GetGlobalQueue() const
 {
-    return global_queue_;
+    return mGlobalQueue;
 }
 
 ISubSystem *GameWorld::GetSystemByName(const std::string_view sys) const {
@@ -200,13 +200,13 @@ ISubSystem *GameWorld::GetSystemByName(const std::string_view sys) const {
 }
 
 const YAML::Node &GameWorld::GetServerConfig() {
-    if (!config_manager_->IsLoaded()) {
+    if (!mConfigManager->IsLoaded()) {
         spdlog::critical("{} - ConfigSystem not loaded", __FUNCTION__);
         Shutdown();
         exit(-1);
     }
 
-    return config_manager_->GetServerConfig();
+    return mConfigManager->GetServerConfig();
 }
 
 uint32_t GameWorld::GetServerID() {
@@ -216,19 +216,19 @@ uint32_t GameWorld::GetServerID() {
 
 bool GameWorld::LoadServerDLL(const std::string &path) {
 #if defined(_WIN32) || defined(_WIN64)
-    module_ = LoadLibrary(path.c_str());
+    mModule = LoadLibrary(path.c_str());
 #else
     mModule = dlopen(path.c_str(), RTLD_LAZY);
 #endif
 
-    if (module_ == nullptr) {
+    if (mModule == nullptr) {
         spdlog::error("Failed to load server dll: {}", path);
         return false;
     }
 
 #if defined(_WIN32) || defined(_WIN64)
-    const auto creator = reinterpret_cast<ServerCreator>(GetProcAddress(module_, "CreateServer"));
-    const auto destroyer = reinterpret_cast<ServerDestroyer>(GetProcAddress(module_, "DestroyServer"));
+    const auto creator = reinterpret_cast<ServerCreator>(GetProcAddress(mModule, "CreateServer"));
+    const auto destroyer = reinterpret_cast<ServerDestroyer>(GetProcAddress(mModule, "DestroyServer"));
 #else
     const auto creator = reinterpret_cast<AServerCreator>(dlsym(mModule, "CreateServer"));
     const auto destroyer = reinterpret_cast<AServerDestroyer>(dlsym(mModule, "DestroyServer"));
@@ -238,7 +238,7 @@ bool GameWorld::LoadServerDLL(const std::string &path) {
         spdlog::error("Failed to load DLL function: {}", path);
 
 #if defined(_WIN32) || defined(_WIN64)
-        FreeLibrary(module_);
+        FreeLibrary(mModule);
 #else
         dlclose(mModule);
 #endif
@@ -246,14 +246,14 @@ bool GameWorld::LoadServerDLL(const std::string &path) {
         return false;
     }
 
-    server_ = creator(this);
-    server_destroyer_ = destroyer;
+    mServer = creator(this);
+    mDestroyer = destroyer;
 
-    server_->InitGameWorld();
+    mServer->InitGameWorld();
 
-    config_manager_->Abort();
-    protocol_route_->AbortHandler();
-    login_authenticator_->AbortHandler();
+    mConfigManager->Abort();
+    mProtocolRoute->AbortHandler();
+    mLoginAuthenticator->AbortHandler();
 
     spdlog::info("Loaded DLL {} Success.", path);
 
@@ -264,25 +264,25 @@ awaitable<void> GameWorld::WaitForConnect() {
     const auto &config = GetServerConfig();
 
     try {
-        acceptor_.open(tcp::v4());
-        acceptor_.bind({tcp::v4(), config["server"]["port"].as<uint16_t>()});
-        acceptor_.listen();
+        mAcceptor.open(tcp::v4());
+        mAcceptor.bind({tcp::v4(), config["server"]["port"].as<uint16_t>()});
+        mAcceptor.listen();
 
         spdlog::info("Waiting For Client To Connect - Server Port: {}", config["server"]["port"].as<uint16_t>());
 
-        while (running_) {
-            const auto scene = dynamic_cast<MainScene *>(scene_manager_->GetNextMainScene());
+        while (bRunning) {
+            const auto scene = dynamic_cast<MainScene *>(mSceneManager->GetNextMainScene());
             if (scene == nullptr) {
                 spdlog::critical("{} - Failed to get main scene.", __FUNCTION__);
                 Shutdown();
                 exit(-1);
             }
 
-            if (auto socket = co_await acceptor_.async_accept(scene->GetIOContext()); socket.is_open()) {
+            if (auto socket = co_await mAcceptor.async_accept(scene->GetIOContext()); socket.is_open()) {
                 const auto addr = socket.remote_endpoint().address();
                 spdlog::info("New Connection From: {}", addr.to_string());
 
-                if (!login_authenticator_->VerifyAddress(socket.remote_endpoint().address())) {
+                if (!mLoginAuthenticator->VerifyAddress(socket.remote_endpoint().address())) {
                     socket.close();
                     spdlog::warn("Rejected Connection From: {}", addr.to_string());
                     continue;
@@ -312,15 +312,15 @@ awaitable<void> GameWorld::WaitForConnect() {
                 conn->SetKey(key);
                 conn->SetPackageCodec<DefaultCodec>();
 
-                server_->SetConnectionHandler(conn);
+                mServer->SetConnectionHandler(conn);
 
                 conn->ConnectToClient();
 
                 connection_map_[key] = conn;
 
                 if (connection_map_.size() >= 1'000'000'000) {
-                    full_timer_.expires_after(10s);
-                    co_await full_timer_.async_wait();
+                    mFullTimer.expires_after(10s);
+                    co_await mFullTimer.async_wait();
                 }
             }
         }
@@ -331,8 +331,8 @@ awaitable<void> GameWorld::WaitForConnect() {
 }
 
 void GameWorld::RemoveConnection(const std::string_view key) {
-    if (std::this_thread::get_id() != world_thread_id_) {
-        co_spawn(ctx_, [this, key]() mutable -> awaitable<void> {
+    if (std::this_thread::get_id() != mThreadID) {
+        co_spawn(mContext, [this, key]() mutable -> awaitable<void> {
             connection_map_.erase(key);
             co_return;
         }, detached);
@@ -342,13 +342,13 @@ void GameWorld::RemoveConnection(const std::string_view key) {
 }
 
 asio::io_context &GameWorld::GetIOContext() {
-    return ctx_;
+    return mContext;
 }
 
 ThreadID GameWorld::GetThreadID() const {
-    return world_thread_id_;
+    return mThreadID;
 }
 
 bool GameWorld::IsMainThread() const {
-    return world_thread_id_ == std::this_thread::get_id();
+    return mThreadID == std::this_thread::get_id();
 }

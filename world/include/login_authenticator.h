@@ -1,6 +1,6 @@
 #pragma once
 
-#include "LoginHandler.h"
+#include "login_handler.h"
 
 #include <asio.hpp>
 
@@ -32,15 +32,15 @@ public:
     template<typename T>
     requires std::derived_from<T, ILoginHandler>
     void SetHandler() {
-        if (handler_ != nullptr) {
-            handler_.reset();
+        if (mHandler != nullptr) {
+            mHandler.reset();
         }
-        handler_ = std::make_unique<T>(this);
+        mHandler = std::make_unique<T>(this);
     }
 
     void AbortHandler() const;
 
 private:
-    GameWorld* world_;
-    std::unique_ptr<ILoginHandler> handler_;
+    GameWorld* mWorld;
+    std::unique_ptr<ILoginHandler> mHandler;
 };
