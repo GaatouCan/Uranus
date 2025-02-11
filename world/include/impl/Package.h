@@ -17,7 +17,7 @@ enum class CodecMethod : uint16_t {
 
 class BASE_API Package final : public IPackage {
 
-    friend class DefaultCodec;
+    friend class PackageCodec;
     friend class UCrossRouteCodecImpl;
 
     struct Header {

@@ -1,4 +1,4 @@
-#include "../../include/impl/default_codec.h"
+#include "../../include/impl/package_codec.h"
 #include "../../include/impl/package.h"
 #include "../../include/connection.h"
 
@@ -10,11 +10,11 @@
 #endif
 
 
-DefaultCodec::DefaultCodec(Connection *conn)
+PackageCodec::PackageCodec(Connection *conn)
     : TPackageCodec(conn) {
 }
 
-awaitable<void> DefaultCodec::EncodeT(Package *pkg) {
+awaitable<void> PackageCodec::EncodeT(Package *pkg) {
     Package::Header header{};
 
     header.magic = htonl(pkg->mHeader.magic);
@@ -36,7 +36,7 @@ awaitable<void> DefaultCodec::EncodeT(Package *pkg) {
     co_await async_write(mConn->GetSocket(), asio::buffer(pkg->RawByteArray().GetRawRef()));
 }
 
-awaitable<void> DefaultCodec::DecodeT(Package *pkg) {
+awaitable<void> PackageCodec::DecodeT(Package *pkg) {
     if (const auto len = co_await async_read(mConn->GetSocket(), asio::buffer(&pkg->mHeader, Package::PACKAGE_HEADER_SIZE)); len == 0) {
         spdlog::warn("{} - Read package header length equal zero", __FUNCTION__);
         pkg->Invalid();
