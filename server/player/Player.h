@@ -46,11 +46,11 @@ public:
 
     void SyncCache(FCacheNode *node);
 
-    void DispatchEvent(EEvent event, IEventParam *param, DispatchType type = DispatchType::PUSH_QUEUE);
+    void DispatchEvent(Event event, IEventParam *param, DispatchType type = DispatchType::PUSH_QUEUE);
 };
 
 #define SEND_PACKAGE(sender, proto, data) \
-    (sender)->Send(static_cast<int32_t>(protocol::EProtoType::proto), (data).SerializeAsString());
+    (sender)->Send(static_cast<int32_t>(protocol::ProtoType::proto), (data).SerializeAsString());
 
 #define BUILD_PACKAGE(pkg, proto, data) \
-    (pkg)->SetPackageID(static_cast<int32_t>(protocol::EProtoType::proto)).SetData((data).SerializeAsString());
+    (pkg)->SetPackageID(static_cast<int32_t>(protocol::ProtoType::proto)).SetData((data).SerializeAsString());

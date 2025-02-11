@@ -1,4 +1,4 @@
-#include "ConnectionHandlerImpl.h"
+#include "ConnectionHandler.h"
 #include "Connection.h"
 #include "GameWorld.h"
 #include "PlayerID.h"
@@ -7,15 +7,15 @@
 #include "../common/ProtoType.h"
 #include "../player/PlayerManager.h"
 
-UConnectionHandlerImpl::UConnectionHandlerImpl(Connection *conn)
+ConnectionHandler::ConnectionHandler(Connection *conn)
     : IConnectionHandler(conn){
 
 }
 
-void UConnectionHandlerImpl::OnConnected() {
+void ConnectionHandler::OnConnected() {
 }
 
-void UConnectionHandlerImpl::OnClosed() {
+void ConnectionHandler::OnClosed() {
     if (!conn_->GetContext().has_value())
         return;
 
@@ -26,7 +26,7 @@ void UConnectionHandlerImpl::OnClosed() {
     }
 }
 
-awaitable<void> UConnectionHandlerImpl::OnReadPackage(IPackage *pkg) {
-    spdlog::debug("{} - Receive Package[{}] From {}.", __FUNCTION__, ProtoTypeToString(static_cast<protocol::EProtoType>(pkg->GetPackageID())), conn_->RemoteAddress().to_string());
+awaitable<void> ConnectionHandler::OnReadPackage(IPackage *pkg) {
+    spdlog::debug("{} - Receive Package[{}] From {}.", __FUNCTION__, ProtoTypeToString(static_cast<protocol::ProtoType>(pkg->GetPackageID())), conn_->RemoteAddress().to_string());
     co_return;
 }

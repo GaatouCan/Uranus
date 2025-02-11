@@ -27,8 +27,8 @@ bool UEventModule::IsQueueEmpty() const {
     return mQueue.empty();
 }
 
-void UEventModule::RegisterListener(const EEvent event, void *ptr, const EventListener &listener) {
-    if (event == EEvent::UNAVAILABLE || ptr == nullptr)
+void UEventModule::RegisterListener(const Event event, void *ptr, const EventListener &listener) {
+    if (event == Event::UNAVAILABLE || ptr == nullptr)
         return;
 
     std::scoped_lock lock(mListenerMutex);
@@ -38,12 +38,12 @@ void UEventModule::RegisterListener(const EEvent event, void *ptr, const EventLi
     mListenerMap[event][ptr] = listener;
 }
 
-void UEventModule::RemoveListener(const EEvent event, void *ptr) {
+void UEventModule::RemoveListener(const Event event, void *ptr) {
     if (ptr == nullptr)
         return;
 
     std::scoped_lock lock(mListenerMutex);
-    if (event == EEvent::UNAVAILABLE) {
+    if (event == Event::UNAVAILABLE) {
         for (auto &val : std::views::values(mListenerMap)) {
             val.erase(ptr);
         }
@@ -54,7 +54,7 @@ void UEventModule::RemoveListener(const EEvent event, void *ptr) {
     }
 }
 
-void UEventModule::Dispatch(EEvent event, IEventParam *param, DispatchType type) {
+void UEventModule::Dispatch(Event event, IEventParam *param, DispatchType type) {
     spdlog::debug("{} - Player[{}] dispatch event[{}]", __FUNCTION__, mOwner->GetFullID(), static_cast<uint32_t>(event));
 
     if (type == DispatchType::DIRECT && GetOwner()->IsSameThread()) {
@@ -94,7 +94,7 @@ awaitable<void> UEventModule::HandleEvent() {
             mQueue.pop();
         }
 
-        if (node.event == EEvent::UNAVAILABLE) {
+        if (node.event == Event::UNAVAILABLE) {
             delete node.param;
             continue;
         }

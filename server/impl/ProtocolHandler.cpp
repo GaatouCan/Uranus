@@ -1,4 +1,4 @@
-#include "ProtocolHandlerImpl.h"
+#include "ProtocolHandler.h"
 #include "PlayerID.h"
 #include "../player/Player.h"
 #include "../player/PlayerManager.h"
@@ -10,11 +10,11 @@
 #include <spdlog/spdlog.h>
 
 
-UProtocolHandlerImpl::UProtocolHandlerImpl(ProtocolRoute *route)
+ProtocolHandler::ProtocolHandler(ProtocolRoute *route)
     : IProtocolHandler(route) {
 }
 
-void UProtocolHandlerImpl::Invoke(const ProtoFunctor &func, const std::shared_ptr<Connection> &conn, IPackage *pkg) {
+void ProtocolHandler::Invoke(const ProtoFunctor &func, const std::shared_ptr<Connection> &conn, IPackage *pkg) {
     const auto mgr = GET_MANAGER(UPlayerManager);
     if (mgr == nullptr) {
         spdlog::critical("{} - PlayerManager not found", __FUNCTION__);
