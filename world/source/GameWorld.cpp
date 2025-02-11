@@ -22,7 +22,7 @@
 
 
 GameWorld::GameWorld()
-    : acceptor(ctx_),
+    : acceptor_(ctx_),
       module_(nullptr),
       server_(nullptr),
       server_destroyer_(nullptr),
@@ -264,9 +264,9 @@ awaitable<void> GameWorld::WaitForConnect() {
     const auto &config = GetServerConfig();
 
     try {
-        acceptor.open(tcp::v4());
-        acceptor.bind({tcp::v4(), config["server"]["port"].as<uint16_t>()});
-        acceptor.listen();
+        acceptor_.open(tcp::v4());
+        acceptor_.bind({tcp::v4(), config["server"]["port"].as<uint16_t>()});
+        acceptor_.listen();
 
         spdlog::info("Waiting For Client To Connect - Server Port: {}", config["server"]["port"].as<uint16_t>());
 
@@ -278,7 +278,7 @@ awaitable<void> GameWorld::WaitForConnect() {
                 exit(-1);
             }
 
-            if (auto socket = co_await acceptor.async_accept(scene->GetIOContext()); socket.is_open()) {
+            if (auto socket = co_await acceptor_.async_accept(scene->GetIOContext()); socket.is_open()) {
                 const auto addr = socket.remote_endpoint().address();
                 spdlog::info("New Connection From: {}", addr.to_string());
 
@@ -291,12 +291,12 @@ awaitable<void> GameWorld::WaitForConnect() {
                 std::string key;
                 int count = 0;
 
-                static std::random_device sRandomDevice;
-                static std::mt19937 sGenerator(sRandomDevice());
-                static std::uniform_int_distribution sDistribution(100, 999);
+                static std::random_device random_device;
+                static std::mt19937 generator(random_device());
+                static std::uniform_int_distribution distribution(100, 999);
 
                 do {
-                    key = fmt::format("{}-{}-{}", addr.to_string(), utils::UnixTime(), sDistribution(sGenerator));
+                    key = fmt::format("{}-{}-{}", addr.to_string(), utils::UnixTime(), distribution(generator));
                     count++;
                 } while (connection_map_.contains(key) && count < 3);
 

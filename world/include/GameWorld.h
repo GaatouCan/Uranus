@@ -10,6 +10,7 @@
 class IServerLogic;
 
 using ConnectionPointer = std::shared_ptr<class Connection>;
+
 typedef IServerLogic*(*ServerCreator)(GameWorld*);
 typedef void(*ServerDestroyer)(IServerLogic*);
 
@@ -32,7 +33,7 @@ struct StringViewEqual {
 class BASE_API GameWorld final {
 
     asio::io_context ctx_;
-    TcpAcceptor acceptor;
+    TcpAcceptor acceptor_;
 
     ModuleHandle module_;
     IServerLogic *server_;
@@ -66,8 +67,6 @@ class BASE_API GameWorld final {
 
     std::unordered_map<std::type_index, ISubSystem *> system_map_;
     std::unordered_map<std::string, ISubSystem *, StringViewHash, StringViewEqual> name_to_system_;
-
-    // std::function<void(const AConnectionPointer &)> mConnectionFilter;
 
     ThreadID world_thread_id_;
 
