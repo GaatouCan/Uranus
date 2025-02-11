@@ -134,7 +134,7 @@ public:
 
     [[nodiscard]] PlayerID GetPlayerID() const;
 
-    void SyncCache(FCacheNode *node);
+    void SyncCache(CacheNode *node);
 };
 
 #define CREATE_SERIALIZER(s, table) const auto s = new USerializer<orm::UDBTable_##table>(utils::PascalToUnderline(#table));

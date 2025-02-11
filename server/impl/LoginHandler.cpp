@@ -49,7 +49,7 @@ awaitable<LoginInfo> LoginHandler::ParseLoginInfo(IPackage *pkg) {
 
         LoginInfo info;
 
-        info.pid.FromUInt64(request.player_id());
+        info.pid.FromInt64(request.player_id());
         info.token = request.token();
 
         co_return info;

@@ -68,7 +68,7 @@ awaitable<std::shared_ptr<Player> > UPlayerManager::OnPlayerLogin(const std::sha
 }
 
 void UPlayerManager::OnPlayerLogout(const PlayerID pid) {
-    spdlog::info("{} - Player[{}] Logout", __FUNCTION__, pid.ToUInt64());
+    spdlog::info("{} - Player[{}] Logout", __FUNCTION__, pid.ToInt64());
     if (const auto plr = RemovePlayer(pid.local); plr != nullptr) {
         plr->TryLeaveScene();
         plr->OnLogout();
@@ -130,7 +130,7 @@ void UPlayerManager::SyncCache(const CacheNode &node) {
 
     std::scoped_lock lock(mCacheMutex);
     mCacheMap[node.pid.local] = node;
-    spdlog::info("{} - Player[{}] Success.", __FUNCTION__, node.pid.ToUInt64());
+    spdlog::info("{} - Player[{}] Success.", __FUNCTION__, node.pid.ToInt64());
 }
 
 awaitable<std::optional<CacheNode> > UPlayerManager::FindCacheNode(const PlayerID &pid) {
