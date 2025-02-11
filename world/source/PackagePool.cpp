@@ -67,6 +67,12 @@ void UPackagePool::Recycle(IPackage *pkg) {
     if (pkg == nullptr)
         return;
 
+    {
+        std::shared_lock lock(mutex_);
+        if (!set_.contains(pkg))
+            return;
+    }
+
     pkg->Reset();
 
     {
