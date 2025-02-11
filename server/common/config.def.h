@@ -1,6 +1,6 @@
 #pragma once
 
-#include "ConfigManager.h"
+#include "config_manager.h"
 
 // #include "../config/AvatarLogicConfig.h"
 

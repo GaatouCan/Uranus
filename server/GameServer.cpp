@@ -2,7 +2,7 @@
 
 #include "GameWorld.h"
 #include "Connection.h"
-#include "ConfigManager.h"
+#include "config_manager.h"
 #include "LoginAuthenticator.h"
 #include "ProtocolRoute.h"
 

@@ -37,12 +37,12 @@ public:
     void OnDayChange();
 
     awaitable<void> OnLogin();
-    void OnLogout(bool bForce = false, const std::string &otherAddress = "");
+    void OnLogout(bool is_force = false, const std::string &other_address = "");
 
     bool IsOnline() const;
 
-    void Send(int32_t id, std::string_view data) const;
-    void Send(int32_t id, const std::stringstream &ss) const;
+    void Send(uint32_t id, std::string_view data) const;
+    void Send(uint32_t id, const std::stringstream &ss) const;
 
     void SyncCache(CacheNode *node);
 

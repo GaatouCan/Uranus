@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../Package.h"
-#include "../ByteArray.h"
+#include "../byte_array.h"
 
 #include <sstream>
 #include <yaml-cpp/yaml.h>
@@ -17,7 +17,7 @@ enum class CodecMethod : uint16_t {
 
 class BASE_API Package final : public IPackage {
 
-    friend class PackageCodec;
+    friend class DefaultCodec;
     friend class UCrossRouteCodecImpl;
 
     struct Header {

@@ -3,12 +3,12 @@
 #include "../include/impl/Package.h"
 #include "../include/Connection.h"
 #include "../include/PackagePool.h"
-#include "../include/impl/PackageCodec.h"
+#include "../include/impl/DefaultCodec.h"
 
 #include "../include/scene/SceneManager.h"
 #include "../include/scene/MainScene.h"
 #include "../include/reactor/GlobalQueue.h"
-#include "../include/ConfigManager.h"
+#include "../include/config_manager.h"
 #include "../include/LoginAuthenticator.h"
 #include "../include/ProtocolRoute.h"
 
@@ -310,7 +310,7 @@ awaitable<void> GameWorld::WaitForConnect() {
                 spdlog::info("Accept Connection From: {}", addr.to_string());
 
                 conn->SetKey(key);
-                conn->SetPackageCodec<PackageCodec>();
+                conn->SetPackageCodec<DefaultCodec>();
 
                 server_->SetConnectionHandler(conn);
 

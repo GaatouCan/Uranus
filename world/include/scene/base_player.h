@@ -1,7 +1,7 @@
 ﻿#pragma once
 
 #include "../PlayerID.h"
-#include "../Actor.h"
+#include "../actor.h"
 #include "../Connection.h"
 #include "../RepeatedTimer.h"
 #include "../PlatformInfo.h"

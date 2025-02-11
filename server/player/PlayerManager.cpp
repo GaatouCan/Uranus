@@ -4,7 +4,7 @@
 
 #include "GameWorld.h"
 #include "impl/Package.h"
-#include "ConfigManager.h"
+#include "config_manager.h"
 #include "system/manager/ManagerSystem.h"
 
 

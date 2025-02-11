@@ -59,9 +59,9 @@ awaitable<void> Player::OnLogin() {
     co_return;
 }
 
-void Player::OnLogout(const bool bForce, const std::string &otherAddress) {
+void Player::OnLogout(const bool is_force, const std::string &other_address) {
     if (!IsSameThread()) {
-        RunInThread(&Player::OnLogout, this, bForce, otherAddress);
+        RunInThread(&Player::OnLogout, this, is_force, other_address);
         return;
     }
     logout_time_ = NowTimePoint();
@@ -71,10 +71,10 @@ void Player::OnLogout(const bool bForce, const std::string &otherAddress) {
     component_module_.OnLogout();
     spdlog::info("{} - Player[{}] Logout.", __FUNCTION__, GetFullID());
 
-    if (bForce) {
+    if (is_force) {
         Login::W2C_ForceLogoutResponse res;
         res.set_player_id(GetFullID());
-        res.set_address(otherAddress);
+        res.set_address(other_address);
 
         SEND_PACKAGE(this, W2C_ForceLogoutResponse, res)
     }
@@ -86,16 +86,16 @@ void Player::OnLogout(const bool bForce, const std::string &otherAddress) {
 }
 
 bool Player::IsOnline() const {
-    constexpr TimePoint zeroTimePoint{};
+    constexpr TimePoint zero_time_point{};
     const auto now = NowTimePoint();
 
-    return login_time_ > zeroTimePoint && login_time_ < now
-           && (logout_time_ > zeroTimePoint && login_time_ < now)
+    return login_time_ > zero_time_point && login_time_ < now
+           && (logout_time_ > zero_time_point && login_time_ < now)
            && logout_time_ <= login_time_;
 }
 
 
-void Player::Send(const int32_t id, const std::string_view data) const {
+void Player::Send(const uint32_t id, const std::string_view data) const {
     const auto pkg = dynamic_cast<Package *>(BuildPackage());
     pkg->SetPackageID(id).SetData(data);
 
@@ -103,7 +103,7 @@ void Player::Send(const int32_t id, const std::string_view data) const {
     SendPackage(pkg);
 }
 
-void Player::Send(const int32_t id, const std::stringstream &ss) const {
+void Player::Send(const uint32_t id, const std::stringstream &ss) const {
     const auto pkg = dynamic_cast<Package *>(BuildPackage());
     pkg->SetPackageID(id).SetData(ss.str());
 

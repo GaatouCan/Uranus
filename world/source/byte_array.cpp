@@ -1,4 +1,4 @@
-#include "../include/ByteArray.h"
+#include "../include/byte_array.h"
 
 ByteArray::ByteArray(const size_t size)
     : bytes_(size) {

@@ -1,4 +1,4 @@
-#include "../include/ConnectionHandler.h"
+#include "../include/connection_handler.h"
 #include "../include/Connection.h"
 
 IConnectionHandler::IConnectionHandler(Connection *conn)
