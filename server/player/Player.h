@@ -1,10 +1,10 @@
 #pragma once
 
-#include "ComponentModule.h"
-#include "EventModule.h"
+#include "component_module.h"
+#include "event_module.h"
 
-#include "scene/BasePlayer.h"
-#include "PlatformInfo.h"
+#include "scene/base_player.h"
+#include "platform_info.h"
 
 
 struct EP_PlayerLogin final : IEventParam {
@@ -17,13 +17,13 @@ struct EP_PlayerLogout final : IEventParam {
 
 class Player final : public IBasePlayer {
 
-    TimePoint login_time_;
-    TimePoint logout_time_;
+    TimePoint mLoginTime;
+    TimePoint mLogoutTime;
 
-    ComponentModule component_module_;
-    EventModule event_module_;
+    ComponentModule mComponentModule;
+    EventModule mEventModule;
 
-    PlatformInfo platform_;
+    PlatformInfo mPlatform;
 
 public:
     Player() = delete;
@@ -31,8 +31,8 @@ public:
     explicit Player(ConnectionPointer conn);
     ~Player() override;
 
-    ComponentModule &GetComponentModule();
-    EventModule &GetEventModule();
+    ComponentModule &GetComponentModule() noexcept { return mComponentModule; }
+    EventModule &GetEventModule() noexcept { return mEventModule; }
 
     void OnDayChange();
 
@@ -50,7 +50,7 @@ public:
 };
 
 #define SEND_PACKAGE(sender, proto, data) \
-    (sender)->Send(static_cast<int32_t>(protocol::ProtoType::proto), (data).SerializeAsString());
+    (sender)->Send(static_cast<uint32_t>(protocol::ProtoType::proto), (data).SerializeAsString());
 
 #define BUILD_PACKAGE(pkg, proto, data) \
-    (pkg)->SetPackageID(static_cast<int32_t>(protocol::ProtoType::proto)).SetData((data).SerializeAsString());
+    (pkg)->SetPackageID(static_cast<uint32_t>(protocol::ProtoType::proto)).SetData((data).SerializeAsString());
