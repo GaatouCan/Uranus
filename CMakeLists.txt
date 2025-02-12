@@ -95,18 +95,15 @@ target_include_directories(Uranus PUBLIC
         $<INSTALL_INTERFACE:include>
 )
 
-
 target_link_libraries(Uranus PUBLIC spdlog::spdlog)
 target_link_libraries(Uranus PUBLIC asio::asio)
 target_link_libraries(Uranus PUBLIC nlohmann_json::nlohmann_json)
 target_link_libraries(Uranus PUBLIC yaml-cpp::yaml-cpp)
-#target_link_libraries(base_static PUBLIC mysql::concpp)
+target_link_libraries(Uranus PUBLIC mysql::concpp)
 
-file(GLOB_RECURSE WORLD_HEADER_FILE ${CMAKE_SOURCE_DIR}/world/include/*.h)
 set_target_properties(Uranus PROPERTIES
         VERSION ${PROJECT_VERSION}
         SOVERSION ${PROJECT_VERSION_MAJOR}
-        PUBLIC_HEADER ${WORLD_HEADER_FILE}
 )
 
 # 安装目标
