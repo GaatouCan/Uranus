@@ -22,9 +22,9 @@ if (WIN32)
     list(APPEND CMAKE_PREFIX_PATH ${THIRD_LIBRARY_DIR}/protobuf)
     list(APPEND CMAKE_PREFIX_PATH ${THIRD_LIBRARY_DIR}/zlib)
     list(APPEND CMAKE_PREFIX_PATH ${THIRD_LIBRARY_DIR}/YAML_CPP)
-    list(APPEND CMAKE_PREFIX_PATH ${THIRD_LIBRARY_DIR}/mysql-connector-c++-9.1.0-winx64)
+    list(APPEND CMAKE_PREFIX_PATH ${THIRD_LIBRARY_DIR}/mysql-connector-c++-9.2.0-winx64)
 else ()
-    list(APPEND CMAKE_PREFIX_PATH ~/cpp_server/library/install/mysql-connector-c++-9.1.0)
+    list(APPEND CMAKE_PREFIX_PATH ~/cpp_server/library/install/mysql-connector-c++-9.2.0)
 endif ()
 
 find_package(spdlog CONFIG REQUIRED)
@@ -158,14 +158,24 @@ add_executable(world world/world.cpp)
 target_include_directories(world PRIVATE ${CMAKE_SOURCE_DIR}/world/include)
 target_link_libraries(world PUBLIC Uranus)
 
-file(GLOB_RECURSE COMMON_SRC    ${CMAKE_SOURCE_DIR}/server/common/*.h      ${CMAKE_SOURCE_DIR}/server/common/*.cpp     ${CMAKE_SOURCE_DIR}/server/common/*.cc)
-file(GLOB_RECURSE IMPL_SRC      ${CMAKE_SOURCE_DIR}/server/impl/*.h        ${CMAKE_SOURCE_DIR}/server/impl/*.cpp       ${CMAKE_SOURCE_DIR}/server/impl/*.cc)
-file(GLOB_RECURSE COMMAND_SRC   ${CMAKE_SOURCE_DIR}/server/command/*.h     ${CMAKE_SOURCE_DIR}/server/command/*.cpp    ${CMAKE_SOURCE_DIR}/server/command/*.cc)
-file(GLOB_RECURSE PLAYER_SRC    ${CMAKE_SOURCE_DIR}/server/player/*.h      ${CMAKE_SOURCE_DIR}/server/player/*.cpp     ${CMAKE_SOURCE_DIR}/server/player/*.cc)
-file(GLOB_RECURSE CONFIG_SRC    ${CMAKE_SOURCE_DIR}/server/config/*.h      ${CMAKE_SOURCE_DIR}/server/config/*.cpp     ${CMAKE_SOURCE_DIR}/server/config/*.cc)
-#file(GLOB_RECURSE WORLD_SRC     ${CMAKE_SOURCE_DIR}/server/world/*.h       ${CMAKE_SOURCE_DIR}/server/world/*.cpp      ${CMAKE_SOURCE_DIR}/server/world/*.cc)
+file(GLOB_RECURSE COMMON_SRC    ${CMAKE_SOURCE_DIR}/server/common/*.h       ${CMAKE_SOURCE_DIR}/server/common/*.cpp)
+file(GLOB_RECURSE IMPL_SRC      ${CMAKE_SOURCE_DIR}/server/impl/*.h         ${CMAKE_SOURCE_DIR}/server/impl/*.cpp)
+file(GLOB_RECURSE COMMAND_SRC   ${CMAKE_SOURCE_DIR}/server/command/*.h      ${CMAKE_SOURCE_DIR}/server/command/*.cpp)
+file(GLOB_RECURSE PLAYER_SRC    ${CMAKE_SOURCE_DIR}/server/player/*.h       ${CMAKE_SOURCE_DIR}/server/player/*.cpp)
+file(GLOB_RECURSE CONFIG_SRC    ${CMAKE_SOURCE_DIR}/server/config/*.h       ${CMAKE_SOURCE_DIR}/server/config/*.cpp)
+file(GLOB_RECURSE GAMEPLAY_SRC  ${CMAKE_SOURCE_DIR}/server/gameplay/*.h     ${CMAKE_SOURCE_DIR}/server/gameplay/*.cpp)
 
-set(SERVER_SRC server/server.h server/game_server.h server/game_server.cpp ${COMMON_SRC} ${IMPL_SRC} ${COMMAND_SRC} ${CONFIG_SRC} ${PLAYER_SRC})
+set(SERVER_SRC
+        server/server.h
+        server/game_server.h server/game_server.cpp
+        ${COMMON_SRC}
+        ${IMPL_SRC}
+        ${COMMAND_SRC}
+        ${CONFIG_SRC}
+        ${PLAYER_SRC}
+        ${GAMEPLAY_SRC}
+)
+
 if (MSVC)
     foreach(file ${SERVER_SRC})
         get_filename_component(PARENT_DIR "${file}" DIRECTORY)

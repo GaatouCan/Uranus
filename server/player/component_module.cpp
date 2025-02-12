@@ -1,16 +1,15 @@
 #include "component_module.h"
 #include "player.h"
 
-// #include "../world/component/appearance/AppearanceCT.h"
+#include "game_world.h"
 
-#include <game_world.h>
-// #include <system/database/DatabaseSystem.h>
+#include "../gameplay/component/appearance/appearance_ct.h"
 
 
 ComponentModule::ComponentModule(Player *plr)
     : mOwner(plr){
 
-    // CreateComponent<UAppearanceCT>();
+    CreateComponent<AppearanceCT>();
 }
 
 ComponentModule::~ComponentModule() {
