@@ -1,8 +1,23 @@
 #pragma once
 
 #include "../../sub_system.h"
+#include "utils.h"
+
+#include <memory>
+#include <thread>
+#include <mysqlx/xdevapi.h>
+
 
 class BASE_API DatabaseSystem final : public ISubSystem {
+
+    struct SessionNode {
+        std::unique_ptr<std::thread> th;
+        std::unique_ptr<mysqlx::Session> sess;
+        ThreadID tid;
+    };
+
+    std::vector<SessionNode> mSessionList;
+    std::atomic_size_t mNextNodeIndex = 0;
 
 public:
     explicit DatabaseSystem(GameWorld *world);
