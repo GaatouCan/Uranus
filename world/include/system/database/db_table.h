@@ -25,3 +25,15 @@ public:
     virtual void Remove(mysqlx::Table &table) = 0;
     virtual void Remove(mysqlx::Schema &schema) = 0;
 };
+
+template <typename T>
+concept DBTableType = std::derived_from<T, IDBTable>;
+
+#define DB_CAST_FROM_BLOB(field, value) \
+{ \
+const auto bytes = (value).getRawBytes(); \
+field = ByteArray(std::vector(bytes.begin(), bytes.end())); \
+}
+
+#define DB_CAST_TO_BLOB(field) \
+mysqlx::bytes((field).Data(), (field).Size())
