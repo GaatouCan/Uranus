@@ -16,7 +16,7 @@ public:
     explicit TimerSystem(GameWorld *world);
     ~TimerSystem() override;
 
-    GET_SYSTEM_NAME(UTimerSystem)
+    GET_SYSTEM_NAME(TimerSystem)
 
     void Init() override;
 

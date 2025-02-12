@@ -5,7 +5,7 @@
 
 class IPlayerComponent {
 
-    class IComponentContext *ctx_;
+    class IComponentContext *mContext;
 
 public:
     explicit IPlayerComponent(IComponentContext *ctx);

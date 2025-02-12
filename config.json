@@ -9,13 +9,12 @@
             "appearance",
             "chat"
         ],
-        "except": ["C2W_LoginRequest"],
-        "include_dir": "ProtocolRoute.h"
+        "include_dir": "protocol_route.h"
     },
     "sql": {
         "sql": "struct/sql",
         "gen": "struct/orm",
-        "desc": "struct/describe.json"
+        "desc": "struct/desc.json"
     },
     "xlsx": {
         "xlsx": "config/xlsx",

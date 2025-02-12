@@ -10,27 +10,28 @@ enum OperateType {
   USE_AVATAR_FRAME = 4;
 }
 
-message C2W_AppearanceRequest {
+message AppearanceRequest {
   OperateType operate_type = 1;
-  uint32 index = 2;
+  int32 index = 2;
   int32 parameter = 3;
 }
 
-message W2C_AppearanceResponse {
+// @client
+message AppearanceResponse {
   message Avatar {
-    uint32 index = 1;
+    int32 index = 1;
     bool bActivated = 2;
-    uint64 expired = 3;
+    int64 expired = 3;
   }
 
   message AvatarFrame {
-    uint32 index = 1;
+    int32 index = 1;
     bool bActivated = 2;
-    uint64 expired = 3;
+    int64 expired = 3;
   }
 
-  uint32 current_avatar = 1;
-  uint32 current_avatar_frame = 2;
+  int32 current_avatar = 1;
+  int32 current_avatar_frame = 2;
 
   repeated Avatar avatar = 3;
   repeated AvatarFrame avatar_frame = 4;

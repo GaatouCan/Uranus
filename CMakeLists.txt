@@ -165,7 +165,7 @@ file(GLOB_RECURSE PLAYER_SRC    ${CMAKE_SOURCE_DIR}/server/player/*.h      ${CMA
 file(GLOB_RECURSE CONFIG_SRC    ${CMAKE_SOURCE_DIR}/server/config/*.h      ${CMAKE_SOURCE_DIR}/server/config/*.cpp     ${CMAKE_SOURCE_DIR}/server/config/*.cc)
 #file(GLOB_RECURSE WORLD_SRC     ${CMAKE_SOURCE_DIR}/server/world/*.h       ${CMAKE_SOURCE_DIR}/server/world/*.cpp      ${CMAKE_SOURCE_DIR}/server/world/*.cc)
 
-set(SERVER_SRC server/server.h server/GameServer.h server/GameServer.cpp ${COMMON_SRC} ${IMPL_SRC} ${COMMAND_SRC} ${CONFIG_SRC} ${PLAYER_SRC})
+set(SERVER_SRC server/server.h server/game_server.h server/game_server.cpp ${COMMON_SRC} ${IMPL_SRC} ${COMMAND_SRC} ${CONFIG_SRC} ${PLAYER_SRC})
 if (MSVC)
     foreach(file ${SERVER_SRC})
         get_filename_component(PARENT_DIR "${file}" DIRECTORY)

@@ -38,7 +38,7 @@ public:
     explicit EventSystem(GameWorld *world);
     ~EventSystem() override;
 
-    GET_SYSTEM_NAME(UEventSystem)
+    GET_SYSTEM_NAME(EventSystem)
 
     void Init() override;
 

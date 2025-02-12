@@ -1,25 +1,25 @@
-﻿#include "PlayerManager.h"
+﻿#include "player_manager.h"
 #include "Player.h"
-#include "../common/ProtoType.h"
+#include "../common/proto_type.h"
 
-#include "GameWorld.h"
-#include "impl/Package.h"
+#include "game_world.h"
+#include "impl/package.h"
 #include "config_manager.h"
-#include "system/manager/ManagerSystem.h"
+#include "system/manager/manager_system.h"
 
 
-UPlayerManager::UPlayerManager(ManagerSystem *owner)
+PlayerManager::PlayerManager(ManagerSystem *owner)
     : IBaseManager(owner) {
 }
 
-UPlayerManager::~UPlayerManager() {
+PlayerManager::~PlayerManager() {
     mPlayerMap.clear();
 }
 
-void UPlayerManager::Init() {
+void PlayerManager::Init() {
 }
 
-void UPlayerManager::OnDayChange() {
+void PlayerManager::OnDayChange() {
     for (const auto &plr: mPlayerMap | std::views::values) {
         if (plr != nullptr && plr->IsOnline()) {
             plr->OnDayChange();
@@ -27,7 +27,7 @@ void UPlayerManager::OnDayChange() {
     }
 }
 
-awaitable<std::shared_ptr<Player> > UPlayerManager::OnPlayerLogin(const std::shared_ptr<Connection> &conn, const PlayerID &id) {
+awaitable<std::shared_ptr<Player> > PlayerManager::OnPlayerLogin(const std::shared_ptr<Connection> &conn, const PlayerID &id) {
     if (conn == nullptr || std::any_cast<PlayerID>(conn->GetContext()) != id) {
         spdlog::error("{} - Null Connection Pointer Or Player ID Not Equal.", __FUNCTION__);
         co_return nullptr;
@@ -54,7 +54,7 @@ awaitable<std::shared_ptr<Player> > UPlayerManager::OnPlayerLogin(const std::sha
     const auto plr = std::make_shared<Player>(conn);
 
     {
-        std::scoped_lock lock(mPlayerMutex);
+        std::unique_lock lock(mPlayerMutex);
         mPlayerMap[id.local] = plr;
     }
 
@@ -67,7 +67,7 @@ awaitable<std::shared_ptr<Player> > UPlayerManager::OnPlayerLogin(const std::sha
     co_return plr;
 }
 
-void UPlayerManager::OnPlayerLogout(const PlayerID pid) {
+void PlayerManager::OnPlayerLogout(const PlayerID pid) {
     spdlog::info("{} - Player[{}] Logout", __FUNCTION__, pid.ToInt64());
     if (const auto plr = RemovePlayer(pid.local); plr != nullptr) {
         plr->TryLeaveScene();
@@ -75,16 +75,16 @@ void UPlayerManager::OnPlayerLogout(const PlayerID pid) {
     }
 }
 
-std::shared_ptr<Player> UPlayerManager::FindPlayer(const uint32_t pid) {
-    std::shared_lock lock(mPlayerSharedMutex);
+std::shared_ptr<Player> PlayerManager::FindPlayer(const int32_t pid) {
+    std::shared_lock lock(mPlayerMutex);
     if (const auto it = mPlayerMap.find(pid); it != mPlayerMap.end()) {
         return it->second;
     }
     return nullptr;
 }
 
-std::shared_ptr<Player> UPlayerManager::RemovePlayer(const uint32_t pid) {
-    std::scoped_lock lock(mPlayerMutex);
+std::shared_ptr<Player> PlayerManager::RemovePlayer(const int32_t pid) {
+    std::unique_lock lock(mPlayerMutex);
     if (const auto it = mPlayerMap.find(pid); it != mPlayerMap.end()) {
         auto res = it->second;
         mPlayerMap.erase(it);
@@ -93,7 +93,7 @@ std::shared_ptr<Player> UPlayerManager::RemovePlayer(const uint32_t pid) {
     return nullptr;
 }
 
-void UPlayerManager::SendToList(const std::set<PlayerID> &players, const int32_t id, const std::string_view data) {
+void PlayerManager::SendToList(const std::set<PlayerID> &players, const int32_t id, const std::string_view data) {
     if (id <= MINIMUM_PACKAGE_ID || id >= static_cast<int32_t>(protocol::ProtoType::PROTO_TYPE_MAX))
         return;
 
@@ -106,7 +106,7 @@ void UPlayerManager::SendToList(const std::set<PlayerID> &players, const int32_t
     }
 }
 
-void UPlayerManager::SyncCache(const std::shared_ptr<Player> &plr) {
+void PlayerManager::SyncCache(const std::shared_ptr<Player> &plr) {
     if (plr == nullptr)
         return;
 
@@ -116,7 +116,7 @@ void UPlayerManager::SyncCache(const std::shared_ptr<Player> &plr) {
     SyncCache(node);
 }
 
-void UPlayerManager::SyncCache(const uint32_t pid) {
+void PlayerManager::SyncCache(const int32_t pid) {
     if (pid < PLAYER_LOCAL_ID_BEGIN || pid > PLAYER_LOCAL_ID_END)
         return;
 
@@ -124,16 +124,16 @@ void UPlayerManager::SyncCache(const uint32_t pid) {
     SyncCache(plr);
 }
 
-void UPlayerManager::SyncCache(const CacheNode &node) {
+void PlayerManager::SyncCache(const CacheNode &node) {
     if (!node.pid.IsAvailable())
         return;
 
-    std::scoped_lock lock(mCacheMutex);
+    std::unique_lock lock(mCacheMutex);
     mCacheMap[node.pid.local] = node;
     spdlog::info("{} - Player[{}] Success.", __FUNCTION__, node.pid.ToInt64());
 }
 
-awaitable<std::optional<CacheNode> > UPlayerManager::FindCacheNode(const PlayerID &pid) {
+awaitable<std::optional<CacheNode> > PlayerManager::FindCacheNode(const PlayerID &pid) {
     if (!pid.IsAvailable())
         co_return std::nullopt;
 
@@ -146,7 +146,7 @@ awaitable<std::optional<CacheNode> > UPlayerManager::FindCacheNode(const PlayerI
         SyncCache(plr);
     }
 
-    std::shared_lock lock(mCacheSharedMutex);
+    std::shared_lock lock(mCacheMutex);
     if (const auto it = mCacheMap.find(pid.local); it != mCacheMap.end()) {
         co_return std::make_optional(it->second);
     }

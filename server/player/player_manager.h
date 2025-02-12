@@ -1,9 +1,9 @@
 #pragma once
 
-#include "CacheNode.h"
+#include "cache_node.h"
 
-#include "system/manager/BaseManager.h"
-#include "PlayerID.h"
+#include "system/manager/base_manager.h"
+#include "player_id.h"
 
 #include <mutex>
 #include <shared_mutex>
@@ -13,23 +13,21 @@
 class Player;
 class Connection;
 
-class UPlayerManager final : public IBaseManager {
+class PlayerManager final : public IBaseManager {
 
-    std::unordered_map<uint32_t, std::shared_ptr<Player>> mPlayerMap;
-    std::mutex mPlayerMutex;
-    mutable std::shared_mutex mPlayerSharedMutex;
+    std::unordered_map<int32_t, std::shared_ptr<Player>> mPlayerMap;
+    mutable std::shared_mutex mPlayerMutex;
 
-    std::unordered_map<uint32_t, CacheNode> mCacheMap;
-    std::mutex mCacheMutex;
-    mutable std::shared_mutex mCacheSharedMutex;
+    std::unordered_map<int32_t, CacheNode> mCacheMap;
+    mutable std::shared_mutex mCacheMutex;
 
 public:
-    explicit UPlayerManager(ManagerSystem *owner);
-    ~UPlayerManager() override;
+    explicit PlayerManager(ManagerSystem *owner);
+    ~PlayerManager() override;
 
     void Init() override;
 
-    GET_MANAGER_NAME(UPlayerManager)
+    GET_MANAGER_NAME(PlayerManager)
 
     void OnDayChange() override;
 
@@ -37,13 +35,13 @@ public:
 
     void OnPlayerLogout(PlayerID pid);
 
-    std::shared_ptr<Player> FindPlayer(uint32_t pid);
-    std::shared_ptr<Player> RemovePlayer(uint32_t pid);
+    std::shared_ptr<Player> FindPlayer(int32_t pid);
+    std::shared_ptr<Player> RemovePlayer(int32_t pid);
 
     void SendToList(const std::set<PlayerID>& players, int32_t id, std::string_view data);
 
     void SyncCache(const std::shared_ptr<Player> &plr);
-    void SyncCache(uint32_t pid);
+    void SyncCache(int32_t pid);
     void SyncCache(const CacheNode &node);
 
     awaitable<std::optional<CacheNode>> FindCacheNode(const PlayerID &pid);

@@ -9,20 +9,23 @@ enum UserRole {
   ADMIN = 3;
 }
 
-message C2W_LoginRequest {
-  uint64 player_id = 1;
+// @ignore
+message ClientLoginRequest {
+  int64 player_id = 1;
   UserRole role = 2;
   string token = 3;
   bool override = 4;
 }
 
-message W2C_LoginResponse {
+// @client
+message LoginResponse {
   bool result = 1;
   int32 progress = 2;
   string describe = 3;
 }
 
-message W2C_ForceLogoutResponse {
-  uint64 player_id = 1;
+// @client
+message ForceLogoutResponse {
+  int64 player_id = 1;
   string address = 2;
 }

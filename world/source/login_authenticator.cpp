@@ -17,6 +17,7 @@ LoginAuthenticator::~LoginAuthenticator() {
 }
 
 void LoginAuthenticator::Init() {
+    assert(mHandler != nullptr);
 }
 
 GameWorld * LoginAuthenticator::GetWorld() const {
@@ -36,12 +37,6 @@ PlayerID LoginAuthenticator::VerifyToken(PlayerID pid, const std::string &token)
 awaitable<void> LoginAuthenticator::OnLogin(const ConnectionPointer &conn, IPackage *pkg) {
     if (conn == nullptr || pkg == nullptr)
         co_return;
-
-    // if (mHandler == nullptr) {
-    //     spdlog::critical("{} - handler not set.", __FUNCTION__);
-    //     mWorld->Shutdown();
-    //     exit(-1);
-    // }
 
     const auto info = co_await mHandler->ParseLoginInfo(pkg);
     if (!info.pid.IsAvailable()) {

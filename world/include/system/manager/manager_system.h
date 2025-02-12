@@ -15,7 +15,7 @@ public:
     explicit ManagerSystem(GameWorld *world);
     ~ManagerSystem() override;
 
-    GET_SYSTEM_NAME(UManagerSystem)
+    GET_SYSTEM_NAME(ManagerSystem)
 
     void Init() override;
 

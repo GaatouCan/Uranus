@@ -1,7 +1,8 @@
 #pragma once
 
 #include "server.h"
-#include "ServerLogic.h"
+#include "server_logic.h"
+
 
 class SERVER_API GameServer final : public IServerLogic {
 public:

@@ -1,30 +1,30 @@
-#include "ComponentModule.h"
-#include "Player.h"
+#include "component_module.h"
+#include "player.h"
 
 // #include "../world/component/appearance/AppearanceCT.h"
 
-#include <GameWorld.h>
+#include <game_world.h>
 // #include <system/database/DatabaseSystem.h>
 
 
 ComponentModule::ComponentModule(Player *plr)
-    : owner_(plr){
+    : mOwner(plr){
 
     // CreateComponent<UAppearanceCT>();
 }
 
 ComponentModule::~ComponentModule() {
-    for (const auto &ctx : std::views::values(component_map_)) {
+    for (const auto &ctx : std::views::values(mComponentMap)) {
         delete ctx;
     }
 }
 
 Player * ComponentModule::GetOwner() const {
-    return owner_;
+    return mOwner;
 }
 
 void ComponentModule::OnDayChange() {
-    for (const auto &ctx : component_map_ | std::views::values) {
+    for (const auto &ctx : mComponentMap | std::views::values) {
         ctx->GetComponent()->OnDayChange(false);
     }
 }
@@ -75,25 +75,25 @@ void ComponentModule::OnDayChange() {
 // }
 
 void ComponentModule::OnLogin() {
-    for (const auto &ctx: std::views::values(component_map_)) {
+    for (const auto &ctx: std::views::values(mComponentMap)) {
         ctx->GetComponent()->OnLogin();
     }
 }
 
 void ComponentModule::OnLogout() {
-    for (const auto &ctx: std::views::values(component_map_)) {
+    for (const auto &ctx: std::views::values(mComponentMap)) {
         ctx->GetComponent()->OnLogout();
     }
 }
 
 PlayerID ComponentModule::GetPlayerID() const {
-    if (owner_)
-        return owner_->GetPlayerID();
+    if (mOwner)
+        return mOwner->GetPlayerID();
     return {};
 }
 
 void ComponentModule::SyncCache(CacheNode *node) {
-    for (const auto &ctx: std::views::values(component_map_)) {
+    for (const auto &ctx: std::views::values(mComponentMap)) {
         ctx->GetComponent()->SyncCache(node);
     }
 }

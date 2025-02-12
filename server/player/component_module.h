@@ -2,15 +2,16 @@
 
 #include <typeindex>
 #include <concepts>
+#include <ranges>
 // #include <mysqlx/xdevapi.h>
-#include <spdlog/spdlog.h>
-#include <PlayerID.h>
 
-#include "PlayerComponent.h"
+#include "player_id.h"
+
+#include "player_component.h"
 // #include <system/database/Serializer.h>
 // #include <system/database/Deserializer.h>
 
-#include <ranges>
+#include <spdlog/spdlog.h>
 
 
 class ComponentModule;
@@ -19,8 +20,8 @@ class IComponentContext {
 
 protected:
 
-    IPlayerComponent* component_ = nullptr;
-    ComponentModule* module_ = nullptr;
+    IPlayerComponent* mComponent = nullptr;
+    ComponentModule* mModule = nullptr;
 
 public:
     // using ASerializerVector = std::vector<std::pair<ISerializer *, bool>>;
@@ -28,13 +29,13 @@ public:
 
     IComponentContext() = delete;
 
-    explicit IComponentContext(ComponentModule *module) : module_(module) {}
+    explicit IComponentContext(ComponentModule *module) : mModule(module) {}
     virtual ~IComponentContext() {
-        delete component_;
+        delete mComponent;
     }
 
-    [[nodiscard]] ComponentModule* GetModule() const { return module_; }
-    [[nodiscard]] IPlayerComponent* GetComponent() const { return component_; }
+    [[nodiscard]] ComponentModule* GetModule() const { return mModule; }
+    [[nodiscard]] IPlayerComponent* GetComponent() const { return mComponent; }
 
     // [[nodiscard]] virtual std::vector<std::string> GetTableList() const = 0;
 
@@ -51,7 +52,7 @@ public:
     // using ADeserializeFunctor = void(Component::*)(UDeserializer &);
 
     explicit TComponentContext(ComponentModule *module) : IComponentContext(module) {
-        component_ = new Component(this);
+        mComponent = new Component(this);
     }
 
     // void RegisterTable(const std::string &table, ASerializeFunctor ser, ADeserializeFunctor deser) {
@@ -92,9 +93,8 @@ private:
 
 class ComponentModule final {
 
-    Player *owner_;
-
-    std::map<std::type_index, IComponentContext *> component_map_;
+    Player *mOwner;
+    std::map<std::type_index, IComponentContext *> mComponentMap;
 
 public:
     ComponentModule() = delete;
@@ -110,7 +110,7 @@ public:
     requires std::derived_from<T, IPlayerComponent>
     T *CreateComponent() {
         const auto ctx = new TComponentContext<T>(this);
-        component_map_.insert_or_assign(typeid(T), ctx);
+        mComponentMap.insert_or_assign(typeid(T), ctx);
 
         spdlog::debug("{} - Player[{}] load {}", __FUNCTION__, GetPlayerID().ToInt64(), ctx->GetComponent()->GetComponentName());
 
@@ -120,7 +120,7 @@ public:
     template<typename T>
     requires std::derived_from<T, IPlayerComponent>
     T *GetComponent() {
-        if (const auto it = component_map_.find(typeid(T)); it != component_map_.end()) {
+        if (const auto it = mComponentMap.find(typeid(T)); it != mComponentMap.end()) {
             return dynamic_cast<T *>(it->second->GetComponent());
         }
         return nullptr;

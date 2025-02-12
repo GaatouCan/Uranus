@@ -1,25 +1,25 @@
-#include "PlayerComponent.h"
-#include "ComponentModule.h"
-#include "Player.h"
+#include "player_component.h"
+#include "component_module.h"
+#include "player.h"
 
 
 IPlayerComponent::IPlayerComponent(IComponentContext *ctx)
-    : ctx_(ctx) {
+    : mContext(ctx) {
 }
 
 IPlayerComponent::~IPlayerComponent() {
 }
 
 IComponentContext * IPlayerComponent::GetComponentContext() const {
-    return ctx_;
+    return mContext;
 }
 
 ComponentModule * IPlayerComponent::GetModule() const {
-    return ctx_->GetModule();
+    return mContext->GetModule();
 }
 
 Player * IPlayerComponent::GetOwner() const {
-    return ctx_->GetModule()->GetOwner();
+    return mContext->GetModule()->GetOwner();
 }
 
 GameWorld * IPlayerComponent::GetWorld() const {

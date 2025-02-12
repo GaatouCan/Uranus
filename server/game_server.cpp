@@ -1,14 +1,14 @@
-#include "GameServer.h"
+#include "game_server.h"
 
-#include "GameWorld.h"
-#include "Connection.h"
+#include "game_world.h"
+#include "connection.h"
 #include "config_manager.h"
-#include "LoginAuthenticator.h"
-#include "ProtocolRoute.h"
+#include "login_authenticator.h"
+#include "protocol_route.h"
 
-#include "impl/ConnectionHandler.h"
-#include "impl/LoginHandler.h"
-#include "impl/ProtocolHandler.h"
+#include "impl/connection_handler.h"
+#include "impl/login_handler.h"
+#include "impl/protocol_handler.h"
 
 #include "common/proto.def.h"
 #include "common/config.def.h"

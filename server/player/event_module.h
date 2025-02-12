@@ -1,9 +1,8 @@
 #pragma once
 
-#include "../common/Event.h"
+#include "../common/event.h"
 
-// #include "system/event/EventParam.h"
-#include "system/event/EventSystem.h"
+#include "system/event/event_system.h"
 
 #include <queue>
 #include <mutex>
@@ -15,19 +14,19 @@
 
 class EventModule final {
 
-    class Player *owner_;
+    class Player *mOwner;
 
     struct EventNode {
         Event event = Event::UNAVAILABLE;
         IEventParam *param = nullptr;
     };
 
-    std::queue<EventNode> queue_;
-    mutable std::shared_mutex event_mutex_;
+    std::queue<EventNode> mQueue;
+    mutable std::shared_mutex mEventMutex;
 
-    std::map<Event, std::map<void *, EventListener>> listener_map_;
-    std::map<void *, EventListener> cur_listener_;
-    std::mutex listener_mutex_;
+    std::map<Event, std::map<void *, EventListener>> mListenerMap;
+    std::map<void *, EventListener> mCurListener;
+    std::mutex mListenerMutex;
 
 public:
     EventModule() = delete;

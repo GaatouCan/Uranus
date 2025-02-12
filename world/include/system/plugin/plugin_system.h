@@ -26,7 +26,7 @@ public:
     explicit PluginSystem(GameWorld *world);
     ~PluginSystem() override;
 
-    GET_SYSTEM_NAME(UPluginSystem)
+    GET_SYSTEM_NAME(PluginSystem)
 
     void Init() override;
 
