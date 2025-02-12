@@ -82,7 +82,7 @@ Package &Package::SetPackageID(const uint32_t id) {
 Package &Package::SetData(const std::string_view str) {
     mData.Resize(str.size());
     memcpy(mData.Data(), str.data(), str.size());
-    mHeader.length = static_cast<int64_t>(str.size());
+    mHeader.length = str.size();
     return *this;
 }
 
