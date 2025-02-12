@@ -1,4 +1,4 @@
-#include "GameWorld.h"
+#include "game_world.h"
 
 int main(int argc, char *argv[]) {
     const auto world = new GameWorld();
