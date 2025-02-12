@@ -1,5 +1,6 @@
 #include "../../include/impl/package.h"
 
+
 uint32_t Package::kPackageMagic = 20250122;
 uint32_t Package::kPackageVersion = 1001;
 std::string Package::kPackageMethod = "PROTOBUF";
