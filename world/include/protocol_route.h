@@ -53,7 +53,7 @@ private:
 };
 
 #define REGISTER_PROTOCOL(proto) \
-    route->RegisterProtocol(static_cast<int32_t>(ProtoType::proto), &proto);
+    route->RegisterProtocol(static_cast<uint32_t>(ProtoType::proto), &proto);
 
 #define REGISTER_FROM_CROSS(proto) \
     // route->RegisterCrossProtocol(static_cast<int32_t>(EProtoType::proto), &proto);

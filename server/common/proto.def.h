@@ -20,7 +20,7 @@ namespace protocol {
 	// Login
 
 	// Appearance
-	// void AppearanceRequest(const std::shared_ptr<IBasePlayer> &plr, IPackage *pkg);
+	void AppearanceRequest(const std::shared_ptr<IBasePlayer> &plr, IPackage *pkg);
 
 	// Chat
 
@@ -36,7 +36,7 @@ inline void LoadProtocol(ProtocolRoute *route) {
 	// Login
 
 	// Appearance
-	// REGISTER_PROTOCOL(AppearanceRequest)
+	REGISTER_PROTOCOL(AppearanceRequest)
 
 	// Chat
 

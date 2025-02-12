@@ -3,6 +3,7 @@
 //
 
 #include "appearance_ct.h"
+#include "../../../common/proto.def.h"
 
 AppearanceCT::AppearanceCT(IComponentContext *ctx)
     : IPlayerComponent(ctx) {
@@ -10,3 +11,8 @@ AppearanceCT::AppearanceCT(IComponentContext *ctx)
 
 AppearanceCT::~AppearanceCT() {
 }
+
+void protocol::AppearanceRequest(const std::shared_ptr<IBasePlayer> &plr, IPackage *pkg) {
+    // TODO
+}
+
