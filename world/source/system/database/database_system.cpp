@@ -84,3 +84,9 @@ void DatabaseSystem::SyncSelect(const std::string &tableName, const std::string 
         cb(row);
     }
 }
+
+void DatabaseSystem::PushTransaction(const TransactionFunctor &func) {
+    const auto &[th, sess, queue, tid] = mSessionList[mNextNodeIndex++];
+    mNextNodeIndex = mNextNodeIndex % mSessionList.size();
+    queue->PushBack(new TransactionTask(func));
+}

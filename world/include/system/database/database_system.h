@@ -31,4 +31,13 @@ public:
     void Init() override;
 
     void SyncSelect(const std::string &tableName, const std::string &where, const std::function<void(mysqlx::Row)> &cb);
+
+    void PushTransaction(const TransactionFunctor &func);
+
+    template<class Callback>
+    void PushSelectTask(const QueryVector &vec, Callback &&cb) {
+        const auto &[th, sess, queue, tid] = mSessionList[mNextNodeIndex++];
+        mNextNodeIndex = mNextNodeIndex % mSessionList.size();
+        queue->PushBack(new QueryTask<Callback>(vec, std::forward<Callback>(cb)));
+    }
 };
