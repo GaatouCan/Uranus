@@ -23,7 +23,7 @@ void DatabaseSystem::Init() {
     mSessionList = std::vector<SessionNode>(cfg["database"]["pool"].as<uint64_t>());
 
     for (auto &node: mSessionList) {
-        node.sess = std::make_unique<mysqlx::Session>(
+        node.session = std::make_unique<mysqlx::Session>(
             cfg["database"]["mysql"]["host"].as<std::string>(),
             cfg["database"]["mysql"]["port"].as<uint16_t>(),
             cfg["database"]["mysql"]["user"].as<std::string>(),
@@ -31,9 +31,9 @@ void DatabaseSystem::Init() {
         );
         // node.queue = std::make_unique<TSDeque<IDatabaseWrapper *>>();
 
-        node.th = std::make_unique<std::thread>([this, &node, &schemaName] {
-            node.tid = std::this_thread::get_id();
-            spdlog::info("\tThread ID {} - Begin handle database task", utils::ThreadIdToInt(node.tid));
+        node.thread = std::make_unique<std::thread>([this, &node, &schemaName] {
+            node.threadID = std::this_thread::get_id();
+            spdlog::info("\tThread ID {} - Begin handle database task", utils::ThreadIdToInt(node.threadID));
             // while (node.queue->IsRunning()) {
             //     node.queue->Wait();
             //     if (!node.queue->IsRunning())
@@ -48,7 +48,7 @@ void DatabaseSystem::Init() {
             // }
             //
             // node.queue->Clear();
-            node.sess->close();
+            node.session->close();
         });
     }
 }

@@ -11,9 +11,9 @@
 class BASE_API DatabaseSystem final : public ISubSystem {
 
     struct SessionNode {
-        std::unique_ptr<std::thread> th;
-        std::unique_ptr<mysqlx::Session> sess;
-        ThreadID tid;
+        std::unique_ptr<std::thread> thread;
+        std::unique_ptr<mysqlx::Session> session;
+        ThreadID threadID;
     };
 
     std::vector<SessionNode> mSessionList;
