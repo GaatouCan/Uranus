@@ -40,4 +40,20 @@ public:
         mNextNodeIndex = mNextNodeIndex % mSessionList.size();
         queue->PushBack(new QueryTask<Callback>(vec, std::forward<Callback>(cb)));
     }
+
+    template<asio::completion_token_for<void(QueryResultPtr)> CompletionToken>
+    auto AsyncSelect(const QueryVector &vec, CompletionToken &&token) {
+        auto init = [this](asio::completion_handler_for<void(QueryResultPtr)> auto handle, const QueryVector &query) {
+            auto work = asio::make_work_guard(handle);
+
+            this->PushSelectTask(query, [handle = std::move(handle), work = std::move(work)](QueryResultPtr result) mutable {
+                auto alloc = asio::get_associated_allocator(handle, asio::recycling_allocator<void>());
+                asio::dispatch(work.get_executor(), asio::bind_allocator(alloc, [handle = std::move(handle), result = std::forward<QueryResultPtr>(result)]() mutable {
+                    std::move(handle)(std::move(result));
+                }));
+            });
+        };
+
+        return asio::async_initiate<CompletionToken, void(QueryResultPtr)>(init, token, vec);
+    };
 };
