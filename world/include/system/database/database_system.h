@@ -1,7 +1,9 @@
 #pragma once
 
 #include "../../sub_system.h"
-#include "utils.h"
+#include "../../thread_safe_deque.h"
+#include "../../utils.h"
+#include "database_task.h"
 
 #include <memory>
 #include <thread>
@@ -13,6 +15,7 @@ class BASE_API DatabaseSystem final : public ISubSystem {
     struct SessionNode {
         std::unique_ptr<std::thread> thread;
         std::unique_ptr<mysqlx::Session> session;
+        std::unique_ptr<ThreadSafeDeque<IDatabaseTask *>> queue;
         ThreadID threadID;
     };
 

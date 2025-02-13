@@ -10,7 +10,7 @@ DatabaseSystem::DatabaseSystem(GameWorld *world)
 
 DatabaseSystem::~DatabaseSystem() {
 
-    for (auto &[th, sess, tid] : mSessionList) {
+    for (auto &[th, sess, queue, tid] : mSessionList) {
         if (th && th->joinable())
             th->join();
     }
@@ -29,25 +29,27 @@ void DatabaseSystem::Init() {
             cfg["database"]["mysql"]["user"].as<std::string>(),
             cfg["database"]["mysql"]["passwd"].as<std::string>()
         );
-        // node.queue = std::make_unique<TSDeque<IDatabaseWrapper *>>();
+
+        node.queue = std::make_unique<ThreadSafeDeque<IDatabaseTask *>>();
 
         node.thread = std::make_unique<std::thread>([this, &node, &schemaName] {
             node.threadID = std::this_thread::get_id();
             spdlog::info("\tThread ID {} - Begin handle database task", utils::ThreadIdToInt(node.threadID));
-            // while (node.queue->IsRunning()) {
-            //     node.queue->Wait();
-            //     if (!node.queue->IsRunning())
-            //         break;
-            //
-            //     if (const auto wrapper = node.queue->PopFront(); wrapper != nullptr) {
-            //         if (auto schema = node.sess->getSchema(schemaName); schema.existsInDatabase()) {
-            //             wrapper->Execute(schema);
-            //         }
-            //         delete wrapper;
-            //     }
-            // }
-            //
-            // node.queue->Clear();
+            while (node.queue->IsRunning()) {
+                node.queue->Wait();
+                if (!node.queue->IsRunning())
+                    break;
+
+                if (const auto op = node.queue->PopFront(); op.has_value() && op.value() != nullptr) {
+                    const auto task = op.value();
+                    if (auto schema = node.session->getSchema(schemaName); schema.existsInDatabase()) {
+                        task->Execute(schema);
+                    }
+                    delete task;
+                }
+            }
+
+            node.queue->Clear();
             node.session->close();
         });
     }
