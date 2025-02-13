@@ -1,5 +1,6 @@
 #include "../../include/impl/package.h"
 
+
 uint32_t Package::kPackageMagic = 20250122;
 uint32_t Package::kPackageVersion = 1001;
 std::string Package::kPackageMethod = "PROTOBUF";
@@ -81,7 +82,7 @@ Package &Package::SetPackageID(const uint32_t id) {
 Package &Package::SetData(const std::string_view str) {
     mData.Resize(str.size());
     memcpy(mData.Data(), str.data(), str.size());
-    mHeader.length = static_cast<int64_t>(str.size());
+    mHeader.length = str.size();
     return *this;
 }
 

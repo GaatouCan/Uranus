@@ -12,7 +12,6 @@ std::chrono::duration<uint32_t> Connection::kExpireTime = 30s;
 std::chrono::duration<uint32_t> Connection::kWriteTimeout = 10s;
 std::chrono::duration<uint32_t> Connection::kReadTimeout = 10s;
 
-
 Connection::Connection(TcpSocket socket, MainScene *scene)
     : mSocket(std::move(socket)),
       mScene(scene),
