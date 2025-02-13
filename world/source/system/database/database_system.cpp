@@ -9,6 +9,10 @@ DatabaseSystem::DatabaseSystem(GameWorld *world)
 }
 
 DatabaseSystem::~DatabaseSystem() {
+    for (auto &[th, sess, queue, tid] : mSessionList) {
+        if (queue)
+            queue->Quit();
+    }
 
     for (auto &[th, sess, queue, tid] : mSessionList) {
         if (th && th->joinable())
@@ -52,5 +56,31 @@ void DatabaseSystem::Init() {
             node.queue->Clear();
             node.session->close();
         });
+    }
+}
+
+void DatabaseSystem::SyncSelect(const std::string &tableName, const std::string &where, const std::function<void(mysqlx::Row)> &cb) {
+    if (mSessionList.empty()) {
+        spdlog::error("{} - No Database Session Available.", __FUNCTION__);
+        return;
+    }
+
+    const auto &[th, sess, queue, tid] = mSessionList.front();
+    const auto &cfg = GetWorld()->GetServerConfig();
+
+    auto schema = sess->getSchema(cfg["database"]["mysql"]["schema"].as<std::string>());
+    if (!schema.existsInDatabase()) {
+        spdlog::error("{} - schema not exists", __FUNCTION__);
+        return;
+    }
+
+    auto table = schema.getTable(tableName);
+    if (!table.existsInDatabase()) {
+        spdlog::error("{} - table not exists", __FUNCTION__);
+        return;
+    }
+
+    for (auto result = table.select().where(where).execute(); const auto &row : result) {
+        cb(row);
     }
 }

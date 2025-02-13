@@ -29,4 +29,6 @@ public:
     GET_SYSTEM_NAME(DatabaseSystem)
 
     void Init() override;
+
+    void SyncSelect(const std::string &tableName, const std::string &where, const std::function<void(mysqlx::Row)> &cb);
 };
