@@ -15,6 +15,7 @@ class Deserializer;
 class AppearanceCT final : public IPlayerComponent {
 
     orm::DBTable_Appearance mAppear;
+    std::vector<orm::DBTable_Avatar> mAvatarList;
 
 public:
     explicit AppearanceCT(IComponentContext *ctx);
@@ -24,5 +25,8 @@ public:
 
     ISerializer *Serialize_Appearance(bool &bExpired) const;
     void Deserialize_Appearance(Deserializer &ds);
+
+    ISerializer *Serialize_Avatar(bool &bExpired) const;
+    void Deserialize_Avatar(Deserializer &ds);
 };
 

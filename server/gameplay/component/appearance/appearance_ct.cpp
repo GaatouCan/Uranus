@@ -13,6 +13,7 @@ AppearanceCT::AppearanceCT(IComponentContext *ctx)
     : IPlayerComponent(ctx) {
 
     SERIALIZE_COMPONENT(AppearanceCT, Appearance)
+    SERIALIZE_COMPONENT(AppearanceCT, Avatar)
 }
 
 AppearanceCT::~AppearanceCT() {
@@ -24,6 +25,14 @@ ISerializer * AppearanceCT::Serialize_Appearance(bool &bExpired) const {
 
 void AppearanceCT::Deserialize_Appearance(Deserializer &ds) {
     WRITE_PARAM(ds, mAppear)
+}
+
+ISerializer * AppearanceCT::Serialize_Avatar(bool &bExpired) const {
+    READ_PARAM_VECTOR(Avatar, mAvatarList)
+}
+
+void AppearanceCT::Deserialize_Avatar(Deserializer &ds) {
+    WRITE_PARAM_VECTOR(ds, mAvatarList)
 }
 
 void protocol::AppearanceRequest(const std::shared_ptr<IBasePlayer> &plr, IPackage *pkg) {

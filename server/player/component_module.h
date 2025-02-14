@@ -159,6 +159,13 @@ for (const auto &val : (pa) | std::views::values) { \
 } \
 return _serializer;
 
+#define READ_PARAM_VECTOR(tb, pa) \
+CREATE_SERIALIZER(_serializer, tb) \
+for (const auto &val : (pa)) { \
+_serializer->PushBack(val); \
+} \
+return _serializer;
+
 #define WRITE_PARAM(ds, pa) \
 if ((ds).HasMore()) { \
     (ds).Deserialize(&(pa)); \
@@ -169,4 +176,13 @@ while ((ds).HasMore()) { \
     decltype(pa)::mapped_type val; \
     (ds).Deserialize(&val); \
     (pa)[val.index] = val; \
+}
+
+
+#define WRITE_PARAM_VECTOR(ds, pa) \
+while ((ds).HasMore()) { \
+    decltype(pa)::value_type val; \
+    (ds).Deserialize(&val); \
+    if (val.index >= 0 && val.index < (pa).size()) \
+        (pa)[val.index] = val; \
 }
