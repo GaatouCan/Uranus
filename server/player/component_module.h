@@ -148,16 +148,16 @@ public:
 dynamic_cast<TComponentContext<comp> *>(GetComponentContext())->RegisterTable(utils::PascalToUnderline(#tb), &comp::Serialize_##tb, &comp::Deserialize_##tb);
 
 #define READ_PARAM(tb, pa) \
-CREATE_SERIALIZER(s, tb) \
-s->PushBack(pa); \
-return s;
+CREATE_SERIALIZER(_serializer, tb) \
+_serializer->PushBack(pa); \
+return _serializer;
 
 #define READ_PARAM_MAP(tb, pa) \
-CREATE_SERIALIZER(s, tb) \
+CREATE_SERIALIZER(_serializer, tb) \
 for (const auto &val : (pa) | std::views::values) { \
-    s->PushBack(val); \
+    _serializer->PushBack(val); \
 } \
-return s;
+return _serializer;
 
 #define WRITE_PARAM(ds, pa) \
 if ((ds).HasMore()) { \
