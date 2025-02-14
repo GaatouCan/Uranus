@@ -49,6 +49,29 @@ void AppearanceCT::Deserialize_AvatarFrame(Deserializer &ds) {
     WRITE_PARAM_VECTOR(ds, mAvatarFrameList)
 }
 
+void AppearanceCT::SendInfo() const {
+    Appearance::AppearanceResponse res;
+
+    res.set_current_avatar(mAppear.avatar);
+    res.set_current_avatar_frame(mAppear.avatar_frame);
+
+    for (const auto &val : mAvatarList) {
+        const auto avatar = res.add_avatar();
+        avatar->set_index(val.index);
+        avatar->set_bactivated(val.activated);
+        avatar->set_expired(val.expired_time);
+    }
+
+    for (const auto &val : mAvatarFrameList) {
+        const auto avatar_frame = res.add_avatar_frame();
+        avatar_frame->set_index(val.index);
+        avatar_frame->set_bactivated(val.activated);
+        avatar_frame->set_expired(val.expired_time);
+    }
+
+
+}
+
 void protocol::AppearanceRequest(const std::shared_ptr<IBasePlayer> &plr, IPackage *pkg) {
     if (plr == nullptr)
         return;

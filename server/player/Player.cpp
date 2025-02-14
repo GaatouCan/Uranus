@@ -33,16 +33,15 @@ awaitable<void> Player::OnLogin() {
     mLoginTime = NowTimePoint();
     spdlog::info("{} - Player[{}] Login Successfully.", __FUNCTION__, GetFullID());
 
-    // co_await mComponentModule.Deserialize();
-
-    mComponentModule.OnLogin();
-
     Login::LoginResponse response;
     response.set_result(true);
     response.set_progress(100);
     response.set_describe("Component Load Completed");
 
     SEND_PACKAGE(this, LoginResponse, response)
+
+    co_await mComponentModule.Deserialize();
+    mComponentModule.OnLogin();
 
     const auto param = new EP_PlayerLogin;
     param->pid = GetFullID();
