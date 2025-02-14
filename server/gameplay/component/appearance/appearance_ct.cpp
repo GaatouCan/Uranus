@@ -7,13 +7,19 @@
 #include "utils.h"
 #include "../../../common/proto.def.h"
 
+#include "../../../player/player.h"
 #include "../../../player/component_module.h"
+
+#include "impl/package.h"
+
+#include <appearance.pb.h>
 
 AppearanceCT::AppearanceCT(IComponentContext *ctx)
     : IPlayerComponent(ctx) {
 
     SERIALIZE_COMPONENT(AppearanceCT, Appearance)
     SERIALIZE_COMPONENT(AppearanceCT, Avatar)
+    SERIALIZE_COMPONENT(AppearanceCT, AvatarFrame)
 }
 
 AppearanceCT::~AppearanceCT() {
@@ -44,6 +50,14 @@ void AppearanceCT::Deserialize_AvatarFrame(Deserializer &ds) {
 }
 
 void protocol::AppearanceRequest(const std::shared_ptr<IBasePlayer> &plr, IPackage *pkg) {
-    // TODO
+    if (plr == nullptr)
+        return;
+
+    auto ct = std::dynamic_pointer_cast<Player>(plr)->GetComponent<AppearanceCT>();
+    if (ct == nullptr)
+        return;
+
+    Appearance::AppearanceRequest request;
+    request.ParseFromString(dynamic_cast<Package *>(pkg)->ToString());
 }
 
