@@ -47,6 +47,12 @@ public:
     void SyncCache(CacheNode *node);
 
     void DispatchEvent(Event event, IEventParam *param, DispatchType type = DispatchType::PUSH_QUEUE);
+
+    template<typename T>
+    requires std::derived_from<T, IPlayerComponent>
+    T *GetComponent() {
+        return mComponentModule.GetComponent<T>();
+    }
 };
 
 #define SEND_PACKAGE(sender, proto, data) \

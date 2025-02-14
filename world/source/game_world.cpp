@@ -11,6 +11,7 @@
 #include "../include/login_authenticator.h"
 #include "../include/protocol_route.h"
 
+#include "../include/system/database/database_system.h"
 #include "../include/system/event/event_system.h"
 #include "../include/system/timer/timer_system.h"
 #include "../include/system/plugin/plugin_system.h"
@@ -36,6 +37,7 @@ GameWorld::GameWorld()
     mProtocolRoute = new ProtocolRoute(this);
 
     // Create Sub System
+    CreateSystem<DatabaseSystem>(2);
     CreateSystem<TimerSystem>(3);
     CreateSystem<ManagerSystem>(4);
     CreateSystem<EventSystem>(5);

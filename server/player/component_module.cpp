@@ -2,6 +2,7 @@
 #include "player.h"
 
 #include "game_world.h"
+#include "system/database/database_system.h"
 
 #include "../gameplay/component/appearance/appearance_ct.h"
 
@@ -28,50 +29,50 @@ void ComponentModule::OnDayChange() {
     }
 }
 
-// void UComponentModule::Serialize() {
-//     IComponentContext::ASerializerVector ret;
-//
-//     for (const auto &ctx: std::views::values(mComponentMap)) {
-//         ctx->SerializeComponent(ret);
-//     }
-//
-//     if (const auto sys = UGameWorld::Instance().GetSystem<UDatabaseSystem>(); sys != nullptr) {
-//         sys->PushTask([ret, pid = mOwner->GetFullID()](mysqlx::Schema &schema) {
-//             for (const auto &[serializer, bExpired] : ret) {
-//                 if (serializer == nullptr)
-//                     continue;
-//
-//                 if (auto table = schema.getTable(serializer->GetTableName()); table.existsInDatabase()) {
-//                     if (bExpired) {
-//                         serializer->RemoveExpiredData(table, fmt::format("pid = {}", pid));
-//                     }
-//                     serializer->Execute(table);
-//                 }
-//                 delete serializer;
-//             }
-//             return true;
-//         });
-//     }
-// }
-//
-// awaitable<void> UComponentModule::Deserialize() {
-//     ADBQueryArray query;
-//     std::string expr = fmt::format("pid = {}", GetOwner()->GetFullID());
-//
-//     for (const auto &ctx : std::views::values(mComponentMap)) {
-//         for (const auto &name : ctx->GetTableList()) {
-//             query.emplace_back(name, expr);
-//         }
-//     }
-//
-//     if (const auto sys = UGameWorld::Instance().GetSystem<UDatabaseSystem>(); sys != nullptr) {
-//         if (const auto res = co_await sys->AsyncSelect(query, asio::use_awaitable); res != nullptr) {
-//             for (const auto &ctx : std::views::values(mComponentMap)) {
-//                 ctx->DeserializeComponent(*res);
-//             }
-//         }
-//     }
-// }
+void ComponentModule::Serialize() {
+    IComponentContext::SerializerVector ret;
+
+    for (const auto &ctx: std::views::values(mComponentMap)) {
+        ctx->SerializeComponent(ret);
+    }
+
+    if (const auto sys = GetOwner()->GetWorld()->GetSystem<DatabaseSystem>(); sys != nullptr) {
+        sys->PushTransaction([ret, pid = mOwner->GetFullID()](mysqlx::Schema &schema) {
+            for (const auto &[serializer, bExpired] : ret) {
+                if (serializer == nullptr)
+                    continue;
+
+                if (auto table = schema.getTable(serializer->GetTableName()); table.existsInDatabase()) {
+                    if (bExpired) {
+                        serializer->RemoveExpiredData(table, fmt::format("pid = {}", pid));
+                    }
+                    serializer->Serialize(table);
+                }
+                delete serializer;
+            }
+            return true;
+        });
+    }
+}
+
+awaitable<void> ComponentModule::Deserialize() {
+    QueryVector query;
+    std::string expr = fmt::format("pid = {}", GetOwner()->GetFullID());
+
+    for (const auto &ctx : std::views::values(mComponentMap)) {
+        for (const auto &name : ctx->GetTableList()) {
+            query.emplace_back(name, expr);
+        }
+    }
+
+    if (const auto sys = GetOwner()->GetWorld()->GetSystem<DatabaseSystem>(); sys != nullptr) {
+        if (const auto res = co_await sys->AsyncSelect(query, asio::use_awaitable); res != nullptr) {
+            for (const auto &ctx : std::views::values(mComponentMap)) {
+                ctx->DeserializeComponent(*res);
+            }
+        }
+    }
+}
 
 void ComponentModule::OnLogin() {
     for (const auto &ctx: std::views::values(mComponentMap)) {

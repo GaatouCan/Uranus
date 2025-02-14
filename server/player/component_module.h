@@ -10,6 +10,7 @@
 #include <typeindex>
 #include <concepts>
 #include <ranges>
+#include <asio/awaitable.hpp>
 
 
 class ComponentModule;
@@ -126,8 +127,8 @@ public:
         return nullptr;
     }
 
-    // void Serialize();
-    // awaitable<void> Deserialize();
+    void Serialize();
+    asio::awaitable<void> Deserialize();
 
     void OnLogin();
     void OnLogout();
