@@ -161,6 +161,7 @@ file(GLOB_RECURSE COMMAND_SRC   ${CMAKE_SOURCE_DIR}/server/command/*.h      ${CM
 file(GLOB_RECURSE PLAYER_SRC    ${CMAKE_SOURCE_DIR}/server/player/*.h       ${CMAKE_SOURCE_DIR}/server/player/*.cpp)
 file(GLOB_RECURSE CONFIG_SRC    ${CMAKE_SOURCE_DIR}/server/config/*.h       ${CMAKE_SOURCE_DIR}/server/config/*.cpp)
 file(GLOB_RECURSE GAMEPLAY_SRC  ${CMAKE_SOURCE_DIR}/server/gameplay/*.h     ${CMAKE_SOURCE_DIR}/server/gameplay/*.cpp)
+file(GLOB_RECURSE ORM_SRC ${CMAKE_SOURCE_DIR}/struct/orm/*.h)
 
 set(SERVER_SRC
         server/server.h
@@ -171,6 +172,7 @@ set(SERVER_SRC
         ${CONFIG_SRC}
         ${PLAYER_SRC}
         ${GAMEPLAY_SRC}
+        ${ORM_SRC}
 )
 
 if (MSVC)

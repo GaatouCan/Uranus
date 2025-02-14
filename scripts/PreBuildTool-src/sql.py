@@ -53,7 +53,7 @@ cpp_type_map = {
     "bool": "bool",
     "string": "std::string",
     "text": "std::string",
-    "blob": "FByteArray"
+    "blob": "ByteArray"
 }
 
 def to_upper_camel_case(x):
@@ -218,7 +218,7 @@ def generate_orm_clazz(src: str, dist: str, desc: str):
  */\n\n''')
 
             file.write('#pragma once\n\n')
-            file.write('#include "../../base/system/database/DBTable.h"\n\n')
+            file.write('#include "system/database/db_table.h"\n\n')
 
             file.write('namespace orm {\n\n')
 
@@ -226,7 +226,7 @@ def generate_orm_clazz(src: str, dist: str, desc: str):
                 file.write(f'\t// table: {table['name']}\n\n')
 
                 # 类定义开始
-                file.write('\tclass UDBTable_%s final : public IDBTable {\n' % to_upper_camel_case(table['name']))
+                file.write('\tclass DBTable_%s final : public IDBTable {\n' % to_upper_camel_case(table['name']))
                 file.write('\tpublic:\n')
 
                 # 含参构造函数参数列表
@@ -253,11 +253,17 @@ def generate_orm_clazz(src: str, dist: str, desc: str):
                     # 表字段映射为类成员变量
                     file.write(f"\t\t{cpp_type_map[field['type']]} {field['name']}")
             
-                    if field['type'] != "string" and field['type'] != "text" and field['type'] != "blob":
+                    if field['type'] != "string" and field['type'] != "text" and field['type'] != "blob" and field['type'] != "bool":
                         if 'default' in field.keys() and field['default'] != "":
                             file.write(f' = {field['default']}')
                         else:
                             file.write(' = 0')
+
+                    if field['type'] == 'bool' and 'default' in field.keys() and field['default'] != "":
+                        if field['default'] == "TRUE":
+                            file.write(' = true')
+                        else:
+                            file.write(' = false')
 
                     file.write(";\n")
 
@@ -325,10 +331,10 @@ def generate_orm_clazz(src: str, dist: str, desc: str):
 
                 where_expr = f".where(\"{where_str}\"){bind_expr}"
 
-                file.write(f"\n\t\tUDBTable_{to_upper_camel_case(table['name'])}() = default;\n\n")
+                file.write(f"\n\t\tDBTable_{to_upper_camel_case(table['name'])}() = default;\n\n")
 
                 # 含参构造函数
-                file.write('\t\tUDBTable_%s(\n%s\n\t\t) : %s {}\n\n' % (to_upper_camel_case(table['name']), construct_str, init_str))
+                file.write('\t\tDBTable_%s(\n%s\n\t\t) : %s {}\n\n' % (to_upper_camel_case(table['name']), construct_str, init_str))
 
                 # 纯虚函数重写
                 file.write('\t\t[[nodiscard]] constexpr const char* GetTableName() const override {\n')

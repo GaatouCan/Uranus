@@ -37,3 +37,4 @@
 /struct/orm/
 /config/xlsx/
 /protobuf/gen/
+/struct/desc.json
