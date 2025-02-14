@@ -70,8 +70,9 @@ public:
         for (auto &[s, ds] : mTableMap | std::views::values) {
             if (s) {
                 bool bExpired = false;
-                ISerializer *is = std::invoke(s, dynamic_cast<Component *>(mComponent), bExpired);
-                vec.emplace_back(is, bExpired);
+                if (ISerializer *is = std::invoke(s, dynamic_cast<Component *>(mComponent), bExpired); is != nullptr) {
+                    vec.emplace_back(is, bExpired);
+                }
             }
         }
     }
@@ -136,7 +137,7 @@ public:
     void SyncCache(CacheNode *node);
 };
 
-#define CREATE_SERIALIZER(s, table) const auto s = new USerializer<orm::UDBTable_##table>(utils::PascalToUnderline(#table));
+#define CREATE_SERIALIZER(s, table) const auto s = new Serializer<orm::DBTable_##table>(utils::PascalToUnderline(#table));
 
 /**
  * 注册组件序列化和反序列化调用

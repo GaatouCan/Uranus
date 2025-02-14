@@ -185,8 +185,10 @@ if (MSVC)
     endforeach()
 endif ()
 
+
 add_library(server SHARED ${SERVER_SRC})
 target_link_libraries(server PUBLIC protobuf::libprotobuf)
+target_include_directories(server PUBLIC ${CMAKE_SOURCE_DIR}/struct/orm)
 target_include_directories(server PRIVATE ${PROTOBUF_GENERATED_DIR})
 target_link_libraries(server PRIVATE proto_static)
 target_link_libraries(server PUBLIC Uranus)
