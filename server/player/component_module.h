@@ -1,17 +1,15 @@
 ﻿#pragma once
 
-#include <typeindex>
-#include <concepts>
-#include <ranges>
-// #include <mysqlx/xdevapi.h>
-
 #include "player_id.h"
 
 #include "player_component.h"
-// #include <system/database/Serializer.h>
-// #include <system/database/Deserializer.h>
+#include "system/database/serializer.h"
+#include "system/database/deserializer.h"
 
 #include <spdlog/spdlog.h>
+#include <typeindex>
+#include <concepts>
+#include <ranges>
 
 
 class ComponentModule;
@@ -24,8 +22,9 @@ protected:
     ComponentModule* mModule = nullptr;
 
 public:
-    // using ASerializerVector = std::vector<std::pair<ISerializer *, bool>>;
-    // using ADeserializerMap = std::unordered_map<std::string, mysqlx::RowResult>;
+
+    using SerializerVector = std::vector<std::pair<ISerializer *, bool>>;
+    using DeserializerMap = std::unordered_map<std::string, mysqlx::RowResult>;
 
     IComponentContext() = delete;
 
@@ -37,10 +36,10 @@ public:
     [[nodiscard]] ComponentModule* GetModule() const { return mModule; }
     [[nodiscard]] IPlayerComponent* GetComponent() const { return mComponent; }
 
-    // [[nodiscard]] virtual std::vector<std::string> GetTableList() const = 0;
+    [[nodiscard]] virtual std::vector<std::string> GetTableList() const = 0;
 
-    // virtual void SerializeComponent(ASerializerVector &vec) const = 0;
-    // virtual void DeserializeComponent(ADeserializerMap &map) const = 0;
+    virtual void SerializeComponent(SerializerVector &vec) const = 0;
+    virtual void DeserializeComponent(DeserializerMap &map) const = 0;
 };
 
 template<class Component>
@@ -48,53 +47,53 @@ requires std::derived_from<Component, IPlayerComponent>
 class TComponentContext final : public IComponentContext {
 
 public:
-    // using ASerializeFunctor = ISerializer*(Component::*)(bool &) const;
-    // using ADeserializeFunctor = void(Component::*)(UDeserializer &);
+    using SerializeFunctor = ISerializer*(Component::*)(bool &) const;
+    using DeserializeFunctor = void(Component::*)(Deserializer &);
 
     explicit TComponentContext(ComponentModule *module) : IComponentContext(module) {
         mComponent = new Component(this);
     }
 
-    // void RegisterTable(const std::string &table, ASerializeFunctor ser, ADeserializeFunctor deser) {
-    //     mMap.insert_or_assign(table, std::make_pair(ser, deser));
-    // }
-    //
-    // [[nodiscard]] std::vector<std::string> GetTableList() const override {
-    //     std::vector<std::string> result;
-    //     for (const auto &name : mMap | std::views::keys) {
-    //         result.emplace_back(name);
-    //     }
-    //     return result;
-    // }
-    //
-    // void SerializeComponent(ASerializerVector &vec) const override {
-    //     for (auto &[s, ds] : mMap | std::views::values) {
-    //         if (s) {
-    //             bool bExpired = false;
-    //             ISerializer *is = std::invoke(s, dynamic_cast<Component *>(mComponent), bExpired);
-    //             vec.emplace_back(is, bExpired);
-    //         }
-    //     }
-    // }
-    //
-    // void DeserializeComponent(ADeserializerMap &map) const override {
-    //     for (auto &[name, pair] : mMap) {
-    //         if (const auto it = map.find(name); it != map.end()) {
-    //             UDeserializer ds(std::move(it->second));
-    //             std::invoke(pair.second, dynamic_cast<Component *>(mComponent), ds);
-    //         }
-    //     }
-    // }
+    void RegisterTable(const std::string &table, SerializeFunctor ser, DeserializeFunctor deser) {
+        mTableMap.insert_or_assign(table, std::make_pair(ser, deser));
+    }
+
+    [[nodiscard]] std::vector<std::string> GetTableList() const override {
+        std::vector<std::string> result;
+        for (const auto &name : mTableMap | std::views::keys) {
+            result.emplace_back(name);
+        }
+        return result;
+    }
+
+    void SerializeComponent(SerializerVector &vec) const override {
+        for (auto &[s, ds] : mTableMap | std::views::values) {
+            if (s) {
+                bool bExpired = false;
+                ISerializer *is = std::invoke(s, dynamic_cast<Component *>(mComponent), bExpired);
+                vec.emplace_back(is, bExpired);
+            }
+        }
+    }
+
+    void DeserializeComponent(DeserializerMap &map) const override {
+        for (auto &[name, pair] : mTableMap) {
+            if (const auto it = map.find(name); it != map.end()) {
+                Deserializer ds(std::move(it->second));
+                std::invoke(pair.second, dynamic_cast<Component *>(mComponent), ds);
+            }
+        }
+    }
 
 private:
-    // std::map<std::string, std::pair<ASerializeFunctor, ADeserializeFunctor>> mMap;
+    std::unordered_map<std::string, std::pair<SerializeFunctor, DeserializeFunctor>> mTableMap;
 };
 
 
 class ComponentModule final {
 
     Player *mOwner;
-    std::map<std::type_index, IComponentContext *> mComponentMap;
+    std::unordered_map<std::type_index, IComponentContext *> mComponentMap;
 
 public:
     ComponentModule() = delete;
