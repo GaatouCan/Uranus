@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "db_table.h"
 
@@ -20,7 +20,7 @@ public:
 };
 
 template<DBTableType T>
-class Serializer : public ISerializer {
+class BASE_API Serializer final : public ISerializer {
 
     std::vector<T> mData;
 
@@ -59,6 +59,7 @@ public:
         bool bInclude = false;
 
         for (auto row : res) {
+            // 如果将被写入的数据里面包含 则跳过
             for (auto &elem : mData) {
                 if (elem.ComparePrimaryKey(row)) {
                     bInclude = true;
@@ -71,6 +72,7 @@ public:
                 continue;
             }
 
+            // 添加到删除列表里
             T elem;
             elem.Read(row);
             del.push_back(elem);
