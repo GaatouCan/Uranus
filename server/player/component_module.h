@@ -137,7 +137,6 @@ public:
     void SyncCache(CacheNode *node);
 };
 
-#define CREATE_SERIALIZER(s, table) const auto s = new Serializer<orm::DBTable_##table>(utils::PascalToUnderline(#table));
 
 /**
  * 注册组件序列化和反序列化调用
@@ -146,6 +145,9 @@ public:
  */
 #define SERIALIZE_COMPONENT(comp, tb) \
 dynamic_cast<TComponentContext<comp> *>(GetComponentContext())->RegisterTable(utils::PascalToUnderline(#tb), &comp::Serialize_##tb, &comp::Deserialize_##tb);
+
+#define CREATE_SERIALIZER(s, table) \
+    const auto s = new Serializer<orm::DBTable_##table>(utils::PascalToUnderline(#table));
 
 #define READ_PARAM(tb, pa) \
 CREATE_SERIALIZER(_serializer, tb) \
@@ -162,7 +164,7 @@ return _serializer;
 #define READ_PARAM_VECTOR(tb, pa) \
 CREATE_SERIALIZER(_serializer, tb) \
 for (const auto &val : (pa)) { \
-_serializer->PushBack(val); \
+    _serializer->PushBack(val); \
 } \
 return _serializer;
 
@@ -178,8 +180,8 @@ while ((ds).HasMore()) { \
     (pa)[val.index] = val; \
 }
 
-
 #define WRITE_PARAM_VECTOR(ds, pa) \
+(pa).resize((ds).TotalRowsCount());\
 while ((ds).HasMore()) { \
     decltype(pa)::value_type val; \
     (ds).Deserialize(&val); \

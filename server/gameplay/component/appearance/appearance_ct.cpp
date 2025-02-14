@@ -35,6 +35,14 @@ void AppearanceCT::Deserialize_Avatar(Deserializer &ds) {
     WRITE_PARAM_VECTOR(ds, mAvatarList)
 }
 
+ISerializer * AppearanceCT::Serialize_AvatarFrame(bool &bExpired) const {
+    READ_PARAM_VECTOR(AvatarFrame, mAvatarFrameList)
+}
+
+void AppearanceCT::Deserialize_AvatarFrame(Deserializer &ds) {
+    WRITE_PARAM_VECTOR(ds, mAvatarFrameList)
+}
+
 void protocol::AppearanceRequest(const std::shared_ptr<IBasePlayer> &plr, IPackage *pkg) {
     // TODO
 }

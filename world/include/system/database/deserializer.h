@@ -7,13 +7,24 @@ class BASE_API Deserializer final {
     mysqlx::RowResult mResult;
     mysqlx::Row mCurrentRow;
 
+    const size_t mTotal;
+
 public:
     explicit Deserializer(mysqlx::RowResult res)
-        : mResult(std::move(res)) {
+        : mResult(std::move(res)),
+          mTotal(mResult.count()) {
 
     }
 
     DISABLE_COPY_MOVE(Deserializer)
+
+    [[nodiscard]] size_t TotalRowsCount() const {
+        return mTotal;
+    }
+
+    size_t Count() {
+        return mResult.count();
+    }
 
     bool HasMore() {
         mCurrentRow = mResult.fetchOne();
