@@ -5,12 +5,11 @@
 #include "appearance_ct.h"
 
 #include "../../../common/proto.def.h"
-#include "utils.h"
-
 #include "../../../player/component_module.h"
 #include "../../../player/player.h"
 
 #include "impl/package.h"
+#include "utils.h"
 
 #include <appearance.pb.h>
 
@@ -22,43 +21,35 @@ AppearanceCT::AppearanceCT(IComponentContext *ctx)
     SERIALIZE_COMPONENT(AppearanceCT, AvatarFrame)
 }
 
-AppearanceCT::~AppearanceCT()
-{
+AppearanceCT::~AppearanceCT() {
 
 }
 
-ISerializer *AppearanceCT::Serialize_Appearance(bool &bExpired) const
-{
+ISerializer *AppearanceCT::Serialize_Appearance(bool &bExpired) const {
     READ_PARAM(Appearance, mAppear)
 }
 
-void AppearanceCT::Deserialize_Appearance(Deserializer &ds)
-{
+void AppearanceCT::Deserialize_Appearance(Deserializer &ds) {
     WRITE_PARAM(ds, mAppear)
 }
 
-ISerializer *AppearanceCT::Serialize_Avatar(bool &bExpired) const
-{
+ISerializer *AppearanceCT::Serialize_Avatar(bool &bExpired) const {
     READ_PARAM_VECTOR(Avatar, mAvatarList)
 }
 
-void AppearanceCT::Deserialize_Avatar(Deserializer &ds)
-{
+void AppearanceCT::Deserialize_Avatar(Deserializer &ds) {
     WRITE_PARAM_VECTOR(ds, mAvatarList)
 }
 
-ISerializer *AppearanceCT::Serialize_AvatarFrame(bool &bExpired) const
-{
+ISerializer *AppearanceCT::Serialize_AvatarFrame(bool &bExpired) const {
     READ_PARAM_VECTOR(AvatarFrame, mAvatarFrameList)
 }
 
-void AppearanceCT::Deserialize_AvatarFrame(Deserializer &ds)
-{
+void AppearanceCT::Deserialize_AvatarFrame(Deserializer &ds) {
     WRITE_PARAM_VECTOR(ds, mAvatarFrameList)
 }
 
-void AppearanceCT::SendInfo() const
-{
+void AppearanceCT::SendInfo() const {
     Appearance::AppearanceResponse res;
 
     res.set_current_avatar(mAppear.avatar);
@@ -94,10 +85,11 @@ void protocol::AppearanceRequest(const std::shared_ptr<IBasePlayer> &plr, IPacka
     request.ParseFromString(dynamic_cast<Package *>(pkg)->ToString());
 
     switch (request.operate_type()) {
-    case Appearance::SEND_INFO: {
-        ct->SendInfo();
-    } break;
-    default:
+        case Appearance::SEND_INFO: {
+            ct->SendInfo();
+        }
         break;
+        default:
+            break;
     }
 }
