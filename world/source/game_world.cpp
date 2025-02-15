@@ -153,7 +153,7 @@ GameWorld &GameWorld::Shutdown() {
     if (!mContext.stopped())
         mContext.stop();
 
-    connection_map_.clear();
+    mConnectionMap.clear();
 
     return *this;
 }
@@ -164,12 +164,12 @@ void GameWorld::RemoveConnection(const std::string &key) {
 
     if (std::this_thread::get_id() != mThreadID) {
         co_spawn(mContext, [this, key]() mutable -> awaitable<void> {
-            connection_map_.erase(key);
+            mConnectionMap.erase(key);
             co_return;
         }, detached);
         return;
     }
-    connection_map_.erase(key);
+    mConnectionMap.erase(key);
 }
 
 ConfigManager *GameWorld::GetConfigManager() const {
@@ -299,7 +299,7 @@ awaitable<void> GameWorld::WaitForConnect() {
                 do {
                     key = fmt::format("{}-{}-{}", addr.to_string(), utils::UnixTime(), distribution(generator));
                     count++;
-                } while (connection_map_.contains(key) && count < 3);
+                } while (mConnectionMap.contains(key) && count < 3);
 
                 if (count >= 3) {
                     socket.close();
@@ -317,9 +317,9 @@ awaitable<void> GameWorld::WaitForConnect() {
 
                 conn->ConnectToClient();
 
-                connection_map_[key] = conn;
+                mConnectionMap[key] = conn;
 
-                if (connection_map_.size() >= 1'000'000'000) {
+                if (mConnectionMap.size() >= 1'000'000'000) {
                     mFullTimer.expires_after(10s);
                     co_await mFullTimer.async_wait();
                 }
@@ -334,12 +334,12 @@ awaitable<void> GameWorld::WaitForConnect() {
 void GameWorld::RemoveConnection(const std::string_view key) {
     if (std::this_thread::get_id() != mThreadID) {
         co_spawn(mContext, [this, key]() mutable -> awaitable<void> {
-            connection_map_.erase(key);
+            mConnectionMap.erase(key);
             co_return;
         }, detached);
         return;
     }
-    connection_map_.erase(key);
+    mConnectionMap.erase(key);
 }
 
 asio::io_context &GameWorld::GetIOContext() {

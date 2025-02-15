@@ -45,7 +45,7 @@ class BASE_API GameWorld final {
     class GlobalQueue *mGlobalQueue;
     class ProtocolRoute *mProtocolRoute;
 
-    std::unordered_map<std::string, ConnectionPointer, StringViewHash, StringViewEqual> connection_map_;
+    std::unordered_map<std::string, ConnectionPointer, StringViewHash, StringViewEqual> mConnectionMap;
 
     SystemTimer mFullTimer;
 
