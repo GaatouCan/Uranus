@@ -86,7 +86,7 @@ void protocol::AppearanceRequest(const std::shared_ptr<IBasePlayer> &plr, IPacka
     if (plr == nullptr)
         return;
 
-    auto ct = std::dynamic_pointer_cast<Player>(plr)->GetComponent<AppearanceCT>();
+    const auto ct = std::dynamic_pointer_cast<Player>(plr)->GetComponent<AppearanceCT>();
     if (ct == nullptr)
         return;
 
