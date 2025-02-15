@@ -61,6 +61,8 @@ public:
 
     static bool InitPackage(IPackage *pkg);
 
+    static bool HasAssignedBuilder();
+
 private:
     void Expanse();
     void Collect();

@@ -151,6 +151,10 @@ bool PackagePool::InitPackage(IPackage *pkg) {
     return true;
 }
 
+bool PackagePool::HasAssignedBuilder() {
+    return kCreatePackage != nullptr;
+}
+
 void PackagePool::Expanse() {
     if (mSet.empty() && !mQueue.empty())
         return;

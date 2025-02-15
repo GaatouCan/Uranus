@@ -2,7 +2,7 @@
 #include "../include/server_logic.h"
 #include "../include/connection.h"
 #include "../include/package_pool.h"
-#include "../include/impl/package_codec.h"
+#include "../include/impl/package.h"
 
 #include "../include/scene/scene_manager.h"
 #include "../include/scene/main_scene.h"
@@ -99,11 +99,14 @@ GameWorld &GameWorld::Init(const std::string &path) {
 
     const auto &config = GetServerConfig();
 
-    Package::LoadConfig(config);
     PackagePool::LoadConfig(config);
 
-    PackagePool::SetPackageBuilder(&Package::CreatePackage);
-    PackagePool::SetPackageInitializer(&Package::InitPackage);
+    // 如果DLL未指定自定义数据包 则使用默认数据包
+    if (!PackagePool::HasAssignedBuilder()) {
+        Package::LoadConfig(config);
+        PackagePool::SetPackageBuilder(&Package::CreatePackage);
+        PackagePool::SetPackageInitializer(&Package::InitPackage);
+    }
 
     mSceneManager->Init();
     mGlobalQueue->Init();
@@ -311,8 +314,8 @@ awaitable<void> GameWorld::WaitForConnect() {
                 spdlog::info("Accept Connection From: {}", addr.to_string());
 
                 conn->SetKey(key);
-                conn->SetPackageCodec<PackageCodec>();
 
+                mServer->SetConnectionCodec(conn);
                 mServer->SetConnectionHandler(conn);
 
                 conn->ConnectToClient();
