@@ -40,7 +40,7 @@ awaitable<void> Player::OnLogin() {
 
     SEND_PACKAGE(this, LoginResponse, response)
 
-    // co_await mComponentModule.Deserialize();
+    co_await mComponentModule.Deserialize();
     mComponentModule.OnLogin();
 
     const auto param = new EP_PlayerLogin;

@@ -56,21 +56,29 @@ void ComponentModule::Serialize() {
 }
 
 awaitable<void> ComponentModule::Deserialize() {
-    QueryVector query;
-    std::string expr = fmt::format("pid = {}", GetOwner()->GetFullID());
+    try {
+        QueryVector query;
+        std::string expr = fmt::format("pid = {}", GetOwner()->GetFullID());
 
-    for (const auto &ctx : std::views::values(mComponentMap)) {
-        for (const auto &name : ctx->GetTableList()) {
-            query.emplace_back(name, expr);
-        }
-    }
-
-    if (const auto sys = GetOwner()->GetWorld()->GetSystem<DatabaseSystem>(); sys != nullptr) {
-        if (const auto res = co_await sys->AsyncSelect(query, asio::use_awaitable); res != nullptr) {
-            for (const auto &ctx : std::views::values(mComponentMap)) {
-                ctx->DeserializeComponent(*res);
+        for (const auto &ctx : std::views::values(mComponentMap)) {
+            for (const auto &name : ctx->GetTableList()) {
+                query.emplace_back(name, expr);
             }
         }
+
+        for (const auto &val : query) {
+            spdlog::debug("{} - {} {}", __FUNCTION__, val.first, val.second);
+        }
+
+        if (const auto sys = GetOwner()->GetWorld()->GetSystem<DatabaseSystem>(); sys != nullptr) {
+            if (const auto res = co_await sys->AsyncSelect(query, asio::use_awaitable); res != nullptr) {
+                for (const auto &ctx : std::views::values(mComponentMap)) {
+                    ctx->DeserializeComponent(*res);
+                }
+            }
+        }
+    } catch (const std::exception &e) {
+        spdlog::error("{} - pid[{}] {}", __FUNCTION__, GetOwner()->GetFullID(), e.what());
     }
 }
 

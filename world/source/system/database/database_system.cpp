@@ -9,12 +9,12 @@ DatabaseSystem::DatabaseSystem(GameWorld *world)
 }
 
 DatabaseSystem::~DatabaseSystem() {
-    for (auto &[th, sess, queue, tid] : mSessionList) {
+    for (const auto &[th, sess, queue, tid] : mSessionList) {
         if (queue)
             queue->Quit();
     }
 
-    for (auto &[th, sess, queue, tid] : mSessionList) {
+    for (const auto &[th, sess, queue, tid] : mSessionList) {
         if (th && th->joinable())
             th->join();
     }
@@ -37,7 +37,7 @@ void DatabaseSystem::Init() {
         node.session = std::make_unique<mysqlx::Session>(host, port, user, passwd);
         node.queue = std::make_unique<ThreadSafeDeque<IDatabaseTask *>>();
 
-        node.thread = std::make_unique<std::thread>([this, &node, &schemaName] {
+        node.thread = std::make_unique<std::thread>([this, &node, schemaName] {
             node.threadID = std::this_thread::get_id();
             spdlog::info("\tThread ID {} - Begin handle database task", utils::ThreadIdToInt(node.threadID));
             while (node.queue->IsRunning()) {
@@ -60,7 +60,7 @@ void DatabaseSystem::Init() {
     }
 }
 
-void DatabaseSystem::SyncSelect(const std::string &tableName, const std::string &where, const std::function<void(mysqlx::Row)> &cb) {
+void DatabaseSystem::SyncSelect(const std::string &tableName, const std::string &where, const std::function<void(mysqlx::Row)> &cb) const {
     if (mSessionList.empty()) {
         spdlog::error("{} - No Database Session Available.", __FUNCTION__);
         return;

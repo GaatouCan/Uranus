@@ -30,7 +30,7 @@ public:
 
     void Init() override;
 
-    void SyncSelect(const std::string &tableName, const std::string &where, const std::function<void(mysqlx::Row)> &cb);
+    void SyncSelect(const std::string &tableName, const std::string &where, const std::function<void(mysqlx::Row)> &cb) const;
 
     void PushTransaction(const TransactionFunctor &func);
 

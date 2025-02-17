@@ -53,7 +53,7 @@ void AppearanceCT::OnLogin() {
     if (mAppear.pid == 0)
         mAppear.pid = GetOwner()->GetFullID();
 
-    spdlog::info("{}", __FUNCTION__);
+    spdlog::info("{} - pid[{}]", __FUNCTION__, GetOwner()->GetFullID());
 }
 
 void AppearanceCT::SendInfo() const {
