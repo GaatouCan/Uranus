@@ -53,7 +53,7 @@ void ManagerSystem::OnTick(TimePoint now) {
     spdlog::debug("{} - {}", __FUNCTION__, utils::ToUnixTime(now));
     for (const auto mgr: std::views::values(mManagerMap)) {
         if (!mgr->bTick) continue;
-        mgr->PushTask<IBaseManager>(&IBaseManager::OnTick, now);
+        mgr->OnTick(now);
     }
 
     static int day = 0;
@@ -62,7 +62,7 @@ void ManagerSystem::OnTick(TimePoint now) {
         today > day && day != 0) {
         day = today;
         for (const auto mgr: std::views::values(mManagerMap)) {
-            mgr->PushTask<IBaseManager>(&IBaseManager::OnDayChange);
+            mgr->OnDayChange();
         }
     }
 }
