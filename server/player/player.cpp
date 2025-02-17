@@ -40,7 +40,7 @@ awaitable<void> Player::OnLogin() {
 
     SEND_PACKAGE(this, LoginResponse, response)
 
-    co_await mComponentModule.Deserialize();
+    // co_await mComponentModule.Deserialize();
     mComponentModule.OnLogin();
 
     const auto param = new EP_PlayerLogin;
@@ -59,9 +59,10 @@ void Player::OnLogout(const bool is_force, const std::string &other_address) {
     mLogoutTime = NowTimePoint();
     CleanAllTimer();
 
-    // mComponentModule.Serialize();
     mComponentModule.OnLogout();
     spdlog::info("{} - Player[{}] Logout.", __FUNCTION__, GetFullID());
+
+    // mComponentModule.Serialize();
 
     if (is_force) {
         Login::ForceLogoutResponse res;

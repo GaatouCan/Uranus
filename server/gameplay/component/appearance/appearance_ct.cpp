@@ -49,6 +49,13 @@ void AppearanceCT::Deserialize_AvatarFrame(Deserializer &ds) {
     WRITE_PARAM_VECTOR(ds, mAvatarFrameList)
 }
 
+void AppearanceCT::OnLogin() {
+    if (mAppear.pid == 0)
+        mAppear.pid = GetOwner()->GetFullID();
+
+    spdlog::info("{}", __FUNCTION__);
+}
+
 void AppearanceCT::SendInfo() const {
     Appearance::AppearanceResponse res;
 

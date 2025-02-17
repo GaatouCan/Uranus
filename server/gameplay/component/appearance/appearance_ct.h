@@ -33,6 +33,8 @@ public:
     ISerializer *Serialize_AvatarFrame(bool &bExpired) const;
     void Deserialize_AvatarFrame(Deserializer &ds);
 
+    void OnLogin() override;
+
     void SendInfo() const;
 };
 
