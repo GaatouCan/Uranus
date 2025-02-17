@@ -1,5 +1,5 @@
 #include "../include/connection_handler.h"
-#include "../include/Connection.h"
+#include "../include/connection.h"
 
 IConnectionHandler::IConnectionHandler(Connection *conn)
     : mConn(conn) {

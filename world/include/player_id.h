@@ -3,7 +3,12 @@
 #include "common.h"
 
 #include <cstdint>
+
+#if defined(_WIN32) || defined(_WIN64)
 #include <xhash>
+#else
+#include <functional>
+#endif
 
 static constexpr int64_t CROSS_SERVER_ID_OFFSET = 1'000'000;
 static constexpr int64_t PLAYER_LOCAL_ID_BEGIN = 1'000;

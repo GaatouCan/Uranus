@@ -41,7 +41,7 @@ using ModuleHandle = HMODULE;
 
 #include <dlfcn.h>
 
-using AModuleHandle = void*;
+using ModuleHandle = void*;
 
 #endif
 
