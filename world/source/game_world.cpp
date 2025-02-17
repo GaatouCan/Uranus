@@ -336,7 +336,7 @@ awaitable<void> GameWorld::WaitForConnect() {
 
 void GameWorld::RemoveConnection(const std::string_view key) {
     if (std::this_thread::get_id() != mThreadID) {
-        co_spawn(mContext, [this, key]() mutable -> awaitable<void> {
+        co_spawn(mContext, [this, key = std::string(key)]() mutable -> awaitable<void> {
             mConnectionMap.erase(key);
             co_return;
         }, detached);
