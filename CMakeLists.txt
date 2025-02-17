@@ -193,9 +193,6 @@ target_include_directories(server PRIVATE ${PROTOBUF_GENERATED_DIR})
 target_link_libraries(server PRIVATE proto_static)
 target_link_libraries(server PUBLIC Uranus)
 
-#add_executable(server ${SERVER_SRC})
-
-#target_include_directories(server PRIVATE ${CMAKE_SOURCE_DIR}/base)
-#target_include_directories(server PRIVATE ${CMAKE_SOURCE_DIR}/struct)
-#target_link_libraries(server PRIVATE base_static)
-
+add_executable(test world/test.cpp)
+target_link_libraries(test PUBLIC spdlog::spdlog)
+target_link_libraries(test PUBLIC mysql::concpp)
