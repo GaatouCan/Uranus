@@ -1,5 +1,9 @@
 #include "../../include/impl/package.h"
 
+#ifdef __linux__
+#include <cstring>
+#endif
+
 
 uint32_t Package::kPackageMagic = 20250122;
 uint32_t Package::kPackageVersion = 1001;

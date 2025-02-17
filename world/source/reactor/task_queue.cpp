@@ -2,6 +2,11 @@
 #include "../../include/reactor/reactor.h"
 #include "../../include/reactor/global_queue.h"
 
+#ifdef __linux__
+#include <cmath>
+#endif
+
+
 TaskQueue::TaskQueue(GlobalQueue *global, IReactor *reactor)
     : mGlobal(global),
       mReactor(reactor),

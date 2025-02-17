@@ -11,6 +11,7 @@
 
 class IReactor;
 class TaskQueue;
+class GameWorld;
 
 struct WeakPointerRawAddressCompare {
     template <typename T>

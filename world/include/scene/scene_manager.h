@@ -11,6 +11,7 @@ static constexpr int32_t NORMAL_SCENE_ID_BEGIN = 1000;
 
 
 class IBaseScene;
+class GameWorld;
 
 class BASE_API SceneManager final
 {

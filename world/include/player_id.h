@@ -6,7 +6,7 @@
 
 #if defined(_WIN32) || defined(_WIN64)
 #include <xhash>
-#else
+#elif defined(__linux__)
 #include <functional>
 #endif
 
