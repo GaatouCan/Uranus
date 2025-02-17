@@ -10,9 +10,8 @@ class Package:
     class Header:
         magic       = MAGIC_NUMBER
         version     = PACKAGE_VERSION
-        method      = 1
+        method      = 0
         resersh     = 0
-        reverse     = 0
         id          = 0
         size        = 0
 
@@ -42,25 +41,24 @@ class Package:
     
     def encode(self) -> bytes:
         return struct.pack(
-            'iihhiii%ds' % self.header_.size, 
+            '>IIHHIQ%ds' % self.header_.size, 
             self.header_.magic, 
             self.header_.version, 
             self.header_.method, 
             self.header_.resersh,
-            self.header_.reverse,
             self.header_.id,
             self.header_.size,
             self.data_
         )
     
     def decode(self, msg: bytes):
-        header = struct.unpack('iihhiii', msg[0:HEADER_SIZE])
+        header = struct.unpack('>IIHHIQ', msg[0:HEADER_SIZE])
 
         self.header_.magic = header[0]
         self.header_.version = header[1]
         self.header_.method = header[2]
-        self.header_.id = header[5]
-        self.header_.size = header[6]
+        self.header_.id = header[4]
+        self.header_.size = header[5]
 
         body = struct.unpack('%ds' % self.header_.size, msg[HEADER_SIZE:])
         self.data_ = body[0]
@@ -68,13 +66,13 @@ class Package:
         return self
     
     def decodeWithSocket(self, sock: socket.socket):
-        header = struct.unpack('iihhiii', sock.recv(HEADER_SIZE))
+        header = struct.unpack('>IIHHIQ', sock.recv(HEADER_SIZE))
 
         self.header_.magic = header[0]
         self.header_.version = header[1]
         self.header_.method = header[2]
-        self.header_.id = header[5]
-        self.header_.size = header[6]
+        self.header_.id = header[4]
+        self.header_.size = header[5]
 
         body = struct.unpack('%ds' % self.header_.size, sock.recv(self.header_.size))
         self.data_ = body[0]
