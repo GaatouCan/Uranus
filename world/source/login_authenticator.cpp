@@ -13,7 +13,7 @@ LoginAuthenticator::LoginAuthenticator(GameWorld *world)
 }
 
 LoginAuthenticator::~LoginAuthenticator() {
-
+    spdlog::info("{} - Shutdown.", __FUNCTION__);
 }
 
 void LoginAuthenticator::Init() {

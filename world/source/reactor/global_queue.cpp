@@ -10,6 +10,7 @@ GlobalQueue::GlobalQueue(GameWorld *world)
 }
 
 GlobalQueue::~GlobalQueue() {
+    spdlog::info("{} - Shutdown.", __FUNCTION__);
     mQueue.Quit();
 
     for (auto &th: mWorkerVec) {
@@ -61,7 +62,7 @@ void GlobalQueue::Init() {
         });
     }
 
-    spdlog::info("Reactor System Work With {} Thread(s).", num);
+    spdlog::info("Global Queue Work With {} Thread(s).", num);
 }
 
 std::shared_ptr<TaskQueue> GlobalQueue::RegisterReactor(IReactor *reactor) {

@@ -37,7 +37,7 @@ GameWorld::GameWorld()
     mProtocolRoute = new ProtocolRoute(this);
 
     // Create Sub System
-    CreateSystem<DatabaseSystem>(2);
+    // CreateSystem<DatabaseSystem>(2);
     CreateSystem<TimerSystem>(3);
     CreateSystem<ManagerSystem>(4);
     CreateSystem<EventSystem>(5);

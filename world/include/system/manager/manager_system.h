@@ -9,7 +9,9 @@
 class ManagerSystem final : public ISubSystem {
 
     std::unordered_map<std::type_index, IBaseManager *> mManagerMap;
-    UniqueID mTimerID;
+
+    SystemTimer mTickTimer;
+    bool bRunning;
 
 public:
     explicit ManagerSystem(GameWorld *world);

@@ -1,6 +1,10 @@
+#include <spdlog/spdlog.h>
+
 #include "game_world.h"
 
 int main(int argc, char *argv[]) {
+    spdlog::set_level(spdlog::level::debug);
+
     const auto world = new GameWorld();
 
     world->Init("server.dll");
