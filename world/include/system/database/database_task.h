@@ -52,12 +52,11 @@ public:
     void Execute(mysqlx::Schema &schema) override {
         auto ret = std::make_shared<QueryResult>();
         for (const auto &[name, expr]: mQuery) {
-            if (auto table = schema.getTable(name); table.existsInDatabase()) {
-                if (expr.empty())
-                    ret->insert_or_assign(name, table.select().execute());
-                else
-                    ret->insert_or_assign(name, table.select().where(expr).execute());
-            }
+            auto table = schema.getTable(name, true);
+            if (expr.empty())
+                ret->insert_or_assign(name, table.select().execute());
+            else
+                ret->insert_or_assign(name, table.select().where(expr).execute());
         }
         mCallback(ret);
     }

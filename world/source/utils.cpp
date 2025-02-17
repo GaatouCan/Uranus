@@ -31,28 +31,19 @@ namespace utils {
     }
 
     std::string PascalToUnderline(const std::string &src) {
-        std::string res;
+        if (src.empty()) return "";
 
-        const auto length = src.size();
-        res.resize(length * 2);
+        std::string result;
+        result.reserve(src.size());
 
-        bool bFirstLetter = true;
-        size_t count = 0;
-
-        for (auto idx = 0; idx < length; idx++) {
-            if (src[idx] >= 'A' && src[idx] <= 'Z' && bFirstLetter) {
-                bFirstLetter = false;
-                res[idx] = src[idx] - 'A' + 'a';
-            } else if (src[idx] >= 'A' && src[idx] <= 'Z' && !bFirstLetter) {
-                res[idx + count] = '_';
-                count++;
-                res[idx + count] = src[idx] - 'A' + 'a';
-            } else {
-                res[idx + count] = src[idx];
+        for (size_t i = 0; i < src.size(); ++i) {
+            if (i > 0 && isupper(src[i])) {
+                result.push_back('_');
             }
+            result.push_back(tolower(src[i]));
         }
 
-        return res;
+        return result;
     }
 
     long long UnixTime() {

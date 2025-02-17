@@ -62,7 +62,7 @@ void Player::OnLogout(const bool is_force, const std::string &other_address) {
     mComponentModule.OnLogout();
     spdlog::info("{} - Player[{}] Logout.", __FUNCTION__, GetFullID());
 
-    // mComponentModule.Serialize();
+    mComponentModule.Serialize();
 
     if (is_force) {
         Login::ForceLogoutResponse res;

@@ -50,6 +50,8 @@ void ComponentModule::Serialize() {
                 }
                 delete serializer;
             }
+
+            spdlog::info("ComponentModule::Serialize() - Player[{}] store.", pid);
             return true;
         });
     }
@@ -64,10 +66,6 @@ awaitable<void> ComponentModule::Deserialize() {
             for (const auto &name : ctx->GetTableList()) {
                 query.emplace_back(name, expr);
             }
-        }
-
-        for (const auto &val : query) {
-            spdlog::debug("{} - {} {}", __FUNCTION__, val.first, val.second);
         }
 
         if (const auto sys = GetOwner()->GetWorld()->GetSystem<DatabaseSystem>(); sys != nullptr) {
@@ -86,6 +84,8 @@ void ComponentModule::OnLogin() {
     for (const auto &ctx: std::views::values(mComponentMap)) {
         ctx->GetComponent()->OnLogin();
     }
+
+    spdlog::info("{} - Player[{}] Loaded.", __FUNCTION__, GetOwner()->GetFullID());
 }
 
 void ComponentModule::OnLogout() {

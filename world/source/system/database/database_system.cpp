@@ -47,12 +47,11 @@ void DatabaseSystem::Init() {
 
                 if (const auto op = node.queue->PopFront(); op.has_value() && op.value() != nullptr) {
                     const auto task = op.value();
-                    if (auto schema = node.session->getSchema(schemaName); schema.existsInDatabase()) {
-                        try {
-                            task->Execute(schema);
-                        } catch (std::exception &e) {
-                            spdlog::error("Database Error - {}", e.what());
-                        }
+                    try {
+                        auto schema = node.session->getSchema(schemaName, true);
+                        task->Execute(schema);
+                    } catch (std::exception &e) {
+                        spdlog::error("Database Error - {}", e.what());
                     }
                     delete task;
                 }
