@@ -27,66 +27,69 @@ def update_table(config: dict):
     """所有最新的表名"""
 
     sql2gen = {
-        'BIGINT': "int64",
-        'bigint': "int64",
+        'BIGINT': "long",
+        'bigint': "long",
+    
+        'INT': "integer",
+        'int': "integer",
 
-        'BIGINT UNSIGNED': "uint64",
-        'bigint unsigned': "uint64",
+        'SMALLINT': "short",
+        'smallint': "short",
 
-        'INT': "int32",
-        'int': "int32",
+        'BIGINT(20)': "long",
+        'bigint(20)': "long",
+    
+        'INT(11)': "integer",
+        'int(11)': "integer",
 
-        'INT UNSIGNED': "uint32",
-        'int unsigned': "uint32",
+        'SMALLINT(6)': "short",
+        'smallint(6)': "short",
 
-        'SMALLINT': "int16",
-        'smallint': "int16",
+        'TINYINT(1)': "bool",
+        'tinyint(1)': "bool",
 
-        'SMALLINT UNSIGNED': "uint16",
-        'smallint unsigned': "uint16",
-
-        'TINYINT': "int8",
-        'tinyint': "int8",
-
-        'TINYINT UNSIGNED': "uint8",
-        'tinyint unsigned': "uint8",
-
-        'DOUBLE': "double",
-        'double': "double",
+        'BOOLEAN': "bool",
+        'boolean': "bool",
 
         'FLOAT': "float",
         'float': "float",
 
-        'VARCHAR(255)': "string",
-        'varchar(255)': "string",
+        'DOUBLE': "double",
+        'double': "double",
+
+        'CHAR': "char",
+        'char': "char",
+
+        'VARCHAR(255)': "varchar",
+        'varchar(255)': "varchar",
 
         'TEXT': "text",
         'text': "text",
 
         'BLOB': "blob",
-        'blob': "blob"
+        'blob': "blob",
+
+        'DATETIME': "datetime",
+        'datetime': "datetime",
+
+        'TIMESTAMP': "timestamp",
+        'timestamp': "timestamp",
     }
 
     # sql类型
     gen2sql = {
-        "int64": "BIGINT",
-        "uint64": "BIGINT UNSIGNED",
-
-        "int32": "INT",
-        "uint32": "INT UNSIGNED",
-
-        "int16": "SMALLINT",
-        "uint16": "SMALLINT UNSIGNED",
-
-        "int8": "TINYINT",
-        "uint8": "TINYINT UNSIGNED",
-
+        "long": "BIGINT",
+        "integer": "INT",
+        "short": "SMALLINT",
+        "bool": "TINYINT(1)",
         "float": "FLOAT",
         "double": "DOUBLE",
-
-        "string": "VARCHAR(255)",
+        "char": "CHAR",
+        "varchar": "VARCHAR(255)",
         "text": "TEXT",
-        "blob": "BLOB"
+        "blob": "BLOB",
+        "timestamp": "TIMESTAMP",
+        "datetime": "DATETIME"
     }
 
     try:
@@ -243,7 +246,13 @@ def update_table(config: dict):
                         if field["default"] == "":
                             sql_str += " DROP DEFAULT"
                         else:
-                            sql_str += f" SET DEFAULT '{field["default"]}'"
+                            if field["type"] == "bool":
+                                if field["default"] == "TRUE" or field["default"] == "1":
+                                    sql_str += " SET DEFAULT 1"
+                                elif field["default"] == "FALSE" or field["default"] == "0":
+                                    sql_str += " SET DEFAULT 0"
+                            else:
+                                sql_str += f" SET DEFAULT '{field["default"]}'"
 
                         temporary_cursor.execute(sql_str)
                         sql_list.append(sql_str)

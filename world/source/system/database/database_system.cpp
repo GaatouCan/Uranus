@@ -26,14 +26,15 @@ void DatabaseSystem::Init() {
     const auto schemaName = cfg["database"]["mysql"]["schema"].as<std::string>();
     mSessionList = std::vector<SessionNode>(cfg["database"]["pool"].as<uint64_t>());
 
-    for (auto &node: mSessionList) {
-        node.session = std::make_unique<mysqlx::Session>(
-            cfg["database"]["mysql"]["host"].as<std::string>(),
-            cfg["database"]["mysql"]["port"].as<uint16_t>(),
-            cfg["database"]["mysql"]["user"].as<std::string>(),
-            cfg["database"]["mysql"]["passwd"].as<std::string>()
-        );
+    auto host = cfg["database"]["mysql"]["host"].as<std::string>();
+    auto port = cfg["database"]["mysql"]["port"].as<uint16_t>();
+    auto user = cfg["database"]["mysql"]["user"].as<std::string>();
+    auto passwd = cfg["database"]["mysql"]["passwd"].as<std::string>();
 
+    spdlog::info("{} - Mysql {}:{}", __FUNCTION__, host, port);
+
+    for (auto &node: mSessionList) {
+        node.session = std::make_unique<mysqlx::Session>(host, port, user, passwd);
         node.queue = std::make_unique<ThreadSafeDeque<IDatabaseTask *>>();
 
         node.thread = std::make_unique<std::thread>([this, &node, &schemaName] {
