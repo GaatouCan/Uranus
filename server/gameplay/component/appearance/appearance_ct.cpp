@@ -26,27 +26,27 @@ AppearanceCT::~AppearanceCT() {
 }
 
 ISerializer *AppearanceCT::Serialize_Appearance(bool &bExpired) const {
-    SERIALIZE_CT(Appearance, mAppear)
+    WRITE_PARAM(Appearance, mAppear)
 }
 
 void AppearanceCT::Deserialize_Appearance(Deserializer &ds) {
-    DESERIALIZE_CT(ds, mAppear)
+    READ_PARAM(ds, mAppear)
 }
 
 ISerializer *AppearanceCT::Serialize_Avatar(bool &bExpired) const {
-    SERIALIZE_CT_VECTOR(Avatar, mAvatarList)
+    WRITE_PARAM_VECTOR(Avatar, mAvatarList)
 }
 
 void AppearanceCT::Deserialize_Avatar(Deserializer &ds) {
-    DESERIALIZE_CT_VECTOR(ds, mAvatarList)
+    READ_PARAM_VECTOR(ds, mAvatarList)
 }
 
 ISerializer *AppearanceCT::Serialize_AvatarFrame(bool &bExpired) const {
-    SERIALIZE_CT_VECTOR(AvatarFrame, mAvatarFrameList)
+    WRITE_PARAM_VECTOR(AvatarFrame, mAvatarFrameList)
 }
 
 void AppearanceCT::Deserialize_AvatarFrame(Deserializer &ds) {
-    DESERIALIZE_CT_VECTOR(ds, mAvatarFrameList)
+    READ_PARAM_VECTOR(ds, mAvatarFrameList)
 }
 
 void AppearanceCT::OnLogin() {

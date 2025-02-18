@@ -150,38 +150,38 @@ dynamic_cast<TComponentContext<comp> *>(GetComponentContext())->RegisterTable(ut
 #define CREATE_SERIALIZER(s, table) \
     const auto s = new Serializer<orm::DBTable_##table>(utils::PascalToUnderline(#table));
 
-#define SERIALIZE_CT(tb, pa) \
+#define WRITE_PARAM(tb, pa) \
 CREATE_SERIALIZER(_serializer, tb) \
 _serializer->PushBack(pa); \
 return _serializer;
 
-#define SERIALIZE_CT_MAP(tb, pa) \
+#define WRITE_PARAM_MAP(tb, pa) \
 CREATE_SERIALIZER(_serializer, tb) \
 for (const auto &val : (pa) | std::views::values) { \
     _serializer->PushBack(val); \
 } \
 return _serializer;
 
-#define SERIALIZE_CT_VECTOR(tb, pa) \
+#define WRITE_PARAM_VECTOR(tb, pa) \
 CREATE_SERIALIZER(_serializer, tb) \
 for (const auto &val : (pa)) { \
     _serializer->PushBack(val); \
 } \
 return _serializer;
 
-#define DESERIALIZE_CT(ds, pa) \
+#define READ_PARAM(ds, pa) \
 if ((ds).HasMore()) { \
     (ds).Deserialize(&(pa)); \
 }
 
-#define DESERIALIZE_CT_MAP(ds, pa) \
+#define READ_PARAM_MAP(ds, pa) \
 while ((ds).HasMore()) { \
     decltype(pa)::mapped_type val; \
     (ds).Deserialize(&val); \
     (pa)[val.index] = val; \
 }
 
-#define DESERIALIZE_CT_VECTOR(ds, pa) \
+#define READ_PARAM_VECTOR(ds, pa) \
 (pa).resize((ds).TotalRowsCount());\
 while ((ds).HasMore()) { \
     decltype(pa)::value_type val; \
