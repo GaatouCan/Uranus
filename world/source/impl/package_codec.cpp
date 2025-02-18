@@ -7,6 +7,7 @@
 #include <WinSock2.h>
 #else
 #include <arpa/inet.h>
+#include <endian.h>
 #endif
 
 
@@ -22,7 +23,12 @@ awaitable<void> PackageCodec::EncodeT(Package *pkg) {
     header.method = static_cast<CodecMethod>(htons(static_cast<uint16_t>(pkg->mHeader.method)));
 
     header.id = htonl(pkg->mHeader.id);
+
+#if defined(_WIN32) || defined(_WIN64)
     header.length = htonll(pkg->mHeader.length);
+#else
+    header.length = htobe64(pkg->mHeader.length);
+#endif
 
     if (const auto len = co_await async_write(mConn->GetSocket(), asio::buffer(&header, Package::PACKAGE_HEADER_SIZE)); len == 0) {
         spdlog::warn("{} - Write package header length equal zero", __FUNCTION__);
@@ -48,7 +54,12 @@ awaitable<void> PackageCodec::DecodeT(Package *pkg) {
     pkg->mHeader.method = static_cast<CodecMethod>(ntohs(static_cast<uint16_t>(pkg->mHeader.method)));
 
     pkg->mHeader.id = ntohl(pkg->mHeader.id);
+
+#if defined(_WIN32) || defined(_WIN64)
     pkg->mHeader.length = ntohll(pkg->mHeader.length);
+#else
+    pkg->mHeader.length = be64toh(pkg->mHeader.length);
+#endif
 
     if (pkg->mHeader.length == 0)
         co_return;

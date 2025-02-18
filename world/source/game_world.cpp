@@ -234,8 +234,8 @@ bool GameWorld::LoadServerDLL(const std::string &path) {
     const auto creator = reinterpret_cast<ServerCreator>(GetProcAddress(mModule, "CreateServer"));
     const auto destroyer = reinterpret_cast<ServerDestroyer>(GetProcAddress(mModule, "DestroyServer"));
 #else
-    const auto creator = reinterpret_cast<AServerCreator>(dlsym(mModule, "CreateServer"));
-    const auto destroyer = reinterpret_cast<AServerDestroyer>(dlsym(mModule, "DestroyServer"));
+    const auto creator = reinterpret_cast<ServerCreator>(dlsym(mModule, "CreateServer"));
+    const auto destroyer = reinterpret_cast<ServerDestroyer>(dlsym(mModule, "DestroyServer"));
 #endif
 
     if (creator == nullptr || destroyer == nullptr) {
@@ -337,12 +337,12 @@ awaitable<void> GameWorld::WaitForConnect() {
 void GameWorld::RemoveConnection(const std::string_view key) {
     if (std::this_thread::get_id() != mThreadID) {
         co_spawn(mContext, [this, key = std::string(key)]() mutable -> awaitable<void> {
-            mConnectionMap.erase(key);
+            mConnectionMap.erase(std::string(key));
             co_return;
         }, detached);
         return;
     }
-    mConnectionMap.erase(key);
+    mConnectionMap.erase(std::string(key));
 }
 
 asio::io_context &GameWorld::GetIOContext() {

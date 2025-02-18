@@ -4,6 +4,7 @@
 #include <functional>
 #include <queue>
 #include <shared_mutex>
+#include <atomic>
 
 #include "../common.h"
 
