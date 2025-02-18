@@ -51,7 +51,7 @@ void ComponentModule::Serialize() {
                 delete serializer;
             }
 
-            spdlog::info("ComponentModule::Serialize() - Player[{}] store.", pid);
+            spdlog::info("ComponentModule::Serialize() - Player[{}] Stored.", pid);
             return true;
         });
     }

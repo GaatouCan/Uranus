@@ -79,7 +79,7 @@ GameWorld::~GameWorld() {
 #else
         dlclose(mModule);
 #endif
-        spdlog::info("Free Server DLL.");
+        spdlog::info("Free Server Dynamic-link Library.");
     }
 
     spdlog::info("Game World Destroyed.");
@@ -259,7 +259,7 @@ bool GameWorld::LoadServerDLL(const std::string &path) {
     mProtocolRoute->AbortHandler();
     mLoginAuthenticator->AbortHandler();
 
-    spdlog::info("Loaded DLL {} Success.", path);
+    spdlog::info("Loaded Dynamic-link Library {} Success.", path);
 
     return true;
 }
