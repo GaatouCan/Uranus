@@ -15,8 +15,8 @@ class Deserializer;
 class AppearanceCT final : public IPlayerComponent {
 
     orm::DBTable_Appearance mAppear;
-    std::vector<orm::DBTable_Avatar> mAvatarList;
-    std::vector<orm::DBTable_AvatarFrame> mAvatarFrameList;
+    std::unordered_map<int32_t, orm::DBTable_Avatar> mAvatarMap;
+    std::unordered_map<int32_t, orm::DBTable_AvatarFrame> mAvatarFrameMap;
 
 public:
     explicit AppearanceCT(IComponentContext *ctx);
@@ -36,5 +36,7 @@ public:
     void OnLogin() override;
 
     void SendInfo() const;
+
+    void ActiveAvatar(int index, bool bAutoUse = false);
 };
 
