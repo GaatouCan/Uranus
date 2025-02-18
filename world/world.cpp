@@ -3,9 +3,9 @@
 #include "game_world.h"
 
 #if defined(_WIN32) || defined(_WIN64)
-    constexpr auto SERVER_DLL_FILENAME = "server.dll";
+constexpr auto SERVER_DLL_FILENAME = "server.dll";
 #else
-    constexpr auto SERVER_DLL_FILENAME = "libserver.so";
+constexpr auto SERVER_DLL_FILENAME = "libserver.so";
 #endif
 
 
