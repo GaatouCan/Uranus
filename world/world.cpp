@@ -8,7 +8,12 @@ int main(int argc, char *argv[]) {
 
     const auto world = new GameWorld();
 
+#if defined(_WIN32) || defined(_WIN64)
     world->Init("server.dll");
+#else
+    world->Init("libserver.so");
+#endif
+
     world->Run();
 
     delete world;

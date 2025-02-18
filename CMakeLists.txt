@@ -66,6 +66,10 @@ foreach (proto ${PROTOBUF_LIST})
     list(APPEND PROTOBUF_FILES ${proto_src} ${proto_hdr})
 endforeach ()
 
+if (UNIX)
+    set(CMAKE_POSITION_INDEPENDENT_CODE ON)
+elseif ()
+
 add_library(proto_static STATIC ${PROTOBUF_FILES})
 target_link_libraries(proto_static PRIVATE protobuf::libprotobuf)
 
