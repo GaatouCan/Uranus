@@ -68,7 +68,7 @@ endforeach ()
 
 if (UNIX)
     set(CMAKE_POSITION_INDEPENDENT_CODE ON)
-elseif ()
+endif ()
 
 add_library(proto_static STATIC ${PROTOBUF_FILES})
 target_link_libraries(proto_static PRIVATE protobuf::libprotobuf)
