@@ -31,7 +31,7 @@ void DatabaseSystem::Init() {
     auto user = cfg["database"]["mysql"]["user"].as<std::string>();
     auto passwd = cfg["database"]["mysql"]["passwd"].as<std::string>();
 
-    spdlog::info("{} - Mysql {}:{}", __FUNCTION__, host, port);
+    spdlog::info("{} - Connect To Database (MySQL){}:{}", __FUNCTION__, host, port);
 
     for (auto &node: mSessionList) {
         node.session = std::make_unique<mysqlx::Session>(host, port, user, passwd);
@@ -39,7 +39,7 @@ void DatabaseSystem::Init() {
 
         node.thread = std::make_unique<std::thread>([this, &node, schemaName] {
             node.threadID = std::this_thread::get_id();
-            spdlog::info("\tThread ID {} - Begin handle database task", utils::ThreadIdToInt(node.threadID));
+            spdlog::info("\tThread[{}] - Begin Handle Database Task.", utils::ThreadIdToInt(node.threadID));
             while (node.queue->IsRunning()) {
                 node.queue->Wait();
                 if (!node.queue->IsRunning())
