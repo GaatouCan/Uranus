@@ -16,9 +16,9 @@
 AppearanceCT::AppearanceCT(IComponentContext *ctx)
     : IPlayerComponent(ctx) {
 
-    SERIALIZE_COMPONENT(AppearanceCT, Appearance)
-    SERIALIZE_COMPONENT(AppearanceCT, Avatar)
-    SERIALIZE_COMPONENT(AppearanceCT, AvatarFrame)
+    COMPONENT_TABLE(AppearanceCT, Appearance)
+    COMPONENT_TABLE(AppearanceCT, Avatar)
+    COMPONENT_TABLE(AppearanceCT, AvatarFrame)
 }
 
 AppearanceCT::~AppearanceCT() {
@@ -26,27 +26,27 @@ AppearanceCT::~AppearanceCT() {
 }
 
 ISerializer *AppearanceCT::Serialize_Appearance(bool &bExpired) const {
-    READ_PARAM(Appearance, mAppear)
+    SERIALIZE_CT(Appearance, mAppear)
 }
 
 void AppearanceCT::Deserialize_Appearance(Deserializer &ds) {
-    WRITE_PARAM(ds, mAppear)
+    DESERIALIZE_CT(ds, mAppear)
 }
 
 ISerializer *AppearanceCT::Serialize_Avatar(bool &bExpired) const {
-    READ_PARAM_VECTOR(Avatar, mAvatarList)
+    SERIALIZE_CT_VECTOR(Avatar, mAvatarList)
 }
 
 void AppearanceCT::Deserialize_Avatar(Deserializer &ds) {
-    WRITE_PARAM_VECTOR(ds, mAvatarList)
+    DESERIALIZE_CT_VECTOR(ds, mAvatarList)
 }
 
 ISerializer *AppearanceCT::Serialize_AvatarFrame(bool &bExpired) const {
-    READ_PARAM_VECTOR(AvatarFrame, mAvatarFrameList)
+    SERIALIZE_CT_VECTOR(AvatarFrame, mAvatarFrameList)
 }
 
 void AppearanceCT::Deserialize_AvatarFrame(Deserializer &ds) {
-    WRITE_PARAM_VECTOR(ds, mAvatarFrameList)
+    DESERIALIZE_CT_VECTOR(ds, mAvatarFrameList)
 }
 
 void AppearanceCT::OnLogin() {
