@@ -1,5 +1,5 @@
 ﻿#include "player_manager.h"
-#include "Player.h"
+#include "player.h"
 #include "../common/proto_type.h"
 
 #include "game_world.h"
