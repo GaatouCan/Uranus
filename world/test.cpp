@@ -8,15 +8,15 @@ int main() {
         mysqlx::Session sess("localhost", 33060, "root", "12345678");
         auto schema = sess.getSchema("demo");
 
-        if (auto table = schema.getTable("avatar"); table.existsInDatabase()) {
-            // table.insert("pid", "index", "expired_time", "activated", "in_used")
-            //         .values(112002, 1, 21143224, true, true)
-            //         .execute();
+        if (auto table = schema.getTable("appearance"); table.existsInDatabase()) {
+            table.insert("pid", "avatar", "avatar_frame", "update_time")
+                    .values(100032, 1, 1, 1700003220)
+                    .execute();
 
-            auto result = table.select().where("pid = 112002").execute();
+            auto result = table.select().where("pid = 100032").execute();
 
             if (auto row = result.fetchOne(); !row.isNull()) {
-                std::cout << row[0] << row[1] << row[2] << row[3] << row[4] << std::endl;
+                std::cout << row[0] << row[1] << row[2] << row[3] << std::endl;
             }
         }
 

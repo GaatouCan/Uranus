@@ -2,12 +2,11 @@
 
 #include "common.h"
 
-#include <cstdint>
-
 #if defined(_WIN32) || defined(_WIN64)
 #include <xhash>
 #elif defined(__linux__)
 #include <functional>
+#include <cstdint>
 #endif
 
 static constexpr int64_t CROSS_SERVER_ID_OFFSET = 1'000'000;

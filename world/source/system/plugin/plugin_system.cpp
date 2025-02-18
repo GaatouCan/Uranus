@@ -55,7 +55,7 @@ bool PluginSystem::LoadPlugin(const std::string_view path) {
 #if defined(_WIN32) || defined(_WIN64)
     const ModuleHandle hModule = LoadLibrary(path.data());
 #else
-    const AModuleHandle hModule = dlopen(path.data(), RTLD_LAZY);
+    const ModuleHandle hModule = dlopen(path.data(), RTLD_LAZY);
 #endif
 
     if (hModule == nullptr) {
@@ -67,8 +67,8 @@ bool PluginSystem::LoadPlugin(const std::string_view path) {
     const auto creator = reinterpret_cast<PluginCreator>(GetProcAddress(hModule, "CreatePlugin"));
     const auto destroyer = reinterpret_cast<PluginDestroyer>(GetProcAddress(hModule, "DestroyPlugin"));
 #else
-    const auto creator = reinterpret_cast<APluginCreator>(dlsym(hModule, "CreatePlugin"));
-    const auto destroyer = reinterpret_cast<APluginDestroyer>(dlsym(hModule, "DestroyPlugin"));
+    const auto creator = reinterpret_cast<PluginCreator>(dlsym(hModule, "CreatePlugin"));
+    const auto destroyer = reinterpret_cast<PluginDestroyer>(dlsym(hModule, "DestroyPlugin"));
 #endif
 
     if (creator == nullptr || destroyer == nullptr) {

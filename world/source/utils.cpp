@@ -106,7 +106,7 @@ namespace utils {
     int GetDayOfWeek(const TimePoint point) {
         const std::time_t currentTime = std::chrono::system_clock::to_time_t(point);
         std::tm tm{};
-#ifdef WIN32
+#if defined(_WIN32) || defined(_WIN64)
         localtime_s(&tm, &currentTime);
 #else
         localtime_r(&currentTime, &tm);
