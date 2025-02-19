@@ -38,5 +38,6 @@ public:
     void SendInfo() const;
 
     void ActiveAvatar(int index, bool bAutoUse = false);
+    void UseAvatar(int index);
 };
 

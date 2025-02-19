@@ -106,6 +106,17 @@ void AppearanceCT::ActiveAvatar(const int index, const bool bAutoUse) {
     SendInfo();
 }
 
+void AppearanceCT::UseAvatar(const int index) {
+    const auto iter = mAvatarMap.find(index);
+    if (iter == mAvatarMap.end() || !iter->second.activated)
+        return;
+
+    iter->second.in_used = true;
+    mAppear.avatar = iter->second.index;
+
+    SendInfo();
+}
+
 void protocol::AppearanceRequest(const std::shared_ptr<IBasePlayer> &plr, IPackage *pkg) {
     if (plr == nullptr)
         return;
@@ -124,6 +135,10 @@ void protocol::AppearanceRequest(const std::shared_ptr<IBasePlayer> &plr, IPacka
         break;
         case Appearance::ACTIVE_AVATAR: {
             ct->ActiveAvatar(request.parameter(), request.extend() == 1);
+        }
+        break;
+        case Appearance::USE_AVATAR: {
+            ct->UseAvatar(request.parameter());
         }
         break;
         default:
