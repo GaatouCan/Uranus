@@ -79,6 +79,8 @@ void AppearanceCT::SendInfo() const {
 }
 
 void AppearanceCT::ActiveAvatar(const int index, const bool bAutoUse) {
+    CheckAvatar(index);
+
     auto iter = mAvatarMap.find(index);
     if (iter != mAvatarMap.end() && iter->second.activated)
         return;
@@ -93,7 +95,7 @@ void AppearanceCT::ActiveAvatar(const int index, const bool bAutoUse) {
     avatar.pid = GetOwner()->GetFullID();
     avatar.index = index;
     avatar.activated = true;
-    avatar.in_used = false;
+    avatar.expired_time = utils::UnixTime() + 1000000;
 
     mAvatarMap[index] = avatar;
     iter = mAvatarMap.find(index);
@@ -107,14 +109,89 @@ void AppearanceCT::ActiveAvatar(const int index, const bool bAutoUse) {
 }
 
 void AppearanceCT::UseAvatar(const int index) {
+    CheckAvatar(index);
+
     const auto iter = mAvatarMap.find(index);
     if (iter == mAvatarMap.end() || !iter->second.activated)
         return;
 
-    iter->second.in_used = true;
-    mAppear.avatar = iter->second.index;
+    mAppear.avatar = index;
 
     SendInfo();
+}
+
+void AppearanceCT::ActiveAvatarFrame(const int index, bool bAutoUse) {
+    CheckAvatarFrame(index);
+
+    auto iter = mAvatarFrameMap.find(index);
+    if (iter != mAvatarFrameMap.end() && iter->second.activated)
+        return;
+
+    const auto cfg_op = GetWorld()->GetConfigManager()->FindConfig("appearance.avatar", index);
+    if (!cfg_op.has_value())
+        return;
+
+    // const auto cfg = cfg_op.value();
+    orm::DBTable_AvatarFrame frame;
+
+    frame.pid = GetOwner()->GetFullID();
+    frame.index = index;
+    frame.activated = true;
+    frame.expired_time = utils::UnixTime() + 1000000;
+
+    mAvatarFrameMap[index] = frame;
+    iter = mAvatarFrameMap.find(index);
+
+    if (bAutoUse) {
+        iter->second.in_used = true;
+        mAppear.avatar_frame = index;
+    }
+
+    SendInfo();
+}
+
+void AppearanceCT::UseAvatarFrame(const int index) {
+    CheckAvatarFrame(index);
+
+    const auto iter = mAvatarFrameMap.find(index);
+    if (iter == mAvatarFrameMap.end() || !iter->second.activated)
+        return;
+
+    mAppear.avatar_frame = index;
+
+    SendInfo();
+}
+
+void AppearanceCT::CheckAvatar(const int index) {
+    const auto iter = mAvatarMap.find(index);
+    if (iter == mAvatarMap.end())
+        return;
+
+    const auto elem = &iter->second;
+    if (!elem->activated)
+        return;
+
+    if (elem->expired_time < 0)
+        return;
+
+    if (elem->expired_time >= 0 && elem->expired_time < utils::UnixTime())
+        elem->activated = false;
+}
+
+void AppearanceCT::CheckAvatarFrame(const int index) {
+    const auto iter = mAvatarFrameMap.find(index);
+    if (iter == mAvatarFrameMap.end())
+        return;
+
+    const auto elem = &iter->second;
+    if (!elem->activated)
+        return;
+
+    if (elem->expired_time < 0)
+        return;
+
+    if (elem->expired_time >= 0 && elem->expired_time < utils::UnixTime())
+        elem->activated = false;
 }
 
 void protocol::AppearanceRequest(const std::shared_ptr<IBasePlayer> &plr, IPackage *pkg) {

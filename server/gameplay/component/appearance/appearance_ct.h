@@ -39,5 +39,12 @@ public:
 
     void ActiveAvatar(int index, bool bAutoUse = false);
     void UseAvatar(int index);
+
+    void ActiveAvatarFrame(int index, bool bAutoUse = false);
+    void UseAvatarFrame(int index);
+
+private:
+    void CheckAvatar(int index);
+    void CheckAvatarFrame(int index);
 };
 

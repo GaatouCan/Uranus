@@ -13,7 +13,6 @@ CREATE TABLE `avatar`
     `index` INT NOT NULL DEFAULT 0 COMMENT '索引',
     `expired_time` BIGINT NOT NULL DEFAULT 0 COMMENT '过期时间',
     `activated` BOOLEAN NOT NULL DEFAULT FALSE COMMENT '是否激活',
-    `in_used` BOOLEAN NOT NULL DEFAULT FALSE COMMENT '是否正在使用',
     PRIMARY KEY (`pid`, `index`)
 ) ENGINE = InnoDB CHARACTER SET = utf16 COMMENT '玩家头像';
 
@@ -23,6 +22,5 @@ CREATE TABLE `avatar_frame`
     `index` INT NOT NULL DEFAULT 0 COMMENT '索引',
     `expired_time` BIGINT NOT NULL DEFAULT 0 COMMENT '过期时间',
     `activated` BOOLEAN NOT NULL DEFAULT FALSE COMMENT '是否激活',
-    `in_used` BOOLEAN NOT NULL DEFAULT FALSE COMMENT '是否正在使用',
     PRIMARY KEY (`pid`, `index`)
 ) ENGINE = InnoDB CHARACTER SET = utf16 COMMENT '玩家头像框';
