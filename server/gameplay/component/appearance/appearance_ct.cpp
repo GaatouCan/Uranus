@@ -87,7 +87,7 @@ void AppearanceCT::ActiveAvatar(const int index, const bool bAutoUse) {
     if (!cfg_op.has_value())
         return;
 
-    const auto cfg = cfg_op.value();
+    // const auto cfg = cfg_op.value();
     orm::DBTable_Avatar avatar;
 
     avatar.pid = GetOwner()->GetFullID();

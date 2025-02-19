@@ -221,34 +221,38 @@ uint32_t GameWorld::GetServerID() {
 bool GameWorld::LoadServerDLL(const std::string &path) {
 #if defined(_WIN32) || defined(_WIN64)
     mModule = LoadLibrary(path.c_str());
-#else
-    mModule = dlopen(path.c_str(), RTLD_LAZY);
-#endif
 
     if (mModule == nullptr) {
         spdlog::error("Failed to load server dll: {}", path);
         return false;
     }
 
-#if defined(_WIN32) || defined(_WIN64)
     const auto creator = reinterpret_cast<ServerCreator>(GetProcAddress(mModule, "CreateServer"));
     const auto destroyer = reinterpret_cast<ServerDestroyer>(GetProcAddress(mModule, "DestroyServer"));
-#else
-    const auto creator = reinterpret_cast<ServerCreator>(dlsym(mModule, "CreateServer"));
-    const auto destroyer = reinterpret_cast<ServerDestroyer>(dlsym(mModule, "DestroyServer"));
-#endif
 
     if (creator == nullptr || destroyer == nullptr) {
         spdlog::error("Failed to load DLL function: {}", path);
-
-#if defined(_WIN32) || defined(_WIN64)
         FreeLibrary(mModule);
-#else
-        dlclose(mModule);
-#endif
-
         return false;
     }
+
+#else
+    mModule = dlopen(path.c_str(), RTLD_LAZY);
+
+    if (mModule == nullptr) {
+        spdlog::error("Failed to load server dll: {}", path);
+        return false;
+    }
+
+    const auto creator = reinterpret_cast<ServerCreator>(dlsym(mModule, "CreateServer"));
+    const auto destroyer = reinterpret_cast<ServerDestroyer>(dlsym(mModule, "DestroyServer"));
+
+    if (creator == nullptr || destroyer == nullptr) {
+        spdlog::error("Failed to load DLL function: {}", path);
+        dlclose(mModule);
+        return false;
+    }
+#endif
 
     mServer = creator(this);
     mDestroyer = destroyer;
@@ -335,14 +339,21 @@ awaitable<void> GameWorld::WaitForConnect() {
 }
 
 void GameWorld::RemoveConnection(const std::string_view key) {
+    if (!bRunning)
+        return;
+
     if (std::this_thread::get_id() != mThreadID) {
         co_spawn(mContext, [this, key = std::string(key)]() mutable -> awaitable<void> {
-            mConnectionMap.erase(std::string(key));
+            mConnectionMap.erase(key);
             co_return;
         }, detached);
         return;
     }
+#if defined(_WIN32) || defined(_WIN64)
+    mConnectionMap.erase(key);
+#else
     mConnectionMap.erase(std::string(key));
+#endif
 }
 
 asio::io_context &GameWorld::GetIOContext() {
