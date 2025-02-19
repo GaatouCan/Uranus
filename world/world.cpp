@@ -9,12 +9,21 @@ constexpr auto SERVER_DLL_FILENAME = "libserver.so";
 #endif
 
 
-int main(int argc, char *argv[]) {
+int main(const int argc, char *argv[]) {
     spdlog::set_level(spdlog::level::info);
+
+    std::string server = SERVER_DLL_FILENAME;
+
+    for (int i = 1; i < argc; i++) {
+        std::string arg = argv[i];
+        if (arg.starts_with("--server=")) {
+            server = arg.substr(strlen("--server="));
+        }
+    }
 
     const auto world = new GameWorld();
 
-    world->Init(SERVER_DLL_FILENAME);
+    world->Init(server);
     world->Run();
 
     delete world;
