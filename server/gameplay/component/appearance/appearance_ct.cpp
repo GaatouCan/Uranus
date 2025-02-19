@@ -218,6 +218,14 @@ void protocol::AppearanceRequest(const std::shared_ptr<IBasePlayer> &plr, IPacka
             ct->UseAvatar(request.parameter());
         }
         break;
+        case Appearance::ACTIVE_AVATAR_FRAME: {
+            ct->ActiveAvatarFrame(request.parameter(), request.extend() == 1);
+        }
+        break;
+        case Appearance::USE_AVATAR_FRAME: {
+            ct->UseAvatarFrame(request.parameter());
+        }
+        break;
         default:
             break;
     }
