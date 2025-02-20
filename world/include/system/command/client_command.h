@@ -1,8 +1,14 @@
-//
-// Created by admin on 25-2-20.
-//
+#pragma once
 
-#ifndef CLIENT_COMMAND_H
-#define CLIENT_COMMAND_H
+#include "base_command.h"
 
-#endif //CLIENT_COMMAND_H
+class BASE_API IClientCommand : public IBaseCommand {
+
+    int32_t mSender;
+
+public:
+    explicit IClientCommand(CommandObject object);
+
+    void SetSender(int32_t sender);
+    [[nodiscard]] int32_t GetSender() const;
+};
