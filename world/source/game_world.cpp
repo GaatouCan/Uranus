@@ -16,6 +16,7 @@
 #include "../include/system/timer/timer_system.h"
 #include "../include/system/plugin/plugin_system.h"
 #include "../include/system/manager/manager_system.h"
+#include "../include/system/command/command_system.h"
 
 #include <ranges>
 #include <random>
@@ -39,9 +40,10 @@ GameWorld::GameWorld()
     // Create Sub System
     CreateSystem<DatabaseSystem>(2);
     CreateSystem<TimerSystem>(3);
-    CreateSystem<ManagerSystem>(4);
-    CreateSystem<EventSystem>(5);
-    CreateSystem<PluginSystem>(6);
+    CreateSystem<CommandSystem>(4);
+    CreateSystem<ManagerSystem>(9);
+    CreateSystem<EventSystem>(10);
+    CreateSystem<PluginSystem>(11);
 }
 
 GameWorld::~GameWorld() {
