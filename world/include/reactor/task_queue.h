@@ -5,8 +5,12 @@
 #include <queue>
 #include <shared_mutex>
 #include <atomic>
+#include <chrono>
 
 #include "../common.h"
+
+
+constexpr auto TASK_QUEUE_MAX_HANDLE_SECOND = std::chrono::seconds(3);
 
 
 class GlobalQueue;

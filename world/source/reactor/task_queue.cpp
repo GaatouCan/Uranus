@@ -1,4 +1,6 @@
 #include "../../include/reactor/task_queue.h"
+
+#include "utils.h"
 #include "../../include/reactor/reactor.h"
 #include "../../include/reactor/global_queue.h"
 
@@ -77,7 +79,9 @@ bool TaskQueue::IsInGlobal() const {
 void TaskQueue::HandleTask(const int rate) {
     int num = std::ceil(mCurQueue.size() * (rate / 10000));
 
-    while (num-- > 0 && !bRemoved) {
+    const auto maxHandleTime = NowTimePoint() + TASK_QUEUE_MAX_HANDLE_SECOND;
+
+    while ((num-- > 0) && !bRemoved && (NowTimePoint() <= maxHandleTime)) {
         if (bRemoved)
             break;
 
