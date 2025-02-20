@@ -6,7 +6,7 @@
 
 #include <typeindex>
 
-class ManagerSystem final : public ISubSystem {
+class BASE_API ManagerSystem final : public ISubSystem {
 
     std::unordered_map<std::type_index, IBaseManager *> mManagerMap;
 
