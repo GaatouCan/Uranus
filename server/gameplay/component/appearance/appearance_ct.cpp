@@ -101,7 +101,7 @@ void AppearanceCT::ActiveAvatar(const int index, const bool bAutoUse) {
     iter = mAvatarMap.find(index);
 
     if (bAutoUse) {
-        iter->second.in_used = true;
+        // iter->second.in_used = true;
         mAppear.avatar = index;
     }
 
@@ -143,7 +143,7 @@ void AppearanceCT::ActiveAvatarFrame(const int index, bool bAutoUse) {
     iter = mAvatarFrameMap.find(index);
 
     if (bAutoUse) {
-        iter->second.in_used = true;
+        // iter->second.in_used = true;
         mAppear.avatar_frame = index;
     }
 
