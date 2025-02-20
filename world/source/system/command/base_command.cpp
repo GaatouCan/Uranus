@@ -3,3 +3,7 @@
 //
 
 #include "../../../include/system/command/base_command.h"
+
+IBaseCommand::IBaseCommand(CommandObject object)
+    : mObject(std::move(object)) {
+}

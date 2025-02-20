@@ -1,8 +1,19 @@
-//
-// Created by admin on 25-2-20.
-//
+#pragma once
 
-#ifndef BASE_COMMAND_H
-#define BASE_COMMAND_H
+#include "command_object.h"
 
-#endif //BASE_COMMAND_H
+#include <asio/awaitable.hpp>
+
+
+class BASE_API IBaseCommand {
+protected:
+    CommandObject mObject;
+
+public:
+    IBaseCommand() = delete;
+
+    explicit IBaseCommand(CommandObject object);
+    virtual ~IBaseCommand() = default;
+
+    virtual asio::awaitable<void> Execute() = 0;
+};
