@@ -3,6 +3,7 @@
 #include "../utils.h"
 
 #include <map>
+#include <set>
 #include <shared_mutex>
 #include <spdlog/spdlog.h>
 
@@ -47,4 +48,6 @@ public:
             co_return;
         });
     }
+
+    std::set<std::shared_ptr<IBasePlayer>> GetPlayerInScene() const;
 };

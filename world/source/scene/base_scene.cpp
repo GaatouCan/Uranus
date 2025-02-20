@@ -3,6 +3,9 @@
 #include "../../include/scene/base_player.h"
 #include "../../include/game_world.h"
 
+#include <ranges>
+
+
 IBaseScene::IBaseScene(SceneManager *owner, const int32_t id)
     : mOwner(owner),
       mSceneID(id) {
@@ -86,4 +89,13 @@ void IBaseScene::RunInThread(const std::function<awaitable<void>()> &func) const
 void IBaseScene::RunInThread(std::function<awaitable<void>()> &&func) const {
     auto &ctx = mOwner->GetWorld()->GetIOContext();
     co_spawn(ctx, std::move(func), detached);
+}
+
+std::set<std::shared_ptr<IBasePlayer>> IBaseScene::GetPlayerInScene() const {
+    std::set<std::shared_ptr<IBasePlayer>> result;
+    std::shared_lock lock(mMutex);
+    for (const auto &player : mPlayerMap | std::views::values) {
+        result.insert(player);
+    }
+    return result;
 }
