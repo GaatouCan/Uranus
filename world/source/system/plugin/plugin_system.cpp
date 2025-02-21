@@ -54,41 +54,25 @@ PluginSystem::PluginNode PluginSystem::FindPlugin(const std::string &name) {
 bool PluginSystem::LoadPlugin(const std::string_view path) {
 #if defined(_WIN32) || defined(_WIN64)
     const ModuleHandle hModule = LoadLibrary(path.data());
-#else
-    const ModuleHandle hModule = dlopen(path.data(), RTLD_LAZY);
-#endif
 
     if (hModule == nullptr) {
         spdlog::error("{} - Failed to load plugin {}", __FUNCTION__,  path.data());
         return false;
     }
 
-#if defined(_WIN32) || defined(_WIN64)
     const auto creator = reinterpret_cast<PluginCreator>(GetProcAddress(hModule, "CreatePlugin"));
     const auto destroyer = reinterpret_cast<PluginDestroyer>(GetProcAddress(hModule, "DestroyPlugin"));
-#else
-    const auto creator = reinterpret_cast<PluginCreator>(dlsym(hModule, "CreatePlugin"));
-    const auto destroyer = reinterpret_cast<PluginDestroyer>(dlsym(hModule, "DestroyPlugin"));
-#endif
 
     if (creator == nullptr || destroyer == nullptr) {
         spdlog::error("{} - Failed to find function {}", __FUNCTION__, path.data());
-#if defined(_WIN32) || defined(_WIN64)
         FreeLibrary(hModule);
-#else
-        dlclose(hModule);
-#endif
         return false;
     }
 
     const auto plugin = creator(this);
     if (plugin == nullptr) {
         spdlog::error("{} - Failed to create plugin {}", __FUNCTION__, path.data());
-#if defined(_WIN32) || defined(_WIN64)
         FreeLibrary(hModule);
-#else
-        dlclose(hModule);
-#endif
         return false;
     }
 
@@ -97,14 +81,46 @@ bool PluginSystem::LoadPlugin(const std::string_view path) {
         if (mPluginMap.contains(plugin->GetPluginName())) {
             spdlog::warn("{} - Plugin {} already exists", __FUNCTION__, plugin->GetPluginName());
             destroyer(plugin);
-#if defined(_WIN32) || defined(_WIN64)
             FreeLibrary(hModule);
-#else
-            dlclose(hModule);
-#endif
             return false;
         }
     }
+
+#else
+    const ModuleHandle hModule = dlopen(path.data(), RTLD_LAZY);
+
+    if (hModule == nullptr) {
+        spdlog::error("{} - Failed to load plugin {}", __FUNCTION__,  path.data());
+        return false;
+    }
+
+    const auto creator = reinterpret_cast<PluginCreator>(dlsym(hModule, "CreatePlugin"));
+    const auto destroyer = reinterpret_cast<PluginDestroyer>(dlsym(hModule, "DestroyPlugin"));
+
+    if (creator == nullptr || destroyer == nullptr) {
+        spdlog::error("{} - Failed to find function {}", __FUNCTION__, path.data());
+        dlclose(hModule);
+        return false;
+    }
+
+    const auto plugin = creator(this);
+    if (plugin == nullptr) {
+        spdlog::error("{} - Failed to create plugin {}", __FUNCTION__, path.data());
+        dlclose(hModule);
+        return false;
+    }
+
+    {
+        std::shared_lock lock(mMutex);
+        if (mPluginMap.contains(plugin->GetPluginName())) {
+            spdlog::warn("{} - Plugin {} already exists", __FUNCTION__, plugin->GetPluginName());
+            destroyer(plugin);
+            dlclose(hModule);
+            return false;
+        }
+    }
+
+#endif
 
     PluginNode node{ hModule, destroyer, plugin };
 
