@@ -5,11 +5,13 @@
 #include "system/database/database_system.h"
 
 #include "../gameplay/component/appearance/appearance_ct.h"
+#include "../gameplay/component/state/state_ct.h"
 
 
 ComponentModule::ComponentModule(Player *plr)
     : mOwner(plr){
 
+    CreateComponent<StateCT>();
     CreateComponent<AppearanceCT>();
 }
 
