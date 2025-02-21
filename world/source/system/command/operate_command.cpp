@@ -3,9 +3,11 @@
 //
 
 #include "../../../include/system/command/operate_command.h"
+#include "../../../include/system/command/command_system.h"
 
-IOperateCommand::IOperateCommand(CommandObject object)
-    : IBaseCommand(std::move(object)),
+
+IOperateCommand::IOperateCommand(CommandSystem *owner, CommandObject object)
+    : IBaseCommand(owner, std::move(object)),
       mOperateID(-1),
       mCreateTime(0),
       mUpdateTime(0) {

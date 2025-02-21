@@ -29,8 +29,8 @@ public:
         if (mClientMap.contains(type))
             return;
 
-        mClientMap[type] = [](const CommandObject &obj) -> std::shared_ptr<IClientCommand> {
-            return std::make_shared<T>(obj);
+        mClientMap[type] = [this](const CommandObject &obj) -> std::shared_ptr<IClientCommand> {
+            return std::make_shared<T>(this, obj);
         };
     }
 
@@ -40,8 +40,8 @@ public:
         if (mOperateMap.contains(type))
             return;
 
-        mOperateMap[type] = [](const CommandObject &obj) -> std::shared_ptr<IOperateCommand> {
-            return std::make_shared<T>(obj);
+        mOperateMap[type] = [this](const CommandObject &obj) -> std::shared_ptr<IOperateCommand> {
+            return std::make_shared<T>(this, obj);
         };
     }
 

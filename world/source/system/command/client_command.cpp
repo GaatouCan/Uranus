@@ -3,9 +3,11 @@
 //
 
 #include "../../../include/system/command/client_command.h"
+#include "../../../include/system/command/command_system.h"
 
-IClientCommand::IClientCommand(CommandObject object)
-    : IBaseCommand(std::move(object)),
+
+IClientCommand::IClientCommand(CommandSystem *owner, CommandObject object)
+    : IBaseCommand(owner, std::move(object)),
       mSender(-1) {
 }
 
