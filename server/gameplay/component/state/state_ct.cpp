@@ -9,6 +9,8 @@
 
 StateCT::StateCT(IComponentContext *ctx)
     : IPlayerComponent(ctx) {
+
+    COMPONENT_TABLE(StateCT, State)
 }
 
 StateCT::~StateCT() {
@@ -20,4 +22,12 @@ ISerializer * StateCT::Serialize_State(bool &bExpired) const {
 
 void StateCT::Deserialize_State(Deserializer &ds) {
     READ_PARAM(ds, mState)
+}
+
+int32_t StateCT::GetLevel() const {
+    return mState.level;
+}
+
+int64_t StateCT::GetExp() const {
+    return mState.experience;
 }

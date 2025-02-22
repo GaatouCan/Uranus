@@ -150,11 +150,21 @@ dynamic_cast<TComponentContext<comp> *>(GetComponentContext())->RegisterTable(ut
 #define CREATE_SERIALIZER(s, table) \
     const auto s = new Serializer<orm::DBTable_##table>(utils::PascalToUnderline(#table));
 
+/**
+ * 将数据写入数据库（序列化）
+ * @param tb 数据库表名
+ * @param pa 数据块
+ */
 #define WRITE_PARAM(tb, pa) \
 CREATE_SERIALIZER(_serializer, tb) \
 _serializer->PushBack(pa); \
 return _serializer;
 
+/**
+ * 将数据写入数据库（序列化）（key-value结构）
+ * @param tb 数据库表名
+ * @param pa 包含数据块的map
+ */
 #define WRITE_PARAM_MAP(tb, pa) \
 CREATE_SERIALIZER(_serializer, tb) \
 for (const auto &val : (pa) | std::views::values) { \
@@ -162,6 +172,11 @@ for (const auto &val : (pa) | std::views::values) { \
 } \
 return _serializer;
 
+/**
+ * 将数据写入数据库（序列化）（array结构）
+ * @param tb 数据库表名
+ * @param pa 包含数据块的vector
+ */
 #define WRITE_PARAM_VECTOR(tb, pa) \
 CREATE_SERIALIZER(_serializer, tb) \
 for (const auto &val : (pa)) { \
@@ -169,11 +184,21 @@ for (const auto &val : (pa)) { \
 } \
 return _serializer;
 
+/**
+ * 将数据库的数据读取到数据块
+ * @param ds Deserializer对象
+ * @param pa 数据块
+ */
 #define READ_PARAM(ds, pa) \
 if ((ds).HasMore()) { \
     (ds).Deserialize(&(pa)); \
 }
 
+/**
+ * 将数据库的数据读取到包含数据块的map
+ * @param ds Deserializer对象
+ * @param pa 包含数据块的map
+ */
 #define READ_PARAM_MAP(ds, pa) \
 while ((ds).HasMore()) { \
     decltype(pa)::mapped_type val; \
@@ -181,6 +206,11 @@ while ((ds).HasMore()) { \
     (pa)[val.index] = val; \
 }
 
+/**
+ * 将数据库的数据读取到包含数据块的vector
+ * @param ds Deserializer对象
+ * @param pa 包含数据块的vector
+ */
 #define READ_PARAM_VECTOR(ds, pa) \
 (pa).resize((ds).TotalRowsCount());\
 while ((ds).HasMore()) { \
