@@ -45,7 +45,12 @@ using ModuleHandle = void*;
 
 #endif
 
+class GameWorld;
+
 namespace utils {
+
+    void BASE_API SetGameWorld(GameWorld *world);
+    GameWorld BASE_API *GetWorld();
 
     void BASE_API TraverseFolder(const std::string &folder, const std::function<void(const std::filesystem::directory_entry &)> &func);
 

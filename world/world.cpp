@@ -23,6 +23,8 @@ int main(const int argc, char *argv[]) {
 
     const auto world = new GameWorld();
 
+    utils::SetGameWorld(world);
+
     world->Init(server);
     world->Run();
 
