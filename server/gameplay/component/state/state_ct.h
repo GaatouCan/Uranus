@@ -23,6 +23,6 @@ public:
     ISerializer *Serialize_State(bool &bExpired) const;
     void Deserialize_State(Deserializer &ds);
 
-    int32_t GetLevel() const;
-    int64_t GetExp() const;
+    [[nodiscard]] int32_t GetLevel() const;
+    [[nodiscard]] int64_t GetExp() const;
 };
