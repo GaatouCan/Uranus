@@ -27,23 +27,23 @@ def update_table(config: dict):
     """所有最新的表名"""
 
     sql2gen = {
-        'BIGINT': "long",
-        'bigint': "long",
+        'BIGINT': "int64",
+        'bigint': "int64",
     
-        'INT': "integer",
-        'int': "integer",
+        'INT': "int32",
+        'int': "int32",
 
-        'SMALLINT': "short",
-        'smallint': "short",
+        'SMALLINT': "int16",
+        'smallint': "int16",
 
-        'BIGINT(20)': "long",
-        'bigint(20)': "long",
+        'BIGINT(20)': "int64",
+        'bigint(20)': "int64",
     
-        'INT(11)': "integer",
-        'int(11)': "integer",
+        'INT(11)': "int32",
+        'int(11)': "int32",
 
-        'SMALLINT(6)': "short",
-        'smallint(6)': "short",
+        'SMALLINT(6)': "int16",
+        'smallint(6)': "int16",
 
         'TINYINT(1)': "bool",
         'tinyint(1)': "bool",
@@ -78,10 +78,10 @@ def update_table(config: dict):
 
     # sql类型
     gen2sql = {
-        "long": "BIGINT",
-        "integer": "INT",
-        "short": "SMALLINT",
-        "bool": "TINYINT(1)",
+        "int64": "BIGINT",
+        "int32": "INT",
+        "int16": "SMALLINT",
+        "bool": "BOOLEAN",
         "float": "FLOAT",
         "double": "DOUBLE",
         "char": "CHAR",
@@ -238,9 +238,20 @@ def update_table(config: dict):
                         temporary_cursor.execute(sql_str)
                         sql_list.append(sql_str)
                         modify = True
+
+                    is_default_change = False
+                    if field['type'] == "bool":
+                        if origin_field["default"] == "0" and (field["default"] == "FALSE" or field["default"] == "0"):
+                            is_default_change = False
+                        elif origin_field["default"] == "1" and (field["default"] == "TRUE" or field["default"] == "1"):
+                            is_default_change = False
+                        else:
+                            is_default_change = True
+                    else:
+                        is_default_change = origin_field["default"] != field['default']
                     
                     # 默认值有变化
-                    if origin_field["default"] != field['default']:
+                    if is_default_change:
                         sql_str = f"ALTER TABLE {table["name"]} ALTER COLUMN {name}"
                     
                         if field["default"] == "":
