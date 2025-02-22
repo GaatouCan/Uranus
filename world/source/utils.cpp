@@ -1,9 +1,20 @@
 #include "../include/utils.h"
+#include "../include/game_world.h"
 
 #include <cassert>
 #include <ctime>
 
 namespace utils {
+
+    static GameWorld *gWorldPtr = nullptr;
+
+    void SetGameWorld(GameWorld *world) {
+        gWorldPtr = world;
+    }
+
+    GameWorld * GetWorld() {
+        return gWorldPtr;
+    }
 
     void TraverseFolder(const std::string &folder, const std::function<void(const std::filesystem::directory_entry &)> &func) {
         for (const auto &entry: std::filesystem::directory_iterator(folder)) {
