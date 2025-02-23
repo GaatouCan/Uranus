@@ -25,4 +25,6 @@ public:
 
     [[nodiscard]] int32_t GetLevel() const;
     [[nodiscard]] int64_t GetExp() const;
+
+    void SyncCache(CacheNode* node) override;
 };

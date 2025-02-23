@@ -7,6 +7,7 @@
 #include "../../../common/proto.def.h"
 #include "../../../player/component_module.h"
 #include "../../../player/player.h"
+#include "../../../player/cache_node.h"
 
 #include "impl/package.h"
 #include "utils.h"
@@ -160,6 +161,11 @@ void AppearanceCT::UseAvatarFrame(const int index) {
     mAppear.avatar_frame = index;
 
     SendInfo();
+}
+
+void AppearanceCT::SyncCache(CacheNode* node) {
+    node->avatar = mAppear.avatar;
+    node->avatarFrame = mAppear.avatar_frame;
 }
 
 void AppearanceCT::CheckAvatar(const int index) {

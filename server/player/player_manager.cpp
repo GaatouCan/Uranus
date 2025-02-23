@@ -1,4 +1,7 @@
 ﻿#include "player_manager.h"
+
+#include <spdlog/details/os.h>
+
 #include "player.h"
 #include "../common/proto_type.h"
 
@@ -64,6 +67,10 @@ awaitable<std::shared_ptr<Player> > PlayerManager::OnPlayerLogin(const std::shar
     // 同步玩家缓存数据
     SyncCache(plr);
 
+    if (const auto iter = mCacheMap.find(id.local); iter != mCacheMap.end()) {
+        iter->second.lastLoginTime = NowTimePoint();
+    }
+
     co_return plr;
 }
 
@@ -71,7 +78,12 @@ void PlayerManager::OnPlayerLogout(const PlayerID pid) {
     spdlog::info("{} - Player[{}] Logout", __FUNCTION__, pid.ToInt64());
     if (const auto plr = RemovePlayer(pid.local); plr != nullptr) {
         plr->TryLeaveScene();
+        SyncCache(plr);
         plr->OnLogout();
+    }
+
+    if (const auto iter = mCacheMap.find(pid.local); iter != mCacheMap.end()) {
+        iter->second.lastLogoutTime = NowTimePoint();
     }
 }
 

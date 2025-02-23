@@ -5,7 +5,6 @@
 #include "system/manager/base_manager.h"
 #include "player_id.h"
 
-#include <mutex>
 #include <shared_mutex>
 #include <set>
 

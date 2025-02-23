@@ -4,6 +4,7 @@
 
 #include "state_ct.h"
 #include "../../../player/component_module.h"
+#include "../../../player/cache_node.h"
 
 #include "utils.h"
 
@@ -30,4 +31,8 @@ int32_t StateCT::GetLevel() const {
 
 int64_t StateCT::GetExp() const {
     return mState.experience;
+}
+
+void StateCT::SyncCache(CacheNode* node) {
+    node->level = mState.level;
 }

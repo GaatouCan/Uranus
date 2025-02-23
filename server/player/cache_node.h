@@ -8,6 +8,11 @@ struct CacheNode {
     TimePoint lastLoginTime;
     TimePoint lastLogoutTime;
 
+    int32_t level = 0;
+
+    int32_t avatar = 0;
+    int32_t avatarFrame = 0;
+
     [[nodiscard]] bool IsOnline() const {
         constexpr auto zeroPoint = TimePoint();
         const auto now = NowTimePoint();

@@ -43,6 +43,8 @@ public:
     void ActiveAvatarFrame(int index, bool bAutoUse = false);
     void UseAvatarFrame(int index);
 
+    void SyncCache(struct CacheNode* node) override;
+
 private:
     void CheckAvatar(int index);
     void CheckAvatarFrame(int index);
