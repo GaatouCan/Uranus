@@ -39,12 +39,12 @@ public:
     [[nodiscard]] uint8_t operator[](size_t pos) const noexcept;
 
     template<typename T>
-    static constexpr bool KPODType = std::is_pointer_v<T> ?
+    static constexpr bool kPODType = std::is_pointer_v<T> ?
         std::is_trivial_v<std::remove_pointer_t<T>> && std::is_standard_layout_v<std::remove_pointer_t<T>> :
         std::is_trivial_v<T> && std::is_standard_layout_v<T>;
 
     template<typename T>
-    requires KPODType<T>
+    requires kPODType<T>
     void CastFromData(T source) {
         constexpr auto size = std::is_pointer_v<T> ? sizeof(std::remove_pointer_t<T>) : sizeof(T);
         mData.resize(size);
@@ -57,7 +57,7 @@ public:
     }
 
     template<typename T>
-    requires KPODType<T>
+    requires kPODType<T>
     bool CastToData(T *target) const {
         const bool ret = mData.size() >= sizeof(std::remove_pointer_t<T>);
         const auto size = ret ?  sizeof(std::remove_pointer_t<T>) : mData.size();
@@ -69,7 +69,7 @@ public:
     }
 
     template<typename T>
-    requires KPODType<T>
+    requires kPODType<T>
     static ByteArray FromData(T data) {
         ByteArray uint8_ts;
         uint8_ts.CastFromData(std::forward<T>(data));
@@ -78,7 +78,7 @@ public:
 };
 
 template<typename T>
-requires ByteArray::KPODType<T>
+requires ByteArray::kPODType<T>
 std::vector<uint8_t> BASE_API DataToByteArray(T data) {
     std::vector<uint8_t> uint8_ts;
 
@@ -95,7 +95,7 @@ std::vector<uint8_t> BASE_API DataToByteArray(T data) {
 }
 
 template<typename T>
-requires ByteArray::KPODType<T>
+requires ByteArray::kPODType<T>
 bool BASE_API ByteArrayToData(const std::vector<uint8_t> &uint8_ts, T *data) {
     const bool ret = uint8_ts.size() >= sizeof(std::remove_pointer_t<T>);
     const auto size = ret ? sizeof(std::remove_pointer_t<T>) : uint8_ts.size();

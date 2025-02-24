@@ -9,6 +9,8 @@
 #include "system/manager/manager_system.h"
 
 
+static_assert(ByteArray::kPODType<CacheNode>, "CacheNode Is Not POD Type");
+
 PlayerManager::PlayerManager(ManagerSystem *owner)
     : IBaseManager(owner) {
 }

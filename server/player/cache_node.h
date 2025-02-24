@@ -8,7 +8,6 @@ struct CacheNode {
     int64_t lastLogoutTime;
 
     int32_t level;
-
     int32_t avatar;
     int32_t avatarFrame;
 
