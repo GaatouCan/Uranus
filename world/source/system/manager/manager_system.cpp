@@ -51,7 +51,7 @@ void ManagerSystem::Init() {
 
 void ManagerSystem::OnTick(TimePoint now) {
     // spdlog::debug("{} - {}", __FUNCTION__, utils::ToUnixTime(now));
-    for (const auto mgr: std::views::values(mManagerMap)) {
+    for (const auto mgr: mManagerMap | std::views::values) {
         if (!mgr->bTick) continue;
         mgr->OnTick(now);
     }

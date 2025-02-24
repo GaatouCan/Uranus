@@ -35,7 +35,7 @@ void PlayerManager::Init() {
 
             if (auto *node = &mCacheMap[pid.local]; node != nullptr) {
                 table.cache.CastToData(node);
-                spdlog::info("{} {} {} {}", node->pid, node->lastLoginTime, node->lastLoginTime, node->avatar);
+                spdlog::info("{} {} {} {}", node->pid, node->lastLoginTime, node->lastLogoutTime, node->avatar);
             }
         });
     }
@@ -50,7 +50,7 @@ void PlayerManager::OnDayChange() {
     }
 }
 
-awaitable<std::shared_ptr<Player> > PlayerManager::OnPlayerLogin(const std::shared_ptr<Connection> &conn, const PlayerID &id) {
+awaitable<std::shared_ptr<Player>> PlayerManager::OnPlayerLogin(const std::shared_ptr<Connection> &conn, const PlayerID &id) {
     if (conn == nullptr || std::any_cast<PlayerID>(conn->GetContext()) != id) {
         spdlog::error("{} - Null Connection Pointer Or Player ID Not Equal.", __FUNCTION__);
         co_return nullptr;
@@ -90,7 +90,6 @@ awaitable<std::shared_ptr<Player> > PlayerManager::OnPlayerLogin(const std::shar
     {
         std::unique_lock lock(mCacheMutex);
         mCacheMap[id.local].lastLoginTime = utils::UnixTime();
-        spdlog::info(mCacheMap[id.local].lastLoginTime);
     }
 
     co_return plr;
@@ -104,10 +103,8 @@ void PlayerManager::OnPlayerLogout(const PlayerID pid) {
 
         SyncCache(plr);
 
-
         std::unique_lock lock(mCacheMutex);
         mCacheMap[pid.local].lastLogoutTime = utils::UnixTime();
-        spdlog::info(mCacheMap[pid.local].lastLogoutTime);
     }
 }
 
@@ -202,12 +199,12 @@ void PlayerManager::OnTick(const TimePoint now) {
     {
         std::shared_lock lock(mCacheMutex);
         for (const auto &val : mCacheMap | std::views::values) {
+            spdlog::info("{} {} {} {}", val.pid, val.lastLoginTime, val.lastLogoutTime, val.avatar);
             orm::DBTable_PlayerCache table;
             table.pid = val.pid;
             table.cache.CastFromData(val);
 
             ser->PushBack(table);
-            spdlog::info("{} {} {} {}", val.pid, val.lastLoginTime, val.lastLoginTime, val.avatar);
         }
     }
 
