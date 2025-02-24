@@ -105,8 +105,6 @@ void AppearanceCT::ActiveAvatar(const int index, const bool bAutoUse) {
         // iter->second.in_used = true;
         mAppear.avatar = index;
     }
-
-    SendInfo();
 }
 
 void AppearanceCT::UseAvatar(const int index) {
@@ -117,8 +115,6 @@ void AppearanceCT::UseAvatar(const int index) {
         return;
 
     mAppear.avatar = index;
-
-    SendInfo();
 }
 
 void AppearanceCT::ActiveAvatarFrame(const int index, bool bAutoUse) {
@@ -147,8 +143,6 @@ void AppearanceCT::ActiveAvatarFrame(const int index, bool bAutoUse) {
         // iter->second.in_used = true;
         mAppear.avatar_frame = index;
     }
-
-    SendInfo();
 }
 
 void AppearanceCT::UseAvatarFrame(const int index) {
@@ -159,8 +153,6 @@ void AppearanceCT::UseAvatarFrame(const int index) {
         return;
 
     mAppear.avatar_frame = index;
-
-    SendInfo();
 }
 
 void AppearanceCT::SyncCache(CacheNode* node) {
@@ -217,19 +209,23 @@ void protocol::AppearanceRequest(const std::shared_ptr<IBasePlayer> &plr, IPacka
         }
         break;
         case Appearance::ACTIVE_AVATAR: {
-            ct->ActiveAvatar(request.parameter(), request.extend() == 1);
+            ct->ActiveAvatar(request.index(), request.parameter() == 1);
+            ct->SendInfo();
         }
         break;
         case Appearance::USE_AVATAR: {
-            ct->UseAvatar(request.parameter());
+            ct->UseAvatar(request.index());
+            ct->SendInfo();
         }
         break;
         case Appearance::ACTIVE_AVATAR_FRAME: {
-            ct->ActiveAvatarFrame(request.parameter(), request.extend() == 1);
+            ct->ActiveAvatarFrame(request.index(), request.parameter() == 1);
+            ct->SendInfo();
         }
         break;
         case Appearance::USE_AVATAR_FRAME: {
-            ct->UseAvatarFrame(request.parameter());
+            ct->UseAvatarFrame(request.index());
+            ct->SendInfo();
         }
         break;
         default:

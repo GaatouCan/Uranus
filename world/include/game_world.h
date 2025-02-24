@@ -107,7 +107,7 @@ public:
     ISubSystem *GetSystemByName(std::string_view sys) const;
 
     const YAML::Node &GetServerConfig();
-    uint32_t GetServerID();
+    int32_t GetServerID();
 
 private:
     bool LoadServerDLL(const std::string &path);

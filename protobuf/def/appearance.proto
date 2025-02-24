@@ -14,7 +14,6 @@ message AppearanceRequest {
   OperateType operate_type = 1;
   int32 index = 2;
   int32 parameter = 3;
-  int32 extend = 4;
 }
 
 // @client

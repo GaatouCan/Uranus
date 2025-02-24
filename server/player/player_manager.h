@@ -20,6 +20,8 @@ class PlayerManager final : public IBaseManager {
     std::unordered_map<int32_t, CacheNode> mCacheMap;
     mutable std::shared_mutex mCacheMutex;
 
+    TimePoint mLastUpdateTime;
+
 public:
     explicit PlayerManager(ManagerSystem *owner);
     ~PlayerManager() override;
@@ -44,6 +46,8 @@ public:
     void SyncCache(const CacheNode &node);
 
     awaitable<std::optional<CacheNode>> FindCacheNode(const PlayerID &pid);
+
+    void OnTick(TimePoint now) override;
 };
 
 #define SEND_TO_PLAYER_SET(mgr, set, proto, data) \

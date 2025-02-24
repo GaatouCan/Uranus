@@ -7,6 +7,7 @@
 #include "../../../player/cache_node.h"
 
 #include "utils.h"
+#include "../../../player/player.h"
 
 StateCT::StateCT(IComponentContext *ctx)
     : IPlayerComponent(ctx) {
@@ -23,6 +24,11 @@ ISerializer * StateCT::Serialize_State(bool &bExpired) const {
 
 void StateCT::Deserialize_State(Deserializer &ds) {
     READ_TABLE(ds, mState)
+}
+
+void StateCT::OnLogin() {
+    if (mState.pid == 0)
+        mState.pid = GetOwner()->GetFullID();
 }
 
 int32_t StateCT::GetLevel() const {

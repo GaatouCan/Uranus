@@ -215,9 +215,9 @@ const YAML::Node &GameWorld::GetServerConfig() {
     return mConfigManager->GetServerConfig();
 }
 
-uint32_t GameWorld::GetServerID() {
+int32_t GameWorld::GetServerID() {
     const auto &cfg = GetServerConfig();
-    return cfg["server"]["cross_id"].as<uint32_t>();
+    return cfg["server"]["cross_id"].as<int32_t>();
 }
 
 bool GameWorld::LoadServerDLL(const std::string &path) {

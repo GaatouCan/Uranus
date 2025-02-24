@@ -16,6 +16,14 @@ static_assert(ByteArray::kPODType<CacheNode>, "CacheNode Is Not POD Type");
 
 PlayerManager::PlayerManager(ManagerSystem *owner)
     : IBaseManager(owner) {
+
+}
+
+PlayerManager::~PlayerManager() {
+    mPlayerMap.clear();
+}
+
+void PlayerManager::Init() {
     if (const auto sys = GetWorld()->GetSystem<DatabaseSystem>(); sys != nullptr) {
         sys->SyncSelect("player_cache", "", [&](mysqlx::Row row) {
             orm::DBTable_PlayerCache table;
@@ -25,17 +33,13 @@ PlayerManager::PlayerManager(ManagerSystem *owner)
             if (!pid.IsAvailable())
                 return;
 
-            if (auto *node = &mCacheMap[pid.local]; node != nullptr)
+            if (auto *node = &mCacheMap[pid.local]; node != nullptr) {
                 table.cache.CastToData(node);
+                spdlog::info("{} {} {} {}", node->pid, node->lastLoginTime, node->lastLoginTime, node->avatar);
+            }
         });
     }
-}
-
-PlayerManager::~PlayerManager() {
-    mPlayerMap.clear();
-}
-
-void PlayerManager::Init() {
+    bTick = true;
 }
 
 void PlayerManager::OnDayChange() {
@@ -85,9 +89,8 @@ awaitable<std::shared_ptr<Player> > PlayerManager::OnPlayerLogin(const std::shar
 
     {
         std::unique_lock lock(mCacheMutex);
-        if (const auto iter = mCacheMap.find(id.local); iter != mCacheMap.end()) {
-            iter->second.lastLoginTime = utils::UnixTime();
-        }
+        mCacheMap[id.local].lastLoginTime = utils::UnixTime();
+        spdlog::info(mCacheMap[id.local].lastLoginTime);
     }
 
     co_return plr;
@@ -103,9 +106,8 @@ void PlayerManager::OnPlayerLogout(const PlayerID pid) {
 
 
         std::unique_lock lock(mCacheMutex);
-        if (const auto iter = mCacheMap.find(pid.local); iter != mCacheMap.end()) {
-            iter->second.lastLogoutTime = utils::UnixTime();
-        }
+        mCacheMap[pid.local].lastLogoutTime = utils::UnixTime();
+        spdlog::info(mCacheMap[pid.local].lastLogoutTime);
     }
 }
 
@@ -189,4 +191,34 @@ awaitable<std::optional<CacheNode>> PlayerManager::FindCacheNode(const PlayerID 
     }
 
     co_return std::nullopt;
+}
+
+void PlayerManager::OnTick(const TimePoint now) {
+    if (now - mLastUpdateTime < std::chrono::seconds(10))
+        return;
+
+    auto ser = new Serializer<orm::DBTable_PlayerCache>("player_cache");
+
+    {
+        std::shared_lock lock(mCacheMutex);
+        for (const auto &val : mCacheMap | std::views::values) {
+            orm::DBTable_PlayerCache table;
+            table.pid = val.pid;
+            table.cache.CastFromData(val);
+
+            ser->PushBack(table);
+            spdlog::info("{} {} {} {}", val.pid, val.lastLoginTime, val.lastLoginTime, val.avatar);
+        }
+    }
+
+    if (const auto sys = GetWorld()->GetSystem<DatabaseSystem>(); sys != nullptr) {
+        sys->PushTransaction([ser](mysqlx::Schema &schema) {
+            auto table = schema.getTable("player_cache", true);
+            ser->Serialize(table);
+            delete ser;
+        });
+    }
+
+    mLastUpdateTime = now;
+    spdlog::info("{} - Stored Cache.", __FUNCTION__);
 }

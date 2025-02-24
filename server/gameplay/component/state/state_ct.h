@@ -23,6 +23,8 @@ public:
     ISerializer *Serialize_State(bool &bExpired) const;
     void Deserialize_State(Deserializer &ds);
 
+    void OnLogin() override;
+
     [[nodiscard]] int32_t GetLevel() const;
     [[nodiscard]] int64_t GetExp() const;
 
