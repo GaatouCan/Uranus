@@ -34,7 +34,7 @@ void PlayerManager::Init() {
                 return;
 
             if (auto *node = &mCacheMap[pid.local]; node != nullptr) {
-                table.cache.CastToData(node);
+                table.cache >> node;
                 // spdlog::info("{} {} {} {}", node->pid, node->lastLoginTime, node->lastLogoutTime, node->avatar);
             }
         });
@@ -201,7 +201,7 @@ void PlayerManager::OnTick(const TimePoint now) {
             // spdlog::info("{} {} {} {}", val.pid, val.lastLoginTime, val.lastLogoutTime, val.avatar);
             orm::DBTable_PlayerCache table;
             table.pid = val.pid;
-            table.cache.CastFromData(val);
+            table.cache << val;
 
             ser->PushBack(table);
         }

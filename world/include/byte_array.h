@@ -58,6 +58,13 @@ public:
 
     template<typename T>
     requires kPODType<T>
+    ByteArray &operator << (T source) {
+        CastFromData(source);
+        return *this;
+    }
+
+    template<typename T>
+    requires kPODType<T>
     bool CastToData(T *target) const {
         const bool ret = mData.size() >= sizeof(std::remove_pointer_t<T>);
         const auto size = ret ?  sizeof(std::remove_pointer_t<T>) : mData.size();
@@ -66,6 +73,13 @@ public:
         memcpy(target, mData.data(), size);
 
         return ret;
+    }
+
+    template<typename T>
+    requires kPODType<T>
+    ByteArray &operator >> (T *target) {
+        CastToData(target);
+        return *this;
     }
 
     template<typename T>
