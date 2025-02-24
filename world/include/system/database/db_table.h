@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../../common.h"
+#include "../../byte_array.h"
 
 #include <mysqlx/xdevapi.h>
 
