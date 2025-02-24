@@ -28,27 +28,27 @@ AppearanceCT::~AppearanceCT() {
 }
 
 ISerializer *AppearanceCT::Serialize_Appearance(bool &bExpired) const {
-    WRITE_PARAM(Appearance, mAppear)
+    WRITE_TABLE(Appearance, mAppear)
 }
 
 void AppearanceCT::Deserialize_Appearance(Deserializer &ds) {
-    READ_PARAM(ds, mAppear)
+    READ_TABLE(ds, mAppear)
 }
 
 ISerializer *AppearanceCT::Serialize_Avatar(bool &bExpired) const {
-    WRITE_PARAM_MAP(Avatar, mAvatarMap)
+    WRITE_TABLE_MAP(Avatar, mAvatarMap)
 }
 
 void AppearanceCT::Deserialize_Avatar(Deserializer &ds) {
-    READ_PARAM_MAP(ds, mAvatarMap)
+    READ_TABLE_MAP(ds, mAvatarMap)
 }
 
 ISerializer *AppearanceCT::Serialize_AvatarFrame(bool &bExpired) const {
-    WRITE_PARAM_MAP(AvatarFrame, mAvatarFrameMap)
+    WRITE_TABLE_MAP(AvatarFrame, mAvatarFrameMap)
 }
 
 void AppearanceCT::Deserialize_AvatarFrame(Deserializer &ds) {
-    READ_PARAM_MAP(ds, mAvatarFrameMap)
+    READ_TABLE_MAP(ds, mAvatarFrameMap)
 }
 
 void AppearanceCT::OnLogin() {

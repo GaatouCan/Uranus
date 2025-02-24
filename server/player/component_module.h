@@ -155,7 +155,7 @@ dynamic_cast<TComponentContext<comp> *>(GetComponentContext())->RegisterTable(ut
  * @param tb 数据库表名
  * @param pa 数据块
  */
-#define WRITE_PARAM(tb, pa) \
+#define WRITE_TABLE(tb, pa) \
 CREATE_SERIALIZER(_serializer, tb) \
 _serializer->PushBack(pa); \
 return _serializer;
@@ -165,7 +165,7 @@ return _serializer;
  * @param tb 数据库表名
  * @param pa 包含数据块的map
  */
-#define WRITE_PARAM_MAP(tb, pa) \
+#define WRITE_TABLE_MAP(tb, pa) \
 CREATE_SERIALIZER(_serializer, tb) \
 for (const auto &val : (pa) | std::views::values) { \
     _serializer->PushBack(val); \
@@ -177,7 +177,7 @@ return _serializer;
  * @param tb 数据库表名
  * @param pa 包含数据块的vector
  */
-#define WRITE_PARAM_VECTOR(tb, pa) \
+#define WRITE_TABLE_VECTOR(tb, pa) \
 CREATE_SERIALIZER(_serializer, tb) \
 for (const auto &val : (pa)) { \
     _serializer->PushBack(val); \
@@ -189,7 +189,7 @@ return _serializer;
  * @param ds Deserializer对象
  * @param pa 数据块
  */
-#define READ_PARAM(ds, pa) \
+#define READ_TABLE(ds, pa) \
 if ((ds).HasMore()) { \
     (ds).Deserialize(&(pa)); \
 }
@@ -199,7 +199,7 @@ if ((ds).HasMore()) { \
  * @param ds Deserializer对象
  * @param pa 包含数据块的map
  */
-#define READ_PARAM_MAP(ds, pa) \
+#define READ_TABLE_MAP(ds, pa) \
 while ((ds).HasMore()) { \
     decltype(pa)::mapped_type val; \
     (ds).Deserialize(&val); \
@@ -211,7 +211,7 @@ while ((ds).HasMore()) { \
  * @param ds Deserializer对象
  * @param pa 包含数据块的vector
  */
-#define READ_PARAM_VECTOR(ds, pa) \
+#define READ_TABLE_VECTOR(ds, pa) \
 (pa).resize((ds).TotalRowsCount());\
 while ((ds).HasMore()) { \
     decltype(pa)::value_type val; \

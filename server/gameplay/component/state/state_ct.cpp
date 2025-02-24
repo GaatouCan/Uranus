@@ -18,11 +18,11 @@ StateCT::~StateCT() {
 }
 
 ISerializer * StateCT::Serialize_State(bool &bExpired) const {
-    WRITE_PARAM(State, mState)
+    WRITE_TABLE(State, mState)
 }
 
 void StateCT::Deserialize_State(Deserializer &ds) {
-    READ_PARAM(ds, mState)
+    READ_TABLE(ds, mState)
 }
 
 int32_t StateCT::GetLevel() const {
