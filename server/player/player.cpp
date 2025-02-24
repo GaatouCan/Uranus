@@ -1,4 +1,5 @@
 #include "player.h"
+#include "cache_node.h"
 #include "../common/proto_type.h"
 
 #include "game_world.h"
@@ -105,6 +106,7 @@ void Player::Send(const uint32_t id, const std::stringstream &ss) const {
 }
 
 void Player::SyncCache(CacheNode *node) {
+    node->pid = GetFullID();
     mComponentModule.SyncCache(node);
 }
 

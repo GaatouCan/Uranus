@@ -1,24 +1,22 @@
 #pragma once
 
-#include "player_id.h"
 #include "utils.h"
 
 struct CacheNode {
-    PlayerID pid;
-    TimePoint lastLoginTime;
-    TimePoint lastLogoutTime;
+    int64_t pid;
+    int64_t lastLoginTime;
+    int64_t lastLogoutTime;
 
-    int32_t level = 0;
+    int32_t level;
 
-    int32_t avatar = 0;
-    int32_t avatarFrame = 0;
+    int32_t avatar;
+    int32_t avatarFrame;
 
     [[nodiscard]] bool IsOnline() const {
-        constexpr auto zeroPoint = TimePoint();
-        const auto now = NowTimePoint();
+        const auto now = utils::UnixTime();
 
-        return lastLoginTime > zeroPoint && lastLoginTime <= now
-               && (lastLogoutTime > zeroPoint && lastLogoutTime <= now)
+        return lastLoginTime > 0 && lastLoginTime <= now
+               && (lastLogoutTime > 0 && lastLogoutTime <= now)
                && lastLoginTime > lastLogoutTime;
     }
 };

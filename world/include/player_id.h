@@ -18,6 +18,12 @@ struct BASE_API PlayerID {
     int32_t local = 0;
     int32_t cross = 0;
 
+    PlayerID() = default;
+
+    explicit PlayerID(const int64_t pid) {
+        FromInt64(pid);
+    }
+
     [[nodiscard]] int32_t GetLocalID() const {
         return local;
     }

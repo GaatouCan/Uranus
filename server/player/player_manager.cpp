@@ -68,7 +68,7 @@ awaitable<std::shared_ptr<Player> > PlayerManager::OnPlayerLogin(const std::shar
     SyncCache(plr);
 
     if (const auto iter = mCacheMap.find(id.local); iter != mCacheMap.end()) {
-        iter->second.lastLoginTime = NowTimePoint();
+        iter->second.lastLoginTime = utils::UnixTime();
     }
 
     co_return plr;
@@ -83,7 +83,7 @@ void PlayerManager::OnPlayerLogout(const PlayerID pid) {
     }
 
     if (const auto iter = mCacheMap.find(pid.local); iter != mCacheMap.end()) {
-        iter->second.lastLogoutTime = NowTimePoint();
+        iter->second.lastLogoutTime = utils::UnixTime();
     }
 }
 
@@ -122,7 +122,7 @@ void PlayerManager::SyncCache(const std::shared_ptr<Player> &plr) {
     if (plr == nullptr)
         return;
 
-    CacheNode node;
+    CacheNode node{};
     plr->SyncCache(&node);
 
     SyncCache(node);
@@ -137,12 +137,14 @@ void PlayerManager::SyncCache(const int32_t pid) {
 }
 
 void PlayerManager::SyncCache(const CacheNode &node) {
-    if (!node.pid.IsAvailable())
+    const PlayerID pid(node.pid);
+
+    if (!pid.IsAvailable())
         return;
 
     std::unique_lock lock(mCacheMutex);
-    mCacheMap[node.pid.local] = node;
-    spdlog::info("{} - Player[{}] Success.", __FUNCTION__, node.pid.ToInt64());
+    mCacheMap[pid.local] = node;
+    spdlog::info("{} - Player[{}] Success.", __FUNCTION__, pid.ToInt64());
 }
 
 awaitable<std::optional<CacheNode> > PlayerManager::FindCacheNode(const PlayerID &pid) {
