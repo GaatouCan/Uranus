@@ -1,7 +1,5 @@
 ﻿#include "player_manager.h"
 
-#include <spdlog/details/os.h>
-
 #include "player.h"
 #include "../common/proto_type.h"
 
@@ -65,11 +63,8 @@ awaitable<std::shared_ptr<Player> > PlayerManager::OnPlayerLogin(const std::shar
     co_await plr->OnLogin();
 
     // 同步玩家缓存数据
-    SyncCache(plr);
-
-    if (const auto iter = mCacheMap.find(id.local); iter != mCacheMap.end()) {
-        iter->second.lastLoginTime = utils::UnixTime();
-    }
+    if (auto *node = SyncCache(plr); node != nullptr)
+        node->lastLoginTime = utils::UnixTime();
 
     co_return plr;
 }
@@ -78,12 +73,10 @@ void PlayerManager::OnPlayerLogout(const PlayerID pid) {
     spdlog::info("{} - Player[{}] Logout", __FUNCTION__, pid.ToInt64());
     if (const auto plr = RemovePlayer(pid.local); plr != nullptr) {
         plr->TryLeaveScene();
-        SyncCache(plr);
         plr->OnLogout();
-    }
 
-    if (const auto iter = mCacheMap.find(pid.local); iter != mCacheMap.end()) {
-        iter->second.lastLogoutTime = utils::UnixTime();
+        if (auto *node = SyncCache(plr); node != nullptr)
+            node->lastLogoutTime = utils::UnixTime();
     }
 }
 
@@ -118,36 +111,42 @@ void PlayerManager::SendToList(const std::set<PlayerID> &players, const int32_t 
     }
 }
 
-void PlayerManager::SyncCache(const std::shared_ptr<Player> &plr) {
+CacheNode *PlayerManager::SyncCache(const std::shared_ptr<Player> &plr) {
     if (plr == nullptr)
-        return;
+        return nullptr;
 
     CacheNode node{};
     plr->SyncCache(&node);
 
-    SyncCache(node);
+    return SyncCache(node);
 }
 
-void PlayerManager::SyncCache(const int32_t pid) {
+CacheNode *PlayerManager::SyncCache(const int32_t pid) {
     if (pid < PLAYER_LOCAL_ID_BEGIN || pid > PLAYER_LOCAL_ID_END)
-        return;
+        return nullptr;
 
     const auto plr = FindPlayer(pid);
-    SyncCache(plr);
+    return SyncCache(plr);
 }
 
-void PlayerManager::SyncCache(const CacheNode &node) {
+CacheNode *PlayerManager::SyncCache(const CacheNode &node) {
     const PlayerID pid(node.pid);
 
     if (!pid.IsAvailable())
-        return;
+        return nullptr;
 
     std::unique_lock lock(mCacheMutex);
-    mCacheMap[pid.local] = node;
+
+    const auto [iter, bSuccess] = mCacheMap.insert_or_assign(pid.local, node);
     spdlog::info("{} - Player[{}] Success.", __FUNCTION__, pid.ToInt64());
+
+    if (bSuccess)
+        return &iter->second;
+
+    return nullptr;
 }
 
-awaitable<std::optional<CacheNode> > PlayerManager::FindCacheNode(const PlayerID &pid) {
+awaitable<std::optional<CacheNode>> PlayerManager::FindCacheNode(const PlayerID &pid) {
     if (!pid.IsAvailable())
         co_return std::nullopt;
 
