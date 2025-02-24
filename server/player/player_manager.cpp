@@ -35,7 +35,7 @@ void PlayerManager::Init() {
 
             if (auto *node = &mCacheMap[pid.local]; node != nullptr) {
                 table.cache.CastToData(node);
-                spdlog::info("{} {} {} {}", node->pid, node->lastLoginTime, node->lastLogoutTime, node->avatar);
+                // spdlog::info("{} {} {} {}", node->pid, node->lastLoginTime, node->lastLogoutTime, node->avatar);
             }
         });
     }
@@ -143,10 +143,9 @@ void PlayerManager::SyncCache(const std::shared_ptr<Player> &plr) {
     if (plr == nullptr)
         return;
 
-    CacheNode node{};
-    plr->SyncCache(&node);
-
-    SyncCache(node);
+    std::unique_lock lock(mCacheMutex);
+    auto *node = &mCacheMap[plr->GetLocalID()];
+    plr->SyncCache(node);
 }
 
 void PlayerManager::SyncCache(const int32_t pid) {
@@ -164,8 +163,8 @@ void PlayerManager::SyncCache(const CacheNode &node) {
         return;
 
     std::unique_lock lock(mCacheMutex);
+    mCacheMap[pid.local] = node;
 
-    mCacheMap.insert_or_assign(pid.local, node);
     spdlog::info("{} - Player[{}] Success.", __FUNCTION__, pid.ToInt64());
 }
 
@@ -199,7 +198,7 @@ void PlayerManager::OnTick(const TimePoint now) {
     {
         std::shared_lock lock(mCacheMutex);
         for (const auto &val : mCacheMap | std::views::values) {
-            spdlog::info("{} {} {} {}", val.pid, val.lastLoginTime, val.lastLogoutTime, val.avatar);
+            // spdlog::info("{} {} {} {}", val.pid, val.lastLoginTime, val.lastLogoutTime, val.avatar);
             orm::DBTable_PlayerCache table;
             table.pid = val.pid;
             table.cache.CastFromData(val);
