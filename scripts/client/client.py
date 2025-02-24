@@ -3,6 +3,7 @@ import time
 
 from package import Package
 from protobuf.gen import login_pb2
+from protobuf.gen import appearance_pb2
 
 SERVER_HOST = "localhost"
 SERVER_PORT = 8080
@@ -34,5 +35,25 @@ res.ParseFromString(r_pkg.get_raw_data())
 print(res)
 
 time.sleep(2)
+
+req = appearance_pb2.AppearanceRequest()
+
+req.operate_type = appearance_pb2.OperateType.ACTIVE_AVATAR
+req.index = 1
+req.parameter = 1
+
+pkg = Package()
+pkg.set_id(2001)
+pkg.set_data(req.SerializeToString())
+
+client.send(pkg.encode())
+
+r_pkg = Package()
+r_pkg.decodeWithSocket(client)
+
+res = appearance_pb2.AppearanceResponse()
+res.ParseFromString(r_pkg.get_raw_data())
+
+print(res)
 
 client.close()
