@@ -376,7 +376,7 @@ def generate_orm_clazz(src: str, dist: str, desc: str):
                     elif type == "uint8_t":
                         type = "uint32_t"
                         file.write(f"\t\t\t{field['name']} = static_cast<uint8_t>(row[{count}].get<{type}>());\n")
-                    elif type == "FByteArray":
+                    elif type == "ByteArray":
                         file.write(f"\t\t\tDB_CAST_FROM_BLOB({field['name']}, row[{count}])\n")
                     else:
                         file.write(f"\t\t\t{field['name']} = row[{count}].get<{type}>();\n")

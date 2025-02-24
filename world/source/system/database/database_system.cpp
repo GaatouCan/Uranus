@@ -84,8 +84,14 @@ void DatabaseSystem::SyncSelect(const std::string &tableName, const std::string 
         return;
     }
 
-    for (auto result = table.select().where(where).execute(); const auto &row : result) {
-        cb(row);
+    if (where.empty()) {
+        for (auto result = table.select().execute(); const auto &row : result) {
+            cb(row);
+        }
+    } else {
+        for (auto result = table.select().where(where).execute(); const auto &row : result) {
+            cb(row);
+        }
     }
 }
 

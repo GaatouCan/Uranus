@@ -39,9 +39,9 @@ public:
 
     void SendToList(const std::set<PlayerID>& players, int32_t id, std::string_view data);
 
-    CacheNode *SyncCache(const std::shared_ptr<Player> &plr);
-    CacheNode *SyncCache(int32_t pid);
-    CacheNode *SyncCache(const CacheNode &node);
+    void SyncCache(const std::shared_ptr<Player> &plr);
+    void SyncCache(int32_t pid);
+    void SyncCache(const CacheNode &node);
 
     awaitable<std::optional<CacheNode>> FindCacheNode(const PlayerID &pid);
 };
