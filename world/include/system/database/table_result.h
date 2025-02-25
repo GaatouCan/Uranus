@@ -12,6 +12,8 @@ class BASE_API TableResult final {
 public:
     explicit TableResult(mysqlx::RowResult res);
 
+    DISABLE_COPY_MOVE(TableResult)
+
     [[nodiscard]] size_t TotalRowsCount() const;
 
     size_t Count();

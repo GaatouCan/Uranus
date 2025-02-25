@@ -182,10 +182,11 @@ public:
  * @param pa 数据块
  */
 #define READ_TABLE(ds, tb, pa) \
-if (auto res = (ds)->FetchResult(utils::PascalToUnderline(#tb)); res.has_value()) { \
+if (auto *res = (ds)->FetchResult(utils::PascalToUnderline(#tb)); res != nullptr) { \
     if (res->HasMore()) { \
         res->Deserialize(&pa); \
     } \
+    delete res; \
 }
 
 /**
@@ -194,12 +195,13 @@ if (auto res = (ds)->FetchResult(utils::PascalToUnderline(#tb)); res.has_value()
  * @param pa 包含数据块的map
  */
 #define READ_TABLE_MAP(ds, tb, pa) \
-if (auto res = (ds)->FetchResult(utils::PascalToUnderline(#tb)); res.has_value()) { \
+if (auto *res = (ds)->FetchResult(utils::PascalToUnderline(#tb)); res != nullptr) { \
     while (res->HasMore()) { \
         decltype(pa)::mapped_type val; \
         res->Deserialize(&val); \
         (pa)[val.index] = std::move(val); \
     } \
+    delete res; \
 }
 
 /**
@@ -208,11 +210,12 @@ if (auto res = (ds)->FetchResult(utils::PascalToUnderline(#tb)); res.has_value()
  * @param pa 包含数据块的vector
  */
 #define READ_TABLE_VECTOR(ds, pa) \
-if (auto res = (ds)->FetchResult(utils::PascalToUnderline(#tb)); res.has_value()) { \
+if (auto *res = (ds)->FetchResult(utils::PascalToUnderline(#tb)); res != nullptr) { \
     (pa).resize((ds).TotalRowsCount());\
     while (res->HasMore()) { \
         decltype(pa)::mapped_type val; \
         res->Deserialize(&val); \
         (pa)[val.index] = std::move(val); \
     } \
+    delete res; \
 }

@@ -16,5 +16,5 @@ public:
 
     void PushBack(const std::string& name, mysqlx::RowResult && res);
 
-    std::optional<TableResult> FetchResult(const std::string &name);
+    TableResult* FetchResult(const std::string &name);
 };

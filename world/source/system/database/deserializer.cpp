@@ -17,10 +17,13 @@ void Deserializer::PushBack(const std::string& name, mysqlx::RowResult&& res) {
     mResultMap.insert_or_assign(name, std::move(res));
 }
 
-std::optional<TableResult> Deserializer::FetchResult(const std::string& name) {
+TableResult* Deserializer::FetchResult(const std::string& name) {
     const auto it = mResultMap.find(name);
     if (it == mResultMap.end())
-        return std::nullopt;
+        return nullptr;
 
-    return TableResult(std::move(it->second));
+    const auto res = new TableResult(std::move(it->second));
+    mResultMap.erase(it);
+
+    return res;
 }
