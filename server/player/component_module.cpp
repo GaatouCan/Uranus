@@ -46,9 +46,9 @@ void ComponentModule::Serialize() {
 
                 if (auto table = schema.getTable(serializer->GetTableName()); table.existsInDatabase()) {
                     if (bExpired) {
-                        serializer->RemoveExpiredData(table, fmt::format("pid = {}", pid));
+                        serializer->DeleteExpiredRow(table, fmt::format("pid = {}", pid));
                     }
-                    serializer->Serialize(table);
+                    serializer->SerializeInternal(table);
                 }
                 delete serializer;
             }

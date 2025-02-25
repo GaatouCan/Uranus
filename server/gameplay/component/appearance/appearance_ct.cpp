@@ -14,41 +14,30 @@
 #include "game_world.h"
 #include "config_manager.h"
 
+#include <system/database/serializer.h>
+#include <system/database/deserializer.h>
+
 #include <appearance.pb.h>
 
 
 AppearanceCT::AppearanceCT(IComponentContext *ctx)
     : IPlayerComponent(ctx) {
-    COMPONENT_TABLE(AppearanceCT, Appearance)
-    COMPONENT_TABLE(AppearanceCT, Avatar)
-    COMPONENT_TABLE(AppearanceCT, AvatarFrame)
+
 }
 
 AppearanceCT::~AppearanceCT() {
 }
 
-ITableVector *AppearanceCT::Serialize_Appearance(bool &bExpired) const {
-    WRITE_TABLE(Appearance, mAppear)
+void AppearanceCT::Serialize(Serializer* s) {
+    WRITE_TABLE(s, Appearance, mAppear)
+    WRITE_TABLE_MAP(s, Avatar, mAvatarMap)
+    WRITE_TABLE_MAP(s, AvatarFrame, mAvatarFrameMap)
 }
 
-void AppearanceCT::Deserialize_Appearance(Deserializer &ds) {
-    READ_TABLE(ds, mAppear)
-}
-
-ITableVector *AppearanceCT::Serialize_Avatar(bool &bExpired) const {
-    WRITE_TABLE_MAP(Avatar, mAvatarMap)
-}
-
-void AppearanceCT::Deserialize_Avatar(Deserializer &ds) {
-    READ_TABLE_MAP(ds, mAvatarMap)
-}
-
-ITableVector *AppearanceCT::Serialize_AvatarFrame(bool &bExpired) const {
-    WRITE_TABLE_MAP(AvatarFrame, mAvatarFrameMap)
-}
-
-void AppearanceCT::Deserialize_AvatarFrame(Deserializer &ds) {
-    READ_TABLE_MAP(ds, mAvatarFrameMap)
+void AppearanceCT::Deserialize(Deserializer* ds) {
+    READ_TABLE(ds, Appearance, mAppear)
+    READ_TABLE_MAP(ds, Avatar, mAvatarMap)
+    READ_TABLE_MAP(ds, AvatarFrame, mAvatarFrameMap)
 }
 
 void AppearanceCT::OnLogin() {

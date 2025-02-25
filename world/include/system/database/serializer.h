@@ -1,22 +1,23 @@
 #pragma once
 
-#include "table_vector.h"
-
+#include "table_array.h"
 
 class BASE_API Serializer final {
     struct TableNode {
-        ITableVector *ptr = nullptr;
-        std::string expired;
+        ITableArray *array = nullptr;
+        std::string expiredExpress;
     };
     std::vector<TableNode> mTableVec;
 public:
     Serializer();
     ~Serializer();
 
+    DISABLE_COPY_MOVE(Serializer)
+
     template<DBTableType T>
-    ITableVector *CreateTableVector(const std::string &name, const std::string &expired = {}) {
-        auto res = new TableVector<T>(name);
-        mTableVec.emplace_back(res, expired);
+    TableArray<T> *CreateTableVector(const std::string &name, const std::string &expiredExpr = {}) {
+        auto res = new TableArray<T>(name);
+        mTableVec.emplace_back(res, expiredExpr);
         return res;
     }
 

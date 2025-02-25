@@ -5,7 +5,9 @@ Serializer::Serializer() {
 }
 
 Serializer::~Serializer() {
-
+    for (const auto& [val, expired] : mTableVec) {
+        delete val;
+    }
 }
 
 void Serializer::Serialize(mysqlx::Schema &schema) {
@@ -15,9 +17,9 @@ void Serializer::Serialize(mysqlx::Schema &schema) {
 
         if (auto table = schema.getTable(val->GetTableName()); table.existsInDatabase()) {
             if (!expired.empty()) {
-                val->RemoveExpiredData(table, expired);
+                val->DeleteExpiredRow(table, expired);
             }
-            val->Serialize(table);
+            val->SerializeInternal(table);
         }
         delete val;
     }

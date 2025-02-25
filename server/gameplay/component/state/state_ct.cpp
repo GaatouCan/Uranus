@@ -5,25 +5,18 @@
 #include "state_ct.h"
 #include "../../../player/component_module.h"
 #include "../../../player/cache_node.h"
+#include "../../../player/player.h"
 
 #include "utils.h"
-#include "../../../player/player.h"
+#include <system/database/serializer.h>
+#include <system/database/deserializer.h>
 
 StateCT::StateCT(IComponentContext *ctx)
     : IPlayerComponent(ctx) {
 
-    COMPONENT_TABLE(StateCT, State)
 }
 
 StateCT::~StateCT() {
-}
-
-ITableVector * StateCT::Serialize_State(bool &bExpired) const {
-    WRITE_TABLE(State, mState)
-}
-
-void StateCT::Deserialize_State(Deserializer &ds) {
-    READ_TABLE(ds, mState)
 }
 
 void StateCT::OnLogin() {
@@ -41,4 +34,12 @@ int64_t StateCT::GetExp() const {
 
 void StateCT::SyncCache(CacheNode* node) {
     node->level = mState.level;
+}
+
+void StateCT::Serialize(Serializer* s) {
+    WRITE_TABLE(s, State, mState)
+}
+
+void StateCT::Deserialize(Deserializer* ds) {
+    READ_TABLE(ds, State, mState)
 }

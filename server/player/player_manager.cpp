@@ -198,7 +198,7 @@ void PlayerManager::OnTick(const TimePoint now) {
     if (now - mLastUpdateTime < std::chrono::seconds(10))
         return;
 
-    auto ser = new TableVector<orm::DBTable_PlayerCache>("player_cache");
+    auto ser = new TableArray<orm::DBTable_PlayerCache>("player_cache");
 
     {
         std::shared_lock lock(mCacheMutex);
@@ -215,7 +215,7 @@ void PlayerManager::OnTick(const TimePoint now) {
     if (const auto sys = GetWorld()->GetSystem<DatabaseSystem>(); sys != nullptr) {
         sys->PushTransaction([ser](mysqlx::Schema &schema) {
             auto table = schema.getTable("player_cache", true);
-            ser->Serialize(table);
+            ser->SerializeInternal(table);
             delete ser;
         });
     }

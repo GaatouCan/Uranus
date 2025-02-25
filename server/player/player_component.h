@@ -29,4 +29,7 @@ public:
 
     void Send(int32_t id, std::string_view data) const;
     void Send(int32_t id, const std::stringstream &ss) const;
+
+    virtual void Serialize(class Serializer *s) {}
+    virtual void Deserialize(class Deserializer *ds) {}
 };

@@ -4,32 +4,37 @@
 
 #include "db_table.h"
 
-class BASE_API ITableVector {
+class BASE_API ITableArray {
+
     std::string mTableName;
 
 public:
-    explicit ITableVector(std::string name)
+    explicit ITableArray(std::string name)
         : mTableName(std::move(name)) {
     }
 
-    virtual ~ITableVector() = default;
+    virtual ~ITableArray() = default;
+
+    DISABLE_COPY_MOVE(ITableArray)
 
     void SetTableName(const std::string &name) { mTableName = name; }
     [[nodiscard]] std::string GetTableName() const { return mTableName; }
 
-    virtual void Serialize(mysqlx::Table &table) = 0;
+protected:
+    friend class Serializer;
 
-    virtual void RemoveExpiredData(mysqlx::Table &table, const std::string &expr) = 0;
+    virtual void SerializeInternal(mysqlx::Table &table) = 0;
+    virtual void DeleteExpiredRow(mysqlx::Table &table, const std::string &expr) = 0;
 };
 
 template<DBTableType T>
-class BASE_API TableVector final : public ITableVector {
+class BASE_API TableArray final : public ITableArray {
 
     std::vector<T> mData;
 
 public:
-    explicit TableVector(std::string name)
-        : ITableVector(std::move(name)) {
+    explicit TableArray(std::string name)
+        : ITableArray(std::move(name)) {
     }
 
     void PushBack(const T &value) {
@@ -45,13 +50,16 @@ public:
         mData.emplace_back(std::forward<Args>(args)...);
     }
 
-    void Serialize(mysqlx::Table &table) override {
+private:
+    friend class Serializer;
+
+    void SerializeInternal(mysqlx::Table &table) override {
         for (auto &value: mData) {
             value.Write(table);
         }
     }
 
-    void RemoveExpiredData(mysqlx::Table &table, const std::string &expr) override {
+    void DeleteExpiredRow(mysqlx::Table &table, const std::string &expr) override {
         auto res = table.select().where(expr).execute();
 
         if (res.count() == 0)

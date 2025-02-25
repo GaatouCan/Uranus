@@ -3,8 +3,8 @@
 #include "player_id.h"
 
 #include "player_component.h"
-#include "system/database/table_vector.h"
-#include "system/database/deserializer.h"
+#include "system/database/table_array.h"
+#include "system/database/table_result.h"
 
 #include <spdlog/spdlog.h>
 #include <typeindex>
@@ -24,7 +24,7 @@ protected:
 
 public:
 
-    using SerializerVector = std::vector<std::pair<ITableVector *, bool>>;
+    using SerializerVector = std::vector<std::pair<ITableArray *, bool>>;
     using DeserializerMap = std::unordered_map<std::string, mysqlx::RowResult>;
 
     IComponentContext() = delete;
@@ -48,8 +48,8 @@ requires std::derived_from<Component, IPlayerComponent>
 class TComponentContext final : public IComponentContext {
 
 public:
-    using SerializeFunctor = ITableVector*(Component::*)(bool &) const;
-    using DeserializeFunctor = void(Component::*)(Deserializer &);
+    using SerializeFunctor = ITableArray*(Component::*)(bool &) const;
+    using DeserializeFunctor = void(Component::*)(TableResult &);
 
     explicit TComponentContext(ComponentModule *module) : IComponentContext(module) {
         mComponent = new Component(this);
@@ -71,7 +71,7 @@ public:
         for (auto &[s, ds] : mTableMap | std::views::values) {
             if (s) {
                 bool bExpired = false;
-                if (ITableVector *is = std::invoke(s, dynamic_cast<Component *>(mComponent), bExpired); is != nullptr) {
+                if (ITableArray *is = std::invoke(s, dynamic_cast<Component *>(mComponent), bExpired); is != nullptr) {
                     vec.emplace_back(is, bExpired);
                 }
             }
@@ -81,7 +81,7 @@ public:
     void DeserializeComponent(DeserializerMap &map) const override {
         for (auto &[name, pair] : mTableMap) {
             if (const auto it = map.find(name); it != map.end()) {
-                Deserializer ds(std::move(it->second));
+                TableResult ds(std::move(it->second));
                 std::invoke(pair.second, dynamic_cast<Component *>(mComponent), ds);
             }
         }
@@ -140,58 +140,52 @@ public:
 
 
 /**
- * 注册组件序列化和反序列化调用
- * @param comp 组件类型
- * @param tb 数据库表名
- */
-#define COMPONENT_TABLE(comp, tb) \
-dynamic_cast<TComponentContext<comp> *>(GetComponentContext())->RegisterTable(utils::PascalToUnderline(#tb), &comp::Serialize_##tb, &comp::Deserialize_##tb);
-
-#define CREATE_SERIALIZER(s, table) \
-    const auto s = new Serializer<orm::DBTable_##table>(utils::PascalToUnderline(#table));
-
-/**
  * 将数据写入数据库（序列化）
  * @param tb 数据库表名
  * @param pa 数据块
  */
-#define WRITE_TABLE(tb, pa) \
-CREATE_SERIALIZER(_serializer, tb) \
-_serializer->PushBack(pa); \
-return _serializer;
+#define WRITE_TABLE(ser, tb, pa) \
+{ \
+    auto *array = (ser)->CreateTableVector<orm::DBTable_##tb>(utils::PascalToUnderline(#tb)); \
+    array->PushBack(pa); \
+}
 
 /**
  * 将数据写入数据库（序列化）（key-value结构）
  * @param tb 数据库表名
  * @param pa 包含数据块的map
  */
-#define WRITE_TABLE_MAP(tb, pa) \
-CREATE_SERIALIZER(_serializer, tb) \
-for (const auto &val : (pa) | std::views::values) { \
-    _serializer->PushBack(val); \
-} \
-return _serializer;
+#define WRITE_TABLE_MAP(ser, tb, pa) \
+{ \
+    auto *array = (ser)->CreateTableVector<orm::DBTable_##tb>(utils::PascalToUnderline(#tb)); \
+    for (const auto &val : (pa) | std::views::values) { \
+        array->PushBack(val); \
+    } \
+}
 
 /**
  * 将数据写入数据库（序列化）（array结构）
  * @param tb 数据库表名
  * @param pa 包含数据块的vector
  */
-#define WRITE_TABLE_VECTOR(tb, pa) \
-CREATE_SERIALIZER(_serializer, tb) \
-for (const auto &val : (pa)) { \
-    _serializer->PushBack(val); \
-} \
-return _serializer;
+#define WRITE_TABLE_VECTOR(ser, tb, pa) \
+{ \
+    auto *array = (ser)->CreateTableVector<orm::DBTable_##tb>(utils::PascalToUnderline(#tb)); \
+    for (const auto &val : (pa)) { \
+        array->PushBack(val); \
+    } \
+}
 
 /**
  * 将数据库的数据读取到数据块
  * @param ds Deserializer对象
  * @param pa 数据块
  */
-#define READ_TABLE(ds, pa) \
-if ((ds).HasMore()) { \
-    (ds).Deserialize(&(pa)); \
+#define READ_TABLE(ds, tb, pa) \
+if (auto res = (ds)->FetchResult(utils::PascalToUnderline(#tb)); res.has_value()) { \
+    if (res->HasMore()) { \
+        res->Deserialize(&pa); \
+    } \
 }
 
 /**
@@ -199,11 +193,13 @@ if ((ds).HasMore()) { \
  * @param ds Deserializer对象
  * @param pa 包含数据块的map
  */
-#define READ_TABLE_MAP(ds, pa) \
-while ((ds).HasMore()) { \
-    decltype(pa)::mapped_type val; \
-    (ds).Deserialize(&val); \
-    (pa)[val.index] = val; \
+#define READ_TABLE_MAP(ds, tb, pa) \
+if (auto res = (ds)->FetchResult(utils::PascalToUnderline(#tb)); res.has_value()) { \
+    while (res->HasMore()) { \
+        decltype(pa)::mapped_type val; \
+        res->Deserialize(&val); \
+        (pa)[val.index] = std::move(val); \
+    } \
 }
 
 /**
@@ -212,10 +208,11 @@ while ((ds).HasMore()) { \
  * @param pa 包含数据块的vector
  */
 #define READ_TABLE_VECTOR(ds, pa) \
-(pa).resize((ds).TotalRowsCount());\
-while ((ds).HasMore()) { \
-    decltype(pa)::value_type val; \
-    (ds).Deserialize(&val); \
-    if (val.index >= 0 && val.index < (pa).size()) \
-        (pa)[val.index] = val; \
+if (auto res = (ds)->FetchResult(utils::PascalToUnderline(#tb)); res.has_value()) { \
+    (pa).resize((ds).TotalRowsCount());\
+    while (res->HasMore()) { \
+        decltype(pa)::mapped_type val; \
+        res->Deserialize(&val); \
+        (pa)[val.index] = std::move(val); \
+    } \
 }

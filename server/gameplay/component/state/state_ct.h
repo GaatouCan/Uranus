@@ -7,8 +7,8 @@
 
 #include "state.orm.h"
 
-class ITableVector;
-class Deserializer;
+class ITableArray;
+class TableResult;
 
 class StateCT final : public IPlayerComponent {
 
@@ -20,13 +20,13 @@ public:
 
     [[nodiscard]] constexpr const char * GetComponentName() const override { return "State"; }
 
-    ITableVector *Serialize_State(bool &bExpired) const;
-    void Deserialize_State(Deserializer &ds);
-
     void OnLogin() override;
 
     [[nodiscard]] int32_t GetLevel() const;
     [[nodiscard]] int64_t GetExp() const;
 
     void SyncCache(CacheNode* node) override;
+
+    void Serialize(Serializer* s) override;
+    void Deserialize(Deserializer* ds) override;
 };
