@@ -33,10 +33,8 @@ void PlayerManager::Init() {
             if (!pid.IsAvailable())
                 return;
 
-            if (auto *node = &mCacheMap[pid.local]; node != nullptr) {
+            if (auto *node = &mCacheMap[pid.local]; node != nullptr)
                 table.cache >> node;
-                // spdlog::info("{} {} {} {}", node->pid, node->lastLoginTime, node->lastLogoutTime, node->avatar);
-            }
         });
     }
     bTick = true;
@@ -143,9 +141,16 @@ void PlayerManager::SyncCache(const std::shared_ptr<Player> &plr) {
     if (plr == nullptr)
         return;
 
-    std::unique_lock lock(mCacheMutex);
-    auto *node = &mCacheMap[plr->GetLocalID()];
-    plr->SyncCache(node);
+    CacheNode cache{};
+    {
+        std::shared_lock lock(mCacheMutex);
+        if (const auto iter = mCacheMap.find(plr->GetLocalID()); iter != mCacheMap.end()) {
+            cache = iter->second;
+        }
+    }
+
+    plr->SyncCache(&cache);
+    SyncCache(cache);
 }
 
 void PlayerManager::SyncCache(const int32_t pid) {
@@ -165,7 +170,7 @@ void PlayerManager::SyncCache(const CacheNode &node) {
     std::unique_lock lock(mCacheMutex);
     mCacheMap[pid.local] = node;
 
-    spdlog::info("{} - Player[{}] Success.", __FUNCTION__, pid.ToInt64());
+    spdlog::trace("{} - Player[{}] Sync Success.", __FUNCTION__, pid.ToInt64());
 }
 
 awaitable<std::optional<CacheNode>> PlayerManager::FindCacheNode(const PlayerID &pid) {
@@ -216,5 +221,5 @@ void PlayerManager::OnTick(const TimePoint now) {
     }
 
     mLastUpdateTime = now;
-    spdlog::info("{} - Stored Cache.", __FUNCTION__);
+    spdlog::trace("{} - Stored Cache.", __FUNCTION__);
 }
