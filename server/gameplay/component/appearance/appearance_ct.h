@@ -9,7 +9,7 @@
 #include "appearance.orm.h"
 
 
-class ISerializer;
+class ITableVector;
 class Deserializer;
 
 class AppearanceCT final : public IPlayerComponent {
@@ -24,13 +24,13 @@ public:
 
     [[nodiscard]] constexpr const char * GetComponentName() const override { return "Appearance"; }
 
-    ISerializer *Serialize_Appearance(bool &bExpired) const;
+    ITableVector *Serialize_Appearance(bool &bExpired) const;
     void Deserialize_Appearance(Deserializer &ds);
 
-    ISerializer *Serialize_Avatar(bool &bExpired) const;
+    ITableVector *Serialize_Avatar(bool &bExpired) const;
     void Deserialize_Avatar(Deserializer &ds);
 
-    ISerializer *Serialize_AvatarFrame(bool &bExpired) const;
+    ITableVector *Serialize_AvatarFrame(bool &bExpired) const;
     void Deserialize_AvatarFrame(Deserializer &ds);
 
     void OnLogin() override;

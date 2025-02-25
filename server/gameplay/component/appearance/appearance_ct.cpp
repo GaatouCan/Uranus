@@ -27,7 +27,7 @@ AppearanceCT::AppearanceCT(IComponentContext *ctx)
 AppearanceCT::~AppearanceCT() {
 }
 
-ISerializer *AppearanceCT::Serialize_Appearance(bool &bExpired) const {
+ITableVector *AppearanceCT::Serialize_Appearance(bool &bExpired) const {
     WRITE_TABLE(Appearance, mAppear)
 }
 
@@ -35,7 +35,7 @@ void AppearanceCT::Deserialize_Appearance(Deserializer &ds) {
     READ_TABLE(ds, mAppear)
 }
 
-ISerializer *AppearanceCT::Serialize_Avatar(bool &bExpired) const {
+ITableVector *AppearanceCT::Serialize_Avatar(bool &bExpired) const {
     WRITE_TABLE_MAP(Avatar, mAvatarMap)
 }
 
@@ -43,7 +43,7 @@ void AppearanceCT::Deserialize_Avatar(Deserializer &ds) {
     READ_TABLE_MAP(ds, mAvatarMap)
 }
 
-ISerializer *AppearanceCT::Serialize_AvatarFrame(bool &bExpired) const {
+ITableVector *AppearanceCT::Serialize_AvatarFrame(bool &bExpired) const {
     WRITE_TABLE_MAP(AvatarFrame, mAvatarFrameMap)
 }
 

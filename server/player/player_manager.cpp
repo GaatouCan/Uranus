@@ -198,7 +198,7 @@ void PlayerManager::OnTick(const TimePoint now) {
     if (now - mLastUpdateTime < std::chrono::seconds(10))
         return;
 
-    auto ser = new Serializer<orm::DBTable_PlayerCache>("player_cache");
+    auto ser = new TableVector<orm::DBTable_PlayerCache>("player_cache");
 
     {
         std::shared_lock lock(mCacheMutex);

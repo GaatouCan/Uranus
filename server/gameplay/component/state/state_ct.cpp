@@ -18,7 +18,7 @@ StateCT::StateCT(IComponentContext *ctx)
 StateCT::~StateCT() {
 }
 
-ISerializer * StateCT::Serialize_State(bool &bExpired) const {
+ITableVector * StateCT::Serialize_State(bool &bExpired) const {
     WRITE_TABLE(State, mState)
 }
 

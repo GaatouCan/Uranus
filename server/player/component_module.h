@@ -3,7 +3,7 @@
 #include "player_id.h"
 
 #include "player_component.h"
-#include "system/database/serializer.h"
+#include "system/database/table_vector.h"
 #include "system/database/deserializer.h"
 
 #include <spdlog/spdlog.h>
@@ -24,7 +24,7 @@ protected:
 
 public:
 
-    using SerializerVector = std::vector<std::pair<ISerializer *, bool>>;
+    using SerializerVector = std::vector<std::pair<ITableVector *, bool>>;
     using DeserializerMap = std::unordered_map<std::string, mysqlx::RowResult>;
 
     IComponentContext() = delete;
@@ -48,7 +48,7 @@ requires std::derived_from<Component, IPlayerComponent>
 class TComponentContext final : public IComponentContext {
 
 public:
-    using SerializeFunctor = ISerializer*(Component::*)(bool &) const;
+    using SerializeFunctor = ITableVector*(Component::*)(bool &) const;
     using DeserializeFunctor = void(Component::*)(Deserializer &);
 
     explicit TComponentContext(ComponentModule *module) : IComponentContext(module) {
@@ -71,7 +71,7 @@ public:
         for (auto &[s, ds] : mTableMap | std::views::values) {
             if (s) {
                 bool bExpired = false;
-                if (ISerializer *is = std::invoke(s, dynamic_cast<Component *>(mComponent), bExpired); is != nullptr) {
+                if (ITableVector *is = std::invoke(s, dynamic_cast<Component *>(mComponent), bExpired); is != nullptr) {
                     vec.emplace_back(is, bExpired);
                 }
             }
