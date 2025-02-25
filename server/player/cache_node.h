@@ -2,6 +2,8 @@
 
 #include "utils.h"
 
+#pragma pack(push, 4)
+
 struct CacheNode {
     int64_t pid;
     int64_t lastLoginTime;
@@ -19,3 +21,5 @@ struct CacheNode {
                && lastLoginTime > lastLogoutTime;
     }
 };
+
+#pragma pack(pop)
