@@ -1,7 +1,7 @@
 #include "../../../include/system/database/table_result.h"
 
 
-TableResult::TableResult(mysqlx::RowResult res)
+TableResult::TableResult(mysqlx::RowResult &&res)
     : mResult(std::move(res)),
       mTotal(mResult.count()) {
 }

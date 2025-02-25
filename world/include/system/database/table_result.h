@@ -10,7 +10,7 @@ class BASE_API TableResult final {
     const size_t mTotal;
 
 public:
-    explicit TableResult(mysqlx::RowResult res);
+    explicit TableResult(mysqlx::RowResult &&res);
 
     DISABLE_COPY_MOVE(TableResult)
 
