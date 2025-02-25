@@ -2,7 +2,7 @@
 
 #include "utils.h"
 
-#pragma pack(push, 4)
+#pragma pack(push, 8)
 
 struct CacheNode {
     int64_t pid;
