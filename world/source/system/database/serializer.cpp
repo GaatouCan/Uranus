@@ -9,7 +9,7 @@ Serializer::~Serializer() {
 }
 
 void Serializer::Serialize(mysqlx::Schema &schema) {
-    for (const auto &[val, expired] : mVector) {
+    for (const auto &[val, expired] : mTableVec) {
         if (val == nullptr)
             continue;
 

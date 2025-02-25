@@ -8,7 +8,7 @@ class BASE_API Serializer final {
         ITableVector *ptr = nullptr;
         std::string expired;
     };
-    std::vector<TableNode> mVector;
+    std::vector<TableNode> mTableVec;
 public:
     Serializer();
     ~Serializer();
@@ -16,7 +16,7 @@ public:
     template<DBTableType T>
     ITableVector *CreateTableVector(const std::string &name, const std::string &expired = {}) {
         auto res = new TableVector<T>(name);
-        mVector.emplace_back(res, expired);
+        mTableVec.emplace_back(res, expired);
         return res;
     }
 
