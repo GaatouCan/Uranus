@@ -15,7 +15,7 @@ class StateCT final : public IPlayerComponent {
     orm::DBTable_State mState;
 
 public:
-    explicit StateCT(IComponentContext *ctx);
+    explicit StateCT(ComponentModule *module);
     ~StateCT() override;
 
     [[nodiscard]] constexpr const char * GetComponentName() const override { return "State"; }
@@ -27,6 +27,6 @@ public:
 
     void SyncCache(CacheNode* node) override;
 
-    void Serialize(Serializer* s) override;
-    void Deserialize(Deserializer* ds) override;
+    void Serialize(const std::shared_ptr<Serializer> &s) override;
+    void Deserialize(Deserializer &ds) override;
 };

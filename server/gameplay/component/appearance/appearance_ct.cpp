@@ -20,24 +20,24 @@
 #include <appearance.pb.h>
 
 
-AppearanceCT::AppearanceCT(IComponentContext *ctx)
-    : IPlayerComponent(ctx) {
+AppearanceCT::AppearanceCT(ComponentModule *module)
+    : IPlayerComponent(module) {
 
 }
 
 AppearanceCT::~AppearanceCT() {
 }
 
-void AppearanceCT::Serialize(Serializer* s) {
+void AppearanceCT::Serialize(const std::shared_ptr<Serializer> &s) {
     WRITE_TABLE(s, Appearance, mAppear)
     WRITE_TABLE_MAP(s, Avatar, mAvatarMap)
     WRITE_TABLE_MAP(s, AvatarFrame, mAvatarFrameMap)
 }
 
-void AppearanceCT::Deserialize(Deserializer* ds) {
-    READ_TABLE(ds, Appearance, mAppear)
-    READ_TABLE_MAP(ds, Avatar, mAvatarMap)
-    READ_TABLE_MAP(ds, AvatarFrame, mAvatarFrameMap)
+void AppearanceCT::Deserialize(Deserializer &ds) {
+    READ_TABLE(&ds, Appearance, mAppear)
+    READ_TABLE_MAP(&ds, Avatar, mAvatarMap)
+    READ_TABLE_MAP(&ds, AvatarFrame, mAvatarFrameMap)
 }
 
 void AppearanceCT::OnLogin() {

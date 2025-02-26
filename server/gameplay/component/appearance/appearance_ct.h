@@ -19,13 +19,13 @@ class AppearanceCT final : public IPlayerComponent {
     std::unordered_map<int32_t, orm::DBTable_AvatarFrame> mAvatarFrameMap;
 
 public:
-    explicit AppearanceCT(IComponentContext *ctx);
+    explicit AppearanceCT(ComponentModule *module);
     ~AppearanceCT() override;
 
     [[nodiscard]] constexpr const char * GetComponentName() const override { return "Appearance"; }
 
-    void Serialize(Serializer *s) override;
-    void Deserialize(Deserializer *ds) override;
+    void Serialize(const std::shared_ptr<Serializer> &s) override;
+    void Deserialize(Deserializer &ds) override;
 
     void OnLogin() override;
 

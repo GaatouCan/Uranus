@@ -8,6 +8,7 @@
 #include "config_manager.h"
 #include "system/manager/manager_system.h"
 #include "system/database/database_system.h"
+#include "system/database/serializer.h"
 
 #include "player_cache.orm.h"
 
@@ -198,7 +199,8 @@ void PlayerManager::OnTick(const TimePoint now) {
     if (now - mLastUpdateTime < std::chrono::seconds(10))
         return;
 
-    auto ser = new TableArray<orm::DBTable_PlayerCache>("player_cache");
+    const auto ser = std::make_shared<Serializer>();
+    auto array = ser->CreateTableVector<orm::DBTable_PlayerCache>("player_cache");
 
     {
         std::shared_lock lock(mCacheMutex);
@@ -208,15 +210,13 @@ void PlayerManager::OnTick(const TimePoint now) {
             table.pid = val.pid;
             table.cache << val;
 
-            ser->PushBack(table);
+            array->PushBack(table);
         }
     }
 
     if (const auto sys = GetWorld()->GetSystem<DatabaseSystem>(); sys != nullptr) {
         sys->PushTransaction([ser](mysqlx::Schema &schema) {
-            auto table = schema.getTable("player_cache", true);
-            ser->SerializeInternal(table);
-            delete ser;
+            ser->Serialize(schema);
         });
     }
 

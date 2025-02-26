@@ -3,23 +3,19 @@
 #include "player.h"
 
 
-IPlayerComponent::IPlayerComponent(IComponentContext *ctx)
-    : mContext(ctx) {
+IPlayerComponent::IPlayerComponent(ComponentModule *module)
+    : mModule(module) {
 }
 
 IPlayerComponent::~IPlayerComponent() {
 }
 
-IComponentContext * IPlayerComponent::GetComponentContext() const {
-    return mContext;
-}
-
 ComponentModule * IPlayerComponent::GetModule() const {
-    return mContext->GetModule();
+    return mModule;
 }
 
 Player * IPlayerComponent::GetOwner() const {
-    return mContext->GetModule()->GetOwner();
+    return mModule->GetOwner();
 }
 
 GameWorld * IPlayerComponent::GetWorld() const {

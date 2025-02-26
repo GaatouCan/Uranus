@@ -4,7 +4,7 @@
 
 class BASE_API Deserializer final {
 
-    std::unordered_map<std::string, mysqlx::RowResult> mResultMap;
+    std::unordered_map<std::string, TableResult *> mResultMap;
 
 public:
     Deserializer();
@@ -12,9 +12,9 @@ public:
 
     DISABLE_COPY_MOVE(Deserializer)
 
-    explicit Deserializer(std::unordered_map<std::string, mysqlx::RowResult> &&result);
+    explicit Deserializer(const std::shared_ptr<std::unordered_map<std::string, mysqlx::RowResult>> &result);
 
     void PushBack(const std::string& name, mysqlx::RowResult && res);
 
-    TableResult* FetchResult(const std::string &name);
+    [[nodiscard]] TableResult* FetchResult(const std::string &name) const;
 };

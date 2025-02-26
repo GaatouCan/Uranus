@@ -2,20 +2,20 @@
 
 #include <impl/package.h>
 
+
 class IPlayerComponent {
 
-    class IComponentContext *mContext;
+    class ComponentModule *mModule;
 
 public:
-    explicit IPlayerComponent(IComponentContext *ctx);
+    explicit IPlayerComponent(ComponentModule *module);
     virtual ~IPlayerComponent();
 
     [[nodiscard]] virtual const char *GetComponentName() const = 0;
 
     IPlayerComponent() = delete;
 
-    [[nodiscard]] IComponentContext *GetComponentContext() const;
-    [[nodiscard]] class ComponentModule *GetModule() const;
+    [[nodiscard]] ComponentModule *GetModule() const;
     [[nodiscard]] class Player *GetOwner() const;
     [[nodiscard]] class GameWorld *GetWorld() const;
 
@@ -30,6 +30,8 @@ public:
     void Send(int32_t id, std::string_view data) const;
     void Send(int32_t id, const std::stringstream &ss) const;
 
-    virtual void Serialize(class Serializer *s) {}
-    virtual void Deserialize(class Deserializer *ds) {}
+    virtual void Serialize(const std::shared_ptr<class Serializer> &s) {}
+
+    virtual void GetTableList(std::vector<std::string> &list) const {}
+    virtual void Deserialize(class Deserializer &ds) {}
 };

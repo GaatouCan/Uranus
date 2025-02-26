@@ -11,8 +11,8 @@
 #include <system/database/serializer.h>
 #include <system/database/deserializer.h>
 
-StateCT::StateCT(IComponentContext *ctx)
-    : IPlayerComponent(ctx) {
+StateCT::StateCT(ComponentModule *module)
+    : IPlayerComponent(module) {
 
 }
 
@@ -36,10 +36,10 @@ void StateCT::SyncCache(CacheNode* node) {
     node->level = mState.level;
 }
 
-void StateCT::Serialize(Serializer* s) {
+void StateCT::Serialize(const std::shared_ptr<Serializer> &s) {
     WRITE_TABLE(s, State, mState)
 }
 
-void StateCT::Deserialize(Deserializer* ds) {
-    READ_TABLE(ds, State, mState)
+void StateCT::Deserialize(Deserializer &ds) {
+    READ_TABLE(&ds, State, mState)
 }
