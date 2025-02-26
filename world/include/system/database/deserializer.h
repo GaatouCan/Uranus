@@ -7,7 +7,7 @@ class BASE_API Deserializer final {
     std::unordered_map<std::string, TableResult *> mResultMap;
 
 public:
-    Deserializer();
+    Deserializer() = default;
     ~Deserializer();
 
     DISABLE_COPY_MOVE(Deserializer)

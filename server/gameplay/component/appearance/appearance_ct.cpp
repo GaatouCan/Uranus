@@ -40,12 +40,6 @@ void AppearanceCT::Deserialize(Deserializer &ds) {
     READ_TABLE_MAP(&ds, AvatarFrame, mAvatarFrameMap)
 }
 
-void AppearanceCT::GetTableList(std::vector<std::string> &list) const {
-    list.emplace_back("appearance");
-    list.emplace_back("avatar");
-    list.emplace_back("avatar_frame");
-}
-
 void AppearanceCT::OnLogin() {
     if (mAppear.pid == 0)
         mAppear.pid = GetOwner()->GetFullID();

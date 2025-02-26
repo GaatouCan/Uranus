@@ -24,7 +24,7 @@ protected:
     friend class Serializer;
 
     virtual void SerializeInternal(mysqlx::Table &table) = 0;
-    virtual void DeleteExpiredRow(mysqlx::Table &table, const std::string &expr) = 0;
+    virtual void RemoveExpiredRow(mysqlx::Table &table, const std::string &expr) = 0;
 };
 
 template<DBTableType T>
@@ -59,7 +59,7 @@ private:
         }
     }
 
-    void DeleteExpiredRow(mysqlx::Table &table, const std::string &expr) override {
+    void RemoveExpiredRow(mysqlx::Table &table, const std::string &expr) override {
         auto res = table.select().where(expr).execute();
 
         if (res.count() == 0)

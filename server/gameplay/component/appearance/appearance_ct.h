@@ -22,12 +22,12 @@ public:
     explicit AppearanceCT(ComponentModule *module);
     ~AppearanceCT() override;
 
-    [[nodiscard]] constexpr const char * GetComponentName() const override { return "Appearance"; }
+    [[nodiscard]] constexpr std::vector<std::string> GetTableList() const  override {
+        return {"appearance", "avatar", "avatar_frame"};
+    }
 
     void Serialize(const std::shared_ptr<Serializer> &s) override;
     void Deserialize(Deserializer &ds) override;
-
-    void GetTableList(std::vector<std::string> &list) const override;
 
     void OnLogin() override;
 

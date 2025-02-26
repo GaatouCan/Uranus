@@ -4,7 +4,6 @@
 
 #include "player_component.h"
 #include "system/database/table_array.h"
-#include "system/database/table_result.h"
 
 #include <spdlog/spdlog.h>
 #include <typeindex>
@@ -32,9 +31,7 @@ public:
     requires std::derived_from<T, IPlayerComponent>
     T *CreateComponent() {
         const auto res = new T(this);
-        mComponentMap.insert_or_assign(typeid(T), res);
-
-        spdlog::debug("{} - Player[{}] load {}", __FUNCTION__, GetPlayerID().ToInt64(), res->GetComponentName());
+        mComponentMap[typeid(T)] = res;
 
         return res;
     }

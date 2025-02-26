@@ -18,9 +18,9 @@ public:
     explicit StateCT(ComponentModule *module);
     ~StateCT() override;
 
-    [[nodiscard]] constexpr const char * GetComponentName() const override { return "State"; }
-
-    void GetTableList(std::vector<std::string> &list) const override;
+    [[nodiscard]] constexpr std::vector<std::string> GetTableList() const override {
+        return {"state"};
+    }
 
     void Serialize(const std::shared_ptr<Serializer> &s) override;
     void Deserialize(Deserializer &ds) override;

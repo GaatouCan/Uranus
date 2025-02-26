@@ -6,7 +6,7 @@
 #include <string>
 #include <mysqlx/xdevapi.h>
 
-using QueryVector = std::vector<std::pair<std::string, std::string> >;      // [表名, where表达式]
+using QueryArray = std::vector<std::pair<std::string, std::string>>;        // [表名, where表达式]
 using QueryResult = std::unordered_map<std::string, mysqlx::RowResult>;     // [表名, 查询结果]
 using QueryResultPtr = std::shared_ptr<QueryResult>;
 
@@ -19,6 +19,7 @@ public:
 };
 
 class BASE_API TransactionTask final : public IDatabaseTask {
+
     TransactionFunctor mFunctor;
 
 public:
@@ -38,25 +39,23 @@ public:
 
 template<class Callable>
 class BASE_API QueryTask final : public IDatabaseTask {
-    QueryVector mQuery;
+
+    QueryArray mArray;
     Callable mCallback;
 
 public:
     QueryTask() = delete;
 
-    QueryTask(QueryVector query, Callable &&cb)
-        : mQuery(std::move(query)),
+    QueryTask(QueryArray query, Callable &&cb)
+        : mArray(std::move(query)),
           mCallback(std::forward<Callable>(cb)) {
     }
 
     void Execute(mysqlx::Schema &schema) override {
         auto ret = std::make_shared<QueryResult>();
-        for (const auto &[name, expr]: mQuery) {
+        for (const auto &[name, expr]: mArray) {
             auto table = schema.getTable(name, true);
-            if (expr.empty())
-                ret->insert_or_assign(name, table.select().execute());
-            else
-                ret->insert_or_assign(name, table.select().where(expr).execute());
+            ret->insert_or_assign(name, expr.empty() ? table.select().execute() : table.select().where(expr).execute());
         }
         mCallback(ret);
     }

@@ -43,7 +43,3 @@ void StateCT::Serialize(const std::shared_ptr<Serializer> &s) {
 void StateCT::Deserialize(Deserializer &ds) {
     READ_TABLE(&ds, State, mState)
 }
-
-void StateCT::GetTableList(std::vector<std::string> &list) const {
-    list.emplace_back("state");
-}

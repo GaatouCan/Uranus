@@ -35,15 +35,15 @@ public:
     void PushTransaction(const TransactionFunctor &func);
 
     template<class Callback>
-    void PushSelectTask(const QueryVector &vec, Callback &&cb) {
+    void PushSelectTask(const QueryArray &vec, Callback &&cb) {
         const auto &[th, sess, queue, tid] = mSessionList[mNextNodeIndex++];
         mNextNodeIndex = mNextNodeIndex % mSessionList.size();
         queue->PushBack(new QueryTask<Callback>(vec, std::forward<Callback>(cb)));
     }
 
     template<asio::completion_token_for<void(QueryResultPtr)> CompletionToken>
-    auto AsyncSelect(const QueryVector &vec, CompletionToken &&token) {
-        auto init = [this](asio::completion_handler_for<void(QueryResultPtr)> auto handle, const QueryVector &query) {
+    auto AsyncSelect(const QueryArray &vec, CompletionToken &&token) {
+        auto init = [this](asio::completion_handler_for<void(QueryResultPtr)> auto handle, const QueryArray &query) {
             auto work = asio::make_work_guard(handle);
 
             this->PushSelectTask(query, [handle = std::move(handle), work = std::move(work)](QueryResultPtr result) mutable {

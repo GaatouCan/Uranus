@@ -11,9 +11,12 @@ public:
     explicit IPlayerComponent(ComponentModule *module);
     virtual ~IPlayerComponent();
 
-    [[nodiscard]] virtual const char *GetComponentName() const = 0;
-
     IPlayerComponent() = delete;
+
+    virtual void Serialize(const std::shared_ptr<class Serializer> &s) {}
+    virtual void Deserialize(class Deserializer &ds) {}
+
+    [[nodiscard]] virtual std::vector<std::string> GetTableList() const = 0;
 
     [[nodiscard]] ComponentModule *GetModule() const;
     [[nodiscard]] class Player *GetOwner() const;
@@ -29,9 +32,4 @@ public:
 
     void Send(int32_t id, std::string_view data) const;
     void Send(int32_t id, const std::stringstream &ss) const;
-
-    virtual void Serialize(const std::shared_ptr<class Serializer> &s) {}
-
-    virtual void GetTableList(std::vector<std::string> &list) const {}
-    virtual void Deserialize(class Deserializer &ds) {}
 };

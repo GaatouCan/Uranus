@@ -51,22 +51,19 @@ void ComponentModule::Serialize() {
 
 awaitable<void> ComponentModule::Deserialize() {
     try {
-        QueryVector query;
+        QueryArray query;
         std::string expr = fmt::format("pid = {}", GetOwner()->GetFullID());
 
-        std::vector<std::string> tableList;
-        for (const auto &val : std::views::values(mComponentMap)) {
-            val->GetTableList(tableList);
-        }
-
-        for (const auto &name : tableList) {
-            query.emplace_back(name, expr);
+        for (const auto &val : mComponentMap | std::views::values) {
+            for (const auto &table : val->GetTableList()) {
+                query.emplace_back(table, expr);
+            }
         }
 
         if (const auto sys = GetOwner()->GetWorld()->GetSystem<DatabaseSystem>(); sys != nullptr) {
             if (const auto res = co_await sys->AsyncSelect(query, asio::use_awaitable); res != nullptr) {
                 Deserializer der(res);
-                for (const auto &val : std::views::values(mComponentMap)) {
+                for (const auto &val : mComponentMap | std::views::values) {
                     val->Deserialize(der);
                 }
             }
