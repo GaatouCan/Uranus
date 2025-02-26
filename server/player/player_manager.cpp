@@ -200,12 +200,12 @@ void PlayerManager::OnTick(const TimePoint now) {
         return;
 
     const auto ser = std::make_shared<Serializer>();
-    auto array = ser->CreateTableVector<orm::DBTable_PlayerCache>("player_cache");
+    auto *array = ser->CreateTableVector<orm::DBTable_PlayerCache>("player_cache");
 
     {
+
         std::shared_lock lock(mCacheMutex);
         for (const auto &val : mCacheMap | std::views::values) {
-            // spdlog::info("{} {} {} {}", val.pid, val.lastLoginTime, val.lastLogoutTime, val.avatar);
             orm::DBTable_PlayerCache table;
             table.pid = val.pid;
             table.cache << val;
