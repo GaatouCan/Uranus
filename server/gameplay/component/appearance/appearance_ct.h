@@ -27,6 +27,8 @@ public:
     void Serialize(const std::shared_ptr<Serializer> &s) override;
     void Deserialize(Deserializer &ds) override;
 
+    void GetTableList(std::vector<std::string> &list) const override;
+
     void OnLogin() override;
 
     void SendInfo() const;

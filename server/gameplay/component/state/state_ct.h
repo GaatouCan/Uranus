@@ -20,13 +20,15 @@ public:
 
     [[nodiscard]] constexpr const char * GetComponentName() const override { return "State"; }
 
+    void GetTableList(std::vector<std::string> &list) const override;
+
+    void Serialize(const std::shared_ptr<Serializer> &s) override;
+    void Deserialize(Deserializer &ds) override;
+
     void OnLogin() override;
 
     [[nodiscard]] int32_t GetLevel() const;
     [[nodiscard]] int64_t GetExp() const;
 
     void SyncCache(CacheNode* node) override;
-
-    void Serialize(const std::shared_ptr<Serializer> &s) override;
-    void Deserialize(Deserializer &ds) override;
 };
