@@ -21,7 +21,6 @@ void Serializer::Serialize(mysqlx::Schema &schema) {
             }
             val->SerializeInternal(table);
         }
-        delete val;
     }
 }
 
