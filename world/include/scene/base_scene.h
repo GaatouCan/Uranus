@@ -26,7 +26,7 @@ public:
 
     [[nodiscard]] int32_t GetSceneID() const;
     [[nodiscard]] SceneManager* GetOwner() const;
-    [[nodiscard]] class GameWorld *GetWorld() const;
+    [[nodiscard]] GameWorld *GetWorld() const;
 
     void PlayerEnterScene(const std::shared_ptr<IBasePlayer> &player);
     void PlayerLeaveScene(const std::shared_ptr<IBasePlayer> &player, bool bChange = false);
