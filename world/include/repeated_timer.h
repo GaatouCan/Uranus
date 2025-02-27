@@ -7,19 +7,19 @@ using TimerFunctor = std::function<void(TimePoint)>;
 
 class BASE_API RepeatedTimer final {
 
-    asio::io_context &mContext;
-    SystemTimer mTimer;
+    asio::io_context &ctx_;
+    SystemTimer timer_;
 
-    UniqueID mID;
-    TimerFunctor mFunctor;
+    UniqueID id_;
+    TimerFunctor functor_;
 
-    std::function<void(const UniqueID &)> mCompleteFunctor;
+    std::function<void(const UniqueID &)> complete_functor_;
 
-    std::chrono::duration<uint32_t> mDelay;
-    std::chrono::duration<uint32_t> mRepeatRate;
-    bool bRepeat;
+    std::chrono::duration<uint32_t> delay_;
+    std::chrono::duration<uint32_t> repeat_rate_;
+    bool repeat_;
 
-    std::atomic<bool> bRunning;
+    std::atomic<bool> running_;
 
 public:
     RepeatedTimer() = delete;
@@ -44,7 +44,7 @@ public:
 
     template<typename Functor, typename... Args>
     RepeatedTimer &SetFunctor(Functor &&func, Args &&... args) {
-        mFunctor = [func = std::forward<Functor>(func), ...args = std::forward<Args>(args)](TimePoint point) mutable {
+        functor_ = [func = std::forward<Functor>(func), ...args = std::forward<Args>(args)](TimePoint point) mutable {
             std::invoke(func, point, args...);
         };
         return *this;
@@ -52,7 +52,7 @@ public:
 
     template<typename Functor, typename Object, typename... Args>
     RepeatedTimer &SetMemberFunctor(Functor &&func, Object *obj, Args &&... args) {
-        mFunctor = [func = std::forward<Functor>(func), obj, ...args = std::forward<Args>(args)](TimePoint point) mutable {
+        functor_ = [func = std::forward<Functor>(func), obj, ...args = std::forward<Args>(args)](TimePoint point) mutable {
             std::invoke(func, obj, point, args...);
         };
         return *this;

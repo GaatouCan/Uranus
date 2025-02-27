@@ -1,17 +1,17 @@
 #pragma once
 
+#include "common.h"
+
 #include <vector>
 
 #ifdef __linux__
 #include <cstdint>
 #endif
 
-#include "common.h"
-
 
 class BASE_API ByteArray final {
 
-    std::vector<uint8_t> mData;
+    std::vector<uint8_t> array_;
 
 public:
     ByteArray() = default;
@@ -30,11 +30,11 @@ public:
 
     std::vector<uint8_t> &GetRawRef();
 
-    auto Begin() -> decltype(mData)::iterator;
-    auto End() -> decltype(mData)::iterator;
+    auto Begin() -> decltype(array_)::iterator;
+    auto End() -> decltype(array_)::iterator;
 
-    [[nodiscard]] auto Begin() const -> decltype(mData)::const_iterator;
-    [[nodiscard]] auto End() const -> decltype(mData)::const_iterator;
+    [[nodiscard]] auto Begin() const -> decltype(array_)::const_iterator;
+    [[nodiscard]] auto End() const -> decltype(array_)::const_iterator;
 
     [[nodiscard]] uint8_t operator[](size_t pos) const noexcept;
 
@@ -47,12 +47,12 @@ public:
     requires kPODType<T>
     void CastFromData(T source) {
         constexpr auto size = std::is_pointer_v<T> ? sizeof(std::remove_pointer_t<T>) : sizeof(T);
-        mData.resize(size);
+        array_.resize(size);
 
         if constexpr (std::is_pointer_v<T>) {
-            memcpy(mData.data(), source, size);
+            memcpy(array_.data(), source, size);
         } else {
-            memcpy(mData.data(), &source, size);
+            memcpy(array_.data(), &source, size);
         }
     }
 
@@ -66,11 +66,11 @@ public:
     template<typename T>
     requires kPODType<T>
     bool CastToData(T *target) const {
-        const bool ret = mData.size() >= sizeof(std::remove_pointer_t<T>);
-        const auto size = ret ?  sizeof(std::remove_pointer_t<T>) : mData.size();
+        const bool ret = array_.size() >= sizeof(std::remove_pointer_t<T>);
+        const auto size = ret ?  sizeof(std::remove_pointer_t<T>) : array_.size();
 
         memset(target, 0, size);
-        memcpy(target, mData.data(), size);
+        memcpy(target, array_.data(), size);
 
         return ret;
     }

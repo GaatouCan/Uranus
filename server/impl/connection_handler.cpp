@@ -16,10 +16,10 @@ void ConnectionHandler::OnConnected() {
 }
 
 void ConnectionHandler::OnClosed() {
-    if (!mConn->GetContext().has_value())
+    if (!conn_->GetContext().has_value())
         return;
 
-    const auto pid = std::any_cast<PlayerID>(mConn->GetContext());
+    const auto pid = std::any_cast<PlayerID>(conn_->GetContext());
 
     if (const auto mgr = GET_MANAGER(PlayerManager); mgr != nullptr) {
         mgr->OnPlayerLogout(pid);
@@ -27,6 +27,6 @@ void ConnectionHandler::OnClosed() {
 }
 
 awaitable<void> ConnectionHandler::OnReadPackage(IPackage *pkg) {
-    spdlog::debug("{} - Receive Package[{}] From {}.", __FUNCTION__, ProtoTypeToString(static_cast<protocol::ProtoType>(pkg->GetPackageID())), mConn->RemoteAddress().to_string());
+    spdlog::debug("{} - Receive Package[{}] From {}.", __FUNCTION__, ProtoTypeToString(static_cast<protocol::ProtoType>(pkg->GetPackageID())), conn_->RemoteAddress().to_string());
     co_return;
 }

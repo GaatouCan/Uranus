@@ -68,9 +68,9 @@ private:
     void Collect();
 
 private:
-    std::queue<IPackage *> mQueue;
-    std::set<IPackage *> mSet;
-    std::atomic<TimePoint> mCollectTime;
+    std::queue<IPackage *> queue_;
+    std::set<IPackage *> pkg_set_;
+    std::atomic<TimePoint> collect_time_;
 
     // std::mutex mMutex;
     mutable std::shared_mutex mMutex;

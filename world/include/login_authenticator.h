@@ -8,6 +8,7 @@
 class Connection;
 using ConnectionPointer = std::shared_ptr<Connection>;
 
+
 class LoginAuthenticator final {
 
     friend class GameWorld;
@@ -32,15 +33,15 @@ public:
     template<typename T>
     requires std::derived_from<T, ILoginHandler>
     void SetHandler() {
-        if (mHandler != nullptr) {
-            mHandler.reset();
+        if (handler_ != nullptr) {
+            handler_.reset();
         }
-        mHandler = std::make_unique<T>(this);
+        handler_ = std::make_unique<T>(this);
     }
 
     void AbortHandler() const;
 
 private:
-    GameWorld* mWorld;
-    std::unique_ptr<ILoginHandler> mHandler;
+    GameWorld* world_;
+    std::unique_ptr<ILoginHandler> handler_;
 };

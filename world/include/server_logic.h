@@ -6,7 +6,7 @@
 
 class BASE_API IServerLogic {
 
-    class GameWorld* mWorld;
+    class GameWorld* world_;
 
 public:
     IServerLogic() = delete;

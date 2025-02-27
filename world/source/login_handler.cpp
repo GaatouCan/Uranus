@@ -3,15 +3,15 @@
 
 
 ILoginHandler::ILoginHandler(LoginAuthenticator *owner)
-    : mOwner(owner) {
+    : owner_(owner) {
 
 }
 
 LoginAuthenticator * ILoginHandler::GetOwner() const {
-    return mOwner;
+    return owner_;
 }
 
 GameWorld *ILoginHandler::GetWorld() const {
-    return mOwner->GetWorld();
+    return owner_->GetWorld();
 }
 

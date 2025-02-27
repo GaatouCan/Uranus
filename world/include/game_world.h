@@ -14,6 +14,7 @@ using ConnectionPointer = std::shared_ptr<class Connection>;
 typedef IServerLogic*(*ServerCreator)(GameWorld*);
 typedef void(*ServerDestroyer)(IServerLogic*);
 
+
 struct StringViewHash {
     using is_transparent = void;
 
@@ -30,24 +31,25 @@ struct StringViewEqual {
     }
 };
 
+
 class BASE_API GameWorld final {
 
-    asio::io_context mContext;
-    TcpAcceptor mAcceptor;
+    asio::io_context ctx_;
+    TcpAcceptor acceptor_;
 
-    ModuleHandle mModule;
-    IServerLogic *mServer;
-    ServerDestroyer mDestroyer;
+    ModuleHandle        module_;
+    IServerLogic *      server_;
+    ServerDestroyer     destroyer_;
 
-    class ConfigManager *mConfigManager;
-    class LoginAuthenticator *mLoginAuthenticator;
-    class SceneManager *mSceneManager;
-    class GlobalQueue *mGlobalQueue;
-    class ProtocolRoute *mProtocolRoute;
+    class ConfigManager *       cfg_mgr_;
+    class LoginAuthenticator *  login_authenticator_;
+    class SceneManager *        scene_mgr_;
+    class GlobalQueue *         global_queue_;
+    class ProtocolRoute *       proto_route_;
 
-    std::unordered_map<std::string, ConnectionPointer, StringViewHash, StringViewEqual> mConnectionMap;
+    std::unordered_map<std::string, ConnectionPointer, StringViewHash, StringViewEqual> conn_map_;
 
-    SystemTimer mFullTimer;
+    SystemTimer full_timer_;
 
     struct SystemPriority {
         int priority;
@@ -62,16 +64,16 @@ class BASE_API GameWorld final {
         }
     };
 
-    std::priority_queue<SystemPriority, std::vector<SystemPriority>, std::greater<> > init_priority_;
-    std::priority_queue<SystemPriority, std::vector<SystemPriority>, std::less<> > dest_priority_;
+    std::priority_queue<SystemPriority, std::vector<SystemPriority>, std::greater<>>    init_priority_;
+    std::priority_queue<SystemPriority, std::vector<SystemPriority>, std::less<>>       dest_priority_;
 
-    std::unordered_map<std::type_index, ISubSystem *> system_map_;
-    std::unordered_map<std::string, ISubSystem *, StringViewHash, StringViewEqual> name_to_system_;
+    std::unordered_map<std::type_index, ISubSystem *>                               sys_map_;
+    std::unordered_map<std::string, ISubSystem *, StringViewHash, StringViewEqual>  name_to_sys_;
 
-    ThreadID mThreadID;
+    ThreadID tid_;
 
-    bool bInited;
-    std::atomic_bool bRunning;
+    bool                inited_;
+    std::atomic_bool    running_;
 
 public:
     GameWorld();
@@ -93,16 +95,16 @@ public:
 
     template<SystemType T>
     T *GetSystem() const noexcept {
-        if (const auto iter = system_map_.find(typeid(T)); iter != system_map_.end())
+        if (const auto iter = sys_map_.find(typeid(T)); iter != sys_map_.end())
             return dynamic_cast<T *>(iter->second);
         return nullptr;
     }
 
-    [[nodiscard]] ConfigManager *GetConfigManager() const;
-    [[nodiscard]] SceneManager *GetSceneManager() const;
-    [[nodiscard]] LoginAuthenticator *GetLoginAuthenticator() const;
-    [[nodiscard]] ProtocolRoute *GetProtocolRoute() const;
-    [[nodiscard]] GlobalQueue *GetGlobalQueue() const;
+    [[nodiscard]] ConfigManager *       GetConfigManager() const;
+    [[nodiscard]] SceneManager *        GetSceneManager() const;
+    [[nodiscard]] LoginAuthenticator *  GetLoginAuthenticator() const;
+    [[nodiscard]] ProtocolRoute *       GetProtocolRoute() const;
+    [[nodiscard]] GlobalQueue *         GetGlobalQueue() const;
 
     ISubSystem *GetSystemByName(std::string_view sys) const;
 
@@ -115,13 +117,13 @@ private:
 
     template<SystemType T>
     T *CreateSystem(const int priority = 0) {
-        if (bInited)
+        if (inited_)
             return nullptr;
 
         const auto res = new T(this);
 
-        system_map_.insert_or_assign(typeid(T), res);
-        name_to_system_.insert_or_assign(res->GetSystemName(), res);
+        sys_map_.insert_or_assign(typeid(T), res);
+        name_to_sys_.insert_or_assign(res->GetSystemName(), res);
 
         init_priority_.push({ priority, typeid(T) });
         dest_priority_.push({ priority, typeid(T) });

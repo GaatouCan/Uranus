@@ -14,21 +14,21 @@ using namespace asio::experimental::awaitable_operators;
 
 class BASE_API Connection final : public std::enable_shared_from_this<Connection> {
 
-    TcpSocket mSocket;
-    class MainScene *mScene;
+    TcpSocket socket_;
+    class MainScene *scene_;
 
-    std::unique_ptr<IPackageCodec> mCodec = nullptr;
-    std::unique_ptr<IConnectionHandler> mHandler = nullptr;
+    std::unique_ptr<IPackageCodec>      codec_ = nullptr;
+    std::unique_ptr<IConnectionHandler> handler_ = nullptr;
 
-    ThreadSafeDeque<IPackage *> mOutput;
+    ThreadSafeDeque<IPackage *> output_;
 
-    std::string mKey;
+    std::string key_;
 
-    SystemTimer mWatchdogTimer;
-    TimePoint mDeadline;
+    SystemTimer watchdog_;
+    TimePoint deadline_;
 
-    std::any mContext;
-    uint32_t mContextNullCount = 0;
+    std::any context_;
+    uint32_t context_null_count_ = 0;
 
     static std::chrono::duration<uint32_t> kExpireTime;
     static std::chrono::duration<uint32_t> kWriteTimeout;
@@ -68,20 +68,20 @@ public:
     template<typename T>
     requires std::derived_from<T, IPackageCodec>
     Connection &SetPackageCodec() {
-        if (mCodec != nullptr)
-            mCodec.reset();
+        if (codec_ != nullptr)
+            codec_.reset();
 
-        mCodec = std::make_unique<T>(this);
+        codec_ = std::make_unique<T>(this);
         return *this;
     }
 
     template<typename T>
     requires std::derived_from<T, IConnectionHandler>
     Connection &SetHandler() {
-        if (mHandler != nullptr)
-            mHandler.reset();
+        if (handler_ != nullptr)
+            handler_.reset();
 
-        mHandler = std::make_unique<T>(this);
+        handler_ = std::make_unique<T>(this);
         return *this;
     }
 
@@ -89,13 +89,13 @@ public:
 
     void Send(IPackage *pkg);
 
-    [[nodiscard]] bool IsConnected() const { return mSocket.is_open(); }
+    [[nodiscard]] bool IsConnected() const { return socket_.is_open(); }
 
-    [[nodiscard]] std::string GetKey() const { return mKey; }
-    [[nodiscard]] TcpSocket &GetSocket() { return mSocket; }
+    [[nodiscard]] std::string GetKey() const { return key_; }
+    [[nodiscard]] TcpSocket &GetSocket() { return socket_; }
 
-    [[nodiscard]] const std::any &GetContext() const { return mContext; }
-    [[nodiscard]] std::any GetMutableContext() const { return mContext; }
+    [[nodiscard]] const std::any &GetContext() const { return context_; }
+    [[nodiscard]] std::any GetMutableContext() const { return context_; }
 
     [[nodiscard]] asio::ip::address RemoteAddress() const;
 

@@ -1,8 +1,8 @@
 ﻿#pragma once
 
-#include <concepts>
-
 #include "common.h"
+
+#include <concepts>
 
 #ifdef __linux__
 #include <cstdint>

@@ -2,9 +2,9 @@
 #include "../include/connection.h"
 
 IConnectionHandler::IConnectionHandler(Connection *conn)
-    : mConn(conn) {
+    : conn_(conn) {
 }
 
 GameWorld * IConnectionHandler::GetWorld() const {
-    return mConn->GetWorld();
+    return conn_->GetWorld();
 }

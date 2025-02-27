@@ -1,7 +1,8 @@
 #pragma once
 
-#include <asio/awaitable.hpp>
 #include "common.h"
+
+#include <asio/awaitable.hpp>
 
 
 using asio::awaitable;
@@ -28,5 +29,5 @@ public:
     [[nodiscard]] class GameWorld *GetWorld() const;
 
 protected:
-    Connection *mConn;
+    Connection *conn_;
 };

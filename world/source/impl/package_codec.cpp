@@ -30,7 +30,7 @@ awaitable<void> PackageCodec::EncodeT(Package *pkg) {
     header.length = htobe64(pkg->mHeader.length);
 #endif
 
-    if (const auto len = co_await async_write(mConn->GetSocket(), asio::buffer(&header, Package::PACKAGE_HEADER_SIZE)); len == 0) {
+    if (const auto len = co_await async_write(conn_->GetSocket(), asio::buffer(&header, Package::PACKAGE_HEADER_SIZE)); len == 0) {
         spdlog::warn("{} - Write package header length equal zero", __FUNCTION__);
         pkg->Invalid();
         co_return;
@@ -39,11 +39,11 @@ awaitable<void> PackageCodec::EncodeT(Package *pkg) {
     if (pkg->mHeader.length == 0)
         co_return;
 
-    co_await async_write(mConn->GetSocket(), asio::buffer(pkg->RawByteArray().GetRawRef()));
+    co_await async_write(conn_->GetSocket(), asio::buffer(pkg->RawByteArray().GetRawRef()));
 }
 
 awaitable<void> PackageCodec::DecodeT(Package *pkg) {
-    if (const auto len = co_await async_read(mConn->GetSocket(), asio::buffer(&pkg->mHeader, Package::PACKAGE_HEADER_SIZE)); len == 0) {
+    if (const auto len = co_await async_read(conn_->GetSocket(), asio::buffer(&pkg->mHeader, Package::PACKAGE_HEADER_SIZE)); len == 0) {
         spdlog::warn("{} - Read package header length equal zero", __FUNCTION__);
         pkg->Invalid();
         co_return;
@@ -65,5 +65,5 @@ awaitable<void> PackageCodec::DecodeT(Package *pkg) {
         co_return;
 
     pkg->mData.Resize(pkg->mHeader.length);
-    co_await async_read(mConn->GetSocket(), asio::buffer(pkg->RawByteArray().GetRawRef()));
+    co_await async_read(conn_->GetSocket(), asio::buffer(pkg->RawByteArray().GetRawRef()));
 }

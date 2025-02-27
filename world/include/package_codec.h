@@ -10,11 +10,11 @@ using asio::awaitable;
 class IPackageCodec {
 
 protected:
-    class Connection* mConn;
+    class Connection* conn_;
 
 public:
     IPackageCodec() = delete;
-    explicit IPackageCodec(Connection *conn) : mConn(conn) {}
+    explicit IPackageCodec(Connection *conn) : conn_(conn) {}
 
     virtual ~IPackageCodec() = default;
 

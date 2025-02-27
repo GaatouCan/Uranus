@@ -6,6 +6,7 @@
 #include <yaml-cpp/yaml.h>
 #include <nlohmann/json.hpp>
 
+
 class ConfigManager;
 
 typedef void(*LogicConfigLoader)(ConfigManager *);

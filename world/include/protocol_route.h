@@ -33,10 +33,10 @@ public:
     template<typename T>
     requires std::derived_from<T, IProtocolHandler>
     void SetHandler() {
-        if (mHandler != nullptr)
-            mHandler.reset();
+        if (handler_ != nullptr)
+            handler_.reset();
 
-        mHandler = std::make_unique<T>(this);
+        handler_ = std::make_unique<T>(this);
     }
 
     void OnReadPackage(const std::shared_ptr<Connection> &conn, IPackage *pkg) const;
@@ -44,12 +44,12 @@ public:
 
     void AbortHandler() const;
 private:
-    GameWorld *mWorld;
+    GameWorld *world_;
 
-    std::unordered_map<uint32_t, ProtoFunctor> mProtoMap;
+    std::unordered_map<uint32_t, ProtoFunctor> proto_map_;
     // std::unordered_map<uint32_t, ACrossFunctor> mCrossMap;
 
-    std::unique_ptr<IProtocolHandler> mHandler;
+    std::unique_ptr<IProtocolHandler> handler_;
 };
 
 #define REGISTER_PROTOCOL(proto) \

@@ -6,6 +6,8 @@
 #include <atomic>
 #include <optional>
 
+#include "common.h"
+
 
 template<typename T>
 class BASE_API ThreadSafeDeque {
