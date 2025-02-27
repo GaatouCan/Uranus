@@ -201,9 +201,9 @@ void PlayerManager::OnTick(const TimePoint now, const Duration interval) {
         return;
 
     const auto ser = std::make_shared<Serializer>();
-    auto *array = ser->CreateTableVector<orm::DBTable_PlayerCache>("player_cache");
 
     {
+        auto *array = ser->CreateTableVector<orm::DBTable_PlayerCache>("player_cache");
 
         std::shared_lock lock(mCacheMutex);
         for (const auto &val : mCacheMap | std::views::values) {
