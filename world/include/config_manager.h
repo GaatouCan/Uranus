@@ -18,19 +18,19 @@ constexpr auto SERVER_CONFIG_JSON = "/json";
 
 class BASE_API ConfigManager final {
 
-    std::string mYAMLPath;
-    std::string mJSONPath;
+    std::string yaml_path_;
+    std::string json_path_;
 
-    YAML::Node mConfig;
-    std::unordered_map<std::string, nlohmann::json> mJSONMap;
+    YAML::Node cfg_;
+    std::unordered_map<std::string, nlohmann::json> json_map_;
 
-    std::unordered_map<std::type_index, std::vector<std::string>> mLogicLoadMap;
-    std::unordered_map<std::type_index, ILogicConfig *> mLogicConfigMap;
+    std::unordered_map<std::type_index, std::vector<std::string>> logic_load_map_;
+    std::unordered_map<std::type_index, ILogicConfig *> logic_config_map_;
 
-    LogicConfigLoader mLogicConfigLoader;
-    LoggerLoader mLoggerLoader;
+    LogicConfigLoader logic_config_loader_;
+    LoggerLoader logger_loader_;
 
-    bool bLoaded = false;
+    bool loaded_ = false;
 
 public:
     ConfigManager();
@@ -48,19 +48,19 @@ public:
 
     template<LogicConfigType T>
     void CreateLogicConfig(const std::vector<std::string> &path_list) {
-        mLogicLoadMap[typeid(T)] = path_list;
+        logic_load_map_[typeid(T)] = path_list;
         std::vector<nlohmann::json> configs;
         for (const auto &path : path_list) {
-            if (const auto iter = mJSONMap.find(path); iter != mJSONMap.end()) {
+            if (const auto iter = json_map_.find(path); iter != json_map_.end()) {
                 configs.push_back(iter->second);
             }
         }
-        mLogicConfigMap.insert_or_assign(typeid(T), new T(configs));
+        logic_config_map_.insert_or_assign(typeid(T), new T(configs));
     }
 
     template<LogicConfigType T>
     T *FindLogicConfig() {
-        if (const auto iter = mLogicConfigMap.find(typeid(T)); iter != mLogicConfigMap.end()) {
+        if (const auto iter = logic_config_map_.find(typeid(T)); iter != logic_config_map_.end()) {
             return dynamic_cast<T *>(iter->second);
         }
         return nullptr;
