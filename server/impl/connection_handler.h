@@ -5,7 +5,7 @@
 
 class ConnectionHandler final : public IConnectionHandler {
 public:
-    explicit ConnectionHandler(Connection *conn);
+    explicit ConnectionHandler(const std::weak_ptr<Connection> &conn);
 
     void OnConnected() override;
     void OnClosed() override;

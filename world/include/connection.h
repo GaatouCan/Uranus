@@ -71,7 +71,7 @@ public:
         if (codec_ != nullptr)
             codec_.reset();
 
-        codec_ = std::make_unique<T>(this);
+        codec_ = std::make_unique<T>(weak_from_this());
         return *this;
     }
 
@@ -81,7 +81,7 @@ public:
         if (handler_ != nullptr)
             handler_.reset();
 
-        handler_ = std::make_unique<T>(this);
+        handler_ = std::make_unique<T>(shared_from_this());
         return *this;
     }
 

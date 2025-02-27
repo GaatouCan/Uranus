@@ -16,7 +16,7 @@ class BASE_API IConnectionHandler {
 public:
     IConnectionHandler() = delete;
 
-    explicit IConnectionHandler(Connection *conn);
+    explicit IConnectionHandler(const std::weak_ptr<Connection> &conn);
     virtual ~IConnectionHandler() = default;
 
     virtual void OnConnected() {}
@@ -29,5 +29,5 @@ public:
     [[nodiscard]] class GameWorld *GetWorld() const;
 
 protected:
-    Connection *conn_;
+    std::weak_ptr<class Connection> conn_;
 };
