@@ -8,10 +8,10 @@
 
 class BASE_API ManagerSystem final : public ISubSystem {
 
-    std::unordered_map<std::type_index, IBaseManager *> mManagerMap;
+    std::unordered_map<std::type_index, IBaseManager *> manager_map_;
 
-    SystemTimer mTickTimer;
-    bool bRunning;
+    SystemTimer tick_timer_;
+    bool running_;
 
 public:
     explicit ManagerSystem(GameWorld *world);
@@ -24,13 +24,13 @@ public:
     template<ManagerType T>
     T* CreateManager() {
         auto mgr = new T(this);
-        mManagerMap[typeid(T)] = mgr;
+        manager_map_[typeid(T)] = mgr;
         return mgr;
     }
 
     template<ManagerType T>
     T *GetManager() {
-        if (const auto it = mManagerMap.find(typeid(T)); it != mManagerMap.end()) {
+        if (const auto it = manager_map_.find(typeid(T)); it != manager_map_.end()) {
             return dynamic_cast<T *>(it->second);
         }
         return nullptr;

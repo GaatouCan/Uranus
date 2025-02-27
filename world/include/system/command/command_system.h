@@ -12,8 +12,8 @@ class BASE_API CommandSystem final : public ISubSystem {
     using ClientCreator = std::function<std::shared_ptr<IClientCommand>(const CommandObject &)>;
     using OperateCreator = std::function<std::shared_ptr<IOperateCommand>(const CommandObject &)>;
 
-    std::unordered_map<std::string, ClientCreator> mClientMap;
-    std::unordered_map<std::string, OperateCreator> mOperateMap;
+    std::unordered_map<std::string, ClientCreator> client_map_;
+    std::unordered_map<std::string, OperateCreator> operate_map_;
 
 public:
     explicit CommandSystem(GameWorld *world);
@@ -26,10 +26,10 @@ public:
     template<class T>
     requires std::derived_from<T, IClientCommand>
     void RegisterClientCommand(const std::string &type) {
-        if (mClientMap.contains(type))
+        if (client_map_.contains(type))
             return;
 
-        mClientMap[type] = [this](const CommandObject &obj) -> std::shared_ptr<IClientCommand> {
+        client_map_[type] = [this](const CommandObject &obj) -> std::shared_ptr<IClientCommand> {
             return std::make_shared<T>(this, obj);
         };
     }
@@ -37,10 +37,10 @@ public:
     template<class T>
     requires std::derived_from<T, IOperateCommand>
     void RegisterOperateCommand(const std::string &type) {
-        if (mOperateMap.contains(type))
+        if (operate_map_.contains(type))
             return;
 
-        mOperateMap[type] = [this](const CommandObject &obj) -> std::shared_ptr<IOperateCommand> {
+        operate_map_[type] = [this](const CommandObject &obj) -> std::shared_ptr<IOperateCommand> {
             return std::make_shared<T>(this, obj);
         };
     }

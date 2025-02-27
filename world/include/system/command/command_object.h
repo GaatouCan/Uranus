@@ -9,11 +9,11 @@
 
 #include "../../common.h"
 
-class CommandObject final {
-    std::string mType;
-    std::string mInput;
-    std::vector<std::string> mParam;
-    size_t mIndex;
+class BASE_API CommandObject final {
+    std::string type_;
+    std::string input_;
+    std::vector<std::string> param_;
+    size_t idx_;
 
 public:
     CommandObject() = delete;

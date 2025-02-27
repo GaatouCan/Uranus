@@ -9,8 +9,8 @@
 
 class BASE_API TimerSystem final : public ISubSystem {
 
-    std::map<UniqueID, RepeatedTimer *> mTimerMap;
-    mutable std::shared_mutex mMutex;
+    std::map<UniqueID, RepeatedTimer *> timer_map_;
+    mutable std::shared_mutex mtx_;
 
 public:
     explicit TimerSystem(GameWorld *world);

@@ -6,14 +6,14 @@
 #include "../../../include/system/command/command_system.h"
 
 IBaseCommand::IBaseCommand(CommandSystem *owner, CommandObject object)
-    : mOwner(owner),
-      mObject(std::move(object)) {
+    : owner_(owner),
+      object_(std::move(object)) {
 }
 
 CommandSystem * IBaseCommand::GetOwner() const {
-    return mOwner;
+    return owner_;
 }
 
 GameWorld * IBaseCommand::GetWorld() const {
-    return mOwner->GetWorld();
+    return owner_->GetWorld();
 }

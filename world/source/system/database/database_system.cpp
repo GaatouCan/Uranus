@@ -9,12 +9,12 @@ DatabaseSystem::DatabaseSystem(GameWorld *world)
 }
 
 DatabaseSystem::~DatabaseSystem() {
-    for (const auto &[th, sess, queue, tid] : mSessionList) {
+    for (const auto &[th, sess, queue, tid] : sess_list_) {
         if (queue)
             queue->Quit();
     }
 
-    for (const auto &[th, sess, queue, tid] : mSessionList) {
+    for (const auto &[th, sess, queue, tid] : sess_list_) {
         if (th && th->joinable())
             th->join();
     }
@@ -24,7 +24,7 @@ void DatabaseSystem::Init() {
     const auto &cfg = GetWorld()->GetServerConfig();
 
     const auto schemaName = cfg["database"]["mysql"]["schema"].as<std::string>();
-    mSessionList = std::vector<SessionNode>(cfg["database"]["pool"].as<uint64_t>());
+    sess_list_ = std::vector<SessionNode>(cfg["database"]["pool"].as<uint64_t>());
 
     auto host = cfg["database"]["mysql"]["host"].as<std::string>();
     auto port = cfg["database"]["mysql"]["port"].as<uint16_t>();
@@ -33,7 +33,7 @@ void DatabaseSystem::Init() {
 
     spdlog::info("{} - Connect To Database (MySQL){}:{}", __FUNCTION__, host, port);
 
-    for (auto &node: mSessionList) {
+    for (auto &node: sess_list_) {
         node.session = std::make_unique<mysqlx::Session>(host, port, user, passwd);
         node.queue = std::make_unique<ThreadSafeDeque<IDatabaseTask *>>();
 
@@ -64,12 +64,12 @@ void DatabaseSystem::Init() {
 }
 
 void DatabaseSystem::SyncSelect(const std::string &tableName, const std::string &where, const std::function<void(mysqlx::Row)> &cb) const {
-    if (mSessionList.empty()) {
+    if (sess_list_.empty()) {
         spdlog::error("{} - No Database Session Available.", __FUNCTION__);
         return;
     }
 
-    const auto &[th, sess, queue, tid] = mSessionList.front();
+    const auto &[th, sess, queue, tid] = sess_list_.front();
     const auto &cfg = GetWorld()->GetServerConfig();
 
     auto schema = sess->getSchema(cfg["database"]["mysql"]["schema"].as<std::string>());
@@ -96,7 +96,7 @@ void DatabaseSystem::SyncSelect(const std::string &tableName, const std::string 
 }
 
 void DatabaseSystem::PushTransaction(const TransactionFunctor &func) {
-    const auto &[th, sess, queue, tid] = mSessionList[mNextNodeIndex++];
-    mNextNodeIndex = mNextNodeIndex % mSessionList.size();
+    const auto &[th, sess, queue, tid] = sess_list_[next_node_idx_++];
+    next_node_idx_ = next_node_idx_ % sess_list_.size();
     queue->PushBack(new TransactionTask(func));
 }

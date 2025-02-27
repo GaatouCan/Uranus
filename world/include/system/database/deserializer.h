@@ -4,7 +4,7 @@
 
 class BASE_API Deserializer final {
 
-    std::unordered_map<std::string, TableResult *> mResultMap;
+    std::unordered_map<std::string, TableResult *> result_map_;
 
 public:
     Deserializer() = default;

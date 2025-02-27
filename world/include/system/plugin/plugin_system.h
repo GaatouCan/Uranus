@@ -14,13 +14,13 @@ class BASE_API PluginSystem final : public ISubSystem {
     typedef void (*PluginDestroyer)(IBasePlugin *);
 
     struct PluginNode {
-        ModuleHandle module;
+        ModuleHandle    module;
         PluginDestroyer destroyer;
-        IBasePlugin *plugin;
+        IBasePlugin *   plugin;
     };
 
-    std::unordered_map<std::string, PluginNode> mPluginMap;
-    mutable std::shared_mutex mMutex;
+    std::unordered_map<std::string, PluginNode> plugin_map_;
+    mutable std::shared_mutex mtx_;
 
 public:
     explicit PluginSystem(GameWorld *world);

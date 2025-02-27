@@ -3,18 +3,18 @@
 
 
 IBaseManager::IBaseManager(ManagerSystem *owner)
-    : mOwner(owner), bTick(false) {
+    : owner_(owner), bTick(false) {
 }
 
 IBaseManager::~IBaseManager() {
 }
 
 ManagerSystem * IBaseManager::GetOwner() const {
-    return mOwner;
+    return owner_;
 }
 
 GameWorld * IBaseManager::GetWorld() const {
-    return mOwner->GetWorld();
+    return owner_->GetWorld();
 }
 
 void IBaseManager::OnTick(TimePoint now) {

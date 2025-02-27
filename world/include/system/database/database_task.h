@@ -20,18 +20,18 @@ public:
 
 class BASE_API TransactionTask final : public IDatabaseTask {
 
-    TransactionFunctor mFunctor;
+    TransactionFunctor functor_;
 
 public:
     TransactionTask() = delete;
 
     explicit TransactionTask(TransactionFunctor functor)
-        : mFunctor(std::move(functor)) {
+        : functor_(std::move(functor)) {
     }
 
     void Execute(mysqlx::Schema &schema) override {
         schema.getSession().startTransaction();
-        mFunctor(schema);
+        functor_(schema);
         schema.getSession().commit();
     }
 };
@@ -40,23 +40,23 @@ public:
 template<class Callable>
 class BASE_API QueryTask final : public IDatabaseTask {
 
-    QueryArray mArray;
-    Callable mCallback;
+    QueryArray array_;
+    Callable cb_;
 
 public:
     QueryTask() = delete;
 
     QueryTask(QueryArray query, Callable &&cb)
-        : mArray(std::move(query)),
-          mCallback(std::forward<Callable>(cb)) {
+        : array_(std::move(query)),
+          cb_(std::forward<Callable>(cb)) {
     }
 
     void Execute(mysqlx::Schema &schema) override {
         auto ret = std::make_shared<QueryResult>();
-        for (const auto &[name, expr]: mArray) {
+        for (const auto &[name, expr]: array_) {
             auto table = schema.getTable(name, true);
             ret->insert_or_assign(name, expr.empty() ? table.select().execute() : table.select().where(expr).execute());
         }
-        mCallback(ret);
+        cb_(ret);
     }
 };

@@ -5,13 +5,13 @@ Serializer::Serializer() {
 }
 
 Serializer::~Serializer() {
-    for (const auto& [val, expired] : mVector) {
+    for (const auto& [val, expired] : table_vec_) {
         delete val;
     }
 }
 
 void Serializer::Serialize(mysqlx::Schema &schema) {
-    for (const auto &[val, expired] : mVector) {
+    for (const auto &[val, expired] : table_vec_) {
         if (val == nullptr)
             continue;
 

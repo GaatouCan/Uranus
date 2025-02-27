@@ -8,13 +8,13 @@
 
 IClientCommand::IClientCommand(CommandSystem *owner, CommandObject object)
     : IBaseCommand(owner, std::move(object)),
-      mSender(-1) {
+      sender_(-1) {
 }
 
 void IClientCommand::SetSender(const int32_t sender) {
-    mSender = sender;
+    sender_ = sender;
 }
 
 int32_t IClientCommand::GetSender() const {
-    return mSender;
+    return sender_;
 }

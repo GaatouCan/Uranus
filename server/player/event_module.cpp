@@ -81,7 +81,7 @@ void EventModule::Dispatch(Event event, IEventParam *param, DispatchType type) {
     }
 
     if (empty)
-        co_spawn(mOwner->GetConnection()->GetSocket().get_executor(), HandleEvent(), detached);
+        co_spawn(mOwner->GetIOContext(), HandleEvent(), detached);
 }
 
 awaitable<void> EventModule::HandleEvent() {

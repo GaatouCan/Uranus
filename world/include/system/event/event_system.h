@@ -25,14 +25,14 @@ class BASE_API EventSystem final : public ISubSystem {
         IEventParam *param = nullptr;
     };
 
-    std::queue<EventNode> mEventQueue;
-    mutable std::shared_mutex mEventMutex;
+    std::queue<EventNode> event_queue_;
+    mutable std::shared_mutex event_mtx_;
 
     using ListenerMap = std::map<void *, EventListener>;
 
-    std::map<uint32_t, ListenerMap> mListenerMap;
-    ListenerMap mCurListener;
-    std::mutex mListenerMutex;
+    std::map<uint32_t, ListenerMap> listener_map_;
+    ListenerMap cur_listener_;
+    std::mutex listener_mtx_;
 
 public:
     explicit EventSystem(GameWorld *world);

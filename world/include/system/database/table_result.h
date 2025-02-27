@@ -4,10 +4,10 @@
 
 class BASE_API TableResult final {
 
-    mysqlx::RowResult mResult;
-    mysqlx::Row mCurrentRow;
+    mysqlx::RowResult result_;
+    mysqlx::Row cur_row_;
 
-    const size_t mTotal;
+    const size_t total_;
 
 public:
     explicit TableResult(mysqlx::RowResult &&res);

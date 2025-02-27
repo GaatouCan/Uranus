@@ -6,7 +6,7 @@
 
 class BASE_API IBaseManager : public IReactor {
 
-    class ManagerSystem *mOwner;
+    class ManagerSystem *owner_;
 
 public:
     IBaseManager() = delete;

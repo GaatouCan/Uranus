@@ -7,10 +7,10 @@
 
 class BASE_API IBaseCommand {
 
-    class CommandSystem *mOwner;
+    class CommandSystem *owner_;
 
 protected:
-    CommandObject mObject;
+    CommandObject object_;
 
 public:
     IBaseCommand() = delete;

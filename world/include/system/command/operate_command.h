@@ -4,11 +4,11 @@
 
 class BASE_API IOperateCommand : public IBaseCommand {
 
-    int64_t mOperateID;
-    int64_t mCreateTime;
-    int64_t mUpdateTime;
+    int64_t op_id_;
+    int64_t create_time_;
+    int64_t update_time_;
 
-    std::string mCreator;
+    std::string creator_;
 
 public:
     IOperateCommand(CommandSystem *owner, CommandObject object);

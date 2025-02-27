@@ -6,10 +6,10 @@ class BASE_API Serializer final {
 
     struct TableNode {
         ITableArray *array = nullptr;
-        std::string expr; // 清理过期数据的where语句
+        std::string expired_expr; // 清理过期数据的where语句
     };
 
-    std::vector<TableNode> mVector;
+    std::vector<TableNode> table_vec_;
 
 public:
     Serializer();
@@ -20,7 +20,7 @@ public:
     template<DBTableType T>
     TableArray<T> *CreateTableVector(const std::string &name, const std::string &expired = {}) {
         auto res = new TableArray<T>(name);
-        mVector.emplace_back(res, expired);
+        table_vec_.emplace_back(res, expired);
         return res;
     }
 

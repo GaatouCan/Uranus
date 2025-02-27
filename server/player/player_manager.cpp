@@ -4,6 +4,7 @@
 #include "../common/proto_type.h"
 
 #include "game_world.h"
+#include "connection.h"
 #include "impl/package.h"
 #include "config_manager.h"
 #include "system/manager/manager_system.h"

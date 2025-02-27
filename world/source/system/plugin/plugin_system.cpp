@@ -12,7 +12,7 @@ PluginSystem::PluginSystem(GameWorld *world)
 }
 
 PluginSystem::~PluginSystem() {
-    for (const auto &[module, destroyer, plugin] : mPluginMap | std::views::values) {
+    for (const auto &[module, destroyer, plugin] : plugin_map_ | std::views::values) {
         if (destroyer) {
             destroyer(plugin);
 #if defined(_WIN32) || defined(_WIN64)
@@ -44,8 +44,8 @@ void PluginSystem::Init() {
 }
 
 PluginSystem::PluginNode PluginSystem::FindPlugin(const std::string &name) {
-    std::shared_lock lock(mMutex);
-    if (const auto it = mPluginMap.find(name); it != mPluginMap.end()) {
+    std::shared_lock lock(mtx_);
+    if (const auto it = plugin_map_.find(name); it != plugin_map_.end()) {
         return it->second;
     }
     return {nullptr, nullptr, nullptr};
@@ -77,8 +77,8 @@ bool PluginSystem::LoadPlugin(const std::string_view path) {
     }
 
     {
-        std::shared_lock lock(mMutex);
-        if (mPluginMap.contains(plugin->GetPluginName())) {
+        std::shared_lock lock(mtx_);
+        if (plugin_map_.contains(plugin->GetPluginName())) {
             spdlog::warn("{} - Plugin {} already exists", __FUNCTION__, plugin->GetPluginName());
             destroyer(plugin);
             FreeLibrary(hModule);
@@ -124,8 +124,8 @@ bool PluginSystem::LoadPlugin(const std::string_view path) {
 
     PluginNode node{ hModule, destroyer, plugin };
 
-    std::unique_lock lock(mMutex);
-    mPluginMap.insert_or_assign(plugin->GetPluginName(), node);
+    std::unique_lock lock(mtx_);
+    plugin_map_.insert_or_assign(plugin->GetPluginName(), node);
     spdlog::info("{} - Load {} Success.", __FUNCTION__, plugin->GetPluginName());
 
     return true;
@@ -139,8 +139,8 @@ bool PluginSystem::UnloadPlugin(const std::string &name) {
     }
 
     {
-        std::unique_lock lock(mMutex);
-        mPluginMap.erase(name);
+        std::unique_lock lock(mtx_);
+        plugin_map_.erase(name);
     }
 
     destroyer(plugin);

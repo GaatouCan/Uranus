@@ -2,29 +2,29 @@
 
 
 TableResult::TableResult(mysqlx::RowResult &&res)
-    : mResult(std::move(res)),
-      mTotal(mResult.count()) {
+    : result_(std::move(res)),
+      total_(result_.count()) {
 }
 
 size_t TableResult::TotalRowsCount() const {
-    return mTotal;
+    return total_;
 }
 
 size_t TableResult::Count() {
-    return mResult.count();
+    return result_.count();
 }
 
 bool TableResult::HasMore() {
-    mCurrentRow = mResult.fetchOne();
-    return !mCurrentRow.isNull();
+    cur_row_ = result_.fetchOne();
+    return !cur_row_.isNull();
 }
 
 void TableResult::Deserialize(IDBTable* table) {
-    if (mCurrentRow.isNull())
-        mCurrentRow = mResult.fetchOne();
+    if (cur_row_.isNull())
+        cur_row_ = result_.fetchOne();
 
-    if (mCurrentRow.isNull())
+    if (cur_row_.isNull())
         return;
 
-    table->Read(mCurrentRow);
+    table->Read(cur_row_);
 }

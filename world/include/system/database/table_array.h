@@ -6,19 +6,19 @@
 
 class BASE_API ITableArray {
 
-    std::string mTableName;
+    std::string table_name_;
 
 public:
     explicit ITableArray(std::string name)
-        : mTableName(std::move(name)) {
+        : table_name_(std::move(name)) {
     }
 
     virtual ~ITableArray() = default;
 
     DISABLE_COPY_MOVE(ITableArray)
 
-    void SetTableName(const std::string &name) { mTableName = name; }
-    [[nodiscard]] std::string GetTableName() const { return mTableName; }
+    void SetTableName(const std::string &name) { table_name_ = name; }
+    [[nodiscard]] std::string GetTableName() const { return table_name_; }
 
 protected:
     friend class Serializer;

@@ -3,7 +3,7 @@
 #include <ranges>
 
 Deserializer::~Deserializer() {
-    for (const auto& val : mResultMap | std::views::values) {
+    for (const auto& val : result_map_ | std::views::values) {
         delete val;
     }
 }
@@ -14,12 +14,12 @@ Deserializer::Deserializer(const std::shared_ptr<std::unordered_map<std::string,
 }
 
 void Deserializer::PushBack(const std::string& name, mysqlx::RowResult&& res) {
-    mResultMap[name] = new TableResult(std::move(res));
+    result_map_[name] = new TableResult(std::move(res));
 }
 
 TableResult* Deserializer::FetchResult(const std::string& name) const {
-    const auto it = mResultMap.find(name);
-    if (it == mResultMap.end())
+    const auto it = result_map_.find(name);
+    if (it == result_map_.end())
         return nullptr;
 
     return it->second;

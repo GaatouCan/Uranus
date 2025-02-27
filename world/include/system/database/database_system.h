@@ -19,8 +19,8 @@ class BASE_API DatabaseSystem final : public ISubSystem {
         ThreadID threadID;
     };
 
-    std::vector<SessionNode> mSessionList;
-    std::atomic_size_t mNextNodeIndex = 0;
+    std::vector<SessionNode> sess_list_;
+    std::atomic_size_t next_node_idx_ = 0;
 
 public:
     explicit DatabaseSystem(GameWorld *world);
@@ -36,8 +36,8 @@ public:
 
     template<class Callback>
     void PushSelectTask(const QueryArray &vec, Callback &&cb) {
-        const auto &[th, sess, queue, tid] = mSessionList[mNextNodeIndex++];
-        mNextNodeIndex = mNextNodeIndex % mSessionList.size();
+        const auto &[th, sess, queue, tid] = sess_list_[next_node_idx_++];
+        next_node_idx_ = next_node_idx_ % sess_list_.size();
         queue->PushBack(new QueryTask<Callback>(vec, std::forward<Callback>(cb)));
     }
 

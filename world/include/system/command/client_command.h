@@ -4,7 +4,7 @@
 
 class BASE_API IClientCommand : public IBaseCommand {
 
-    int32_t mSender;
+    int32_t sender_;
 
 public:
     IClientCommand(CommandSystem *owner, CommandObject object);
