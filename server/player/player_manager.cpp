@@ -39,7 +39,7 @@ void PlayerManager::Init() {
                 table.cache >> node;
         });
     }
-    bTick = true;
+    tick_per_sec_ = true;
 }
 
 void PlayerManager::OnDayChange() {

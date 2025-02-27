@@ -3,7 +3,7 @@
 
 
 IBaseManager::IBaseManager(ManagerSystem *owner)
-    : owner_(owner), bTick(false) {
+    : owner_(owner), tick_per_sec_(false) {
 }
 
 IBaseManager::~IBaseManager() {

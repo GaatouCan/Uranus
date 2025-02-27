@@ -26,7 +26,7 @@ public:
     virtual void OnDayChange();
 
 public:
-    bool bTick;
+    bool tick_per_sec_;
 };
 
 template<typename T>

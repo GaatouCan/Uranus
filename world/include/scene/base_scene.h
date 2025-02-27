@@ -50,4 +50,7 @@ public:
     }
 
     std::set<std::shared_ptr<IBasePlayer>> GetPlayerInScene() const;
+
+public:
+    TimePoint destroy_time_point_;
 };
