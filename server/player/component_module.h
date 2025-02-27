@@ -129,7 +129,7 @@ if (auto *res = (ds)->FetchResult(utils::PascalToUnderline(#tb)); res != nullptr
 if (auto *res = (ds)->FetchResult(utils::PascalToUnderline(#tb)); res != nullptr) { \
     (pa).resize((ds).TotalRowsCount());\
     while (res->HasMore()) { \
-        decltype(pa)::mapped_type val; \
+        decltype(pa)::value_type val; \
         res->Deserialize(&val); \
         (pa)[val.index] = std::move(val); \
     } \
