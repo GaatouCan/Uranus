@@ -7,8 +7,6 @@
 
 #include "state.orm.h"
 
-class ITableArray;
-class TableResult;
 
 class StateCT final : public IPlayerComponent {
 

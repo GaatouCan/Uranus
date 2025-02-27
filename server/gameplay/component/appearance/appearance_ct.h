@@ -9,9 +9,6 @@
 #include "appearance.orm.h"
 
 
-class ITableArray;
-class TableResult;
-
 class AppearanceCT final : public IPlayerComponent {
 
     orm::DBTable_Appearance mAppear;
