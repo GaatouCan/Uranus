@@ -31,8 +31,8 @@ class BASE_API Package final : public IPackage {
         size_t length;
     };
 
-    Header mHeader;
-    ByteArray mData;
+    Header header_;
+    ByteArray data_;
 
 public:
     Package();

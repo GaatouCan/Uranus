@@ -19,18 +19,18 @@ using ReactorTask = std::function<void(IReactor*)>;
 
 class TaskQueue final : public std::enable_shared_from_this<TaskQueue> {
 
-    GlobalQueue *mGlobal;
-    IReactor *mReactor;
+    GlobalQueue *global_;
+    IReactor *reactor_;
 
-    std::queue<ReactorTask> mCurQueue;
-    std::queue<ReactorTask> mWaitQueue;
+    std::queue<ReactorTask> cur_queue_;
+    std::queue<ReactorTask> wait_queue_;
 
     // std::mutex mMutex;
-    mutable std::shared_mutex mMutex;
+    mutable std::shared_mutex mtx_;
 
-    std::atomic_bool bRunning;
-    std::atomic_bool bInGlobal;
-    std::atomic_bool bRemoved;
+    std::atomic_bool running_;
+    std::atomic_bool in_global_;
+    std::atomic_bool removed_;
 
 public:
     TaskQueue() = delete;

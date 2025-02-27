@@ -11,53 +11,53 @@ std::string Package::kPackageMethod = "PROTOBUF";
 
 
 Package::Package()
-    : mHeader() {
-    memset(&mHeader, 0, sizeof(mHeader));
+    : header_() {
+    memset(&header_, 0, sizeof(header_));
 }
 
 Package::~Package() = default;
 
 Package::Package(const Package &rhs) : Package() {
     if (this != &rhs) {
-        memcpy(&mHeader, &rhs.mHeader, sizeof(mHeader));
+        memcpy(&header_, &rhs.header_, sizeof(header_));
 
-        mData = rhs.mData;
-        mHeader.length = mData.Size();
+        data_ = rhs.data_;
+        header_.length = data_.Size();
     }
 }
 
 Package::Package(Package &&rhs) noexcept : Package() {
     if (this != &rhs) {
-        memcpy(&mHeader, &rhs.mHeader, sizeof(mHeader));
+        memcpy(&header_, &rhs.header_, sizeof(header_));
 
-        mData = std::move(rhs.mData);
-        mHeader.length = mData.Size();
+        data_ = std::move(rhs.data_);
+        header_.length = data_.Size();
     }
 }
 
 Package &Package::operator=(const Package &rhs) {
     if (this != &rhs) {
-        memcpy(&mHeader, &rhs.mHeader, sizeof(mHeader));
+        memcpy(&header_, &rhs.header_, sizeof(header_));
 
-        mData = rhs.mData;
-        mHeader.length = mData.Size();
+        data_ = rhs.data_;
+        header_.length = data_.Size();
     }
     return *this;
 }
 
 Package &Package::operator=(Package &&rhs) noexcept {
     if (this != &rhs) {
-        memcpy(&mHeader, &rhs.mHeader, sizeof(mHeader));
+        memcpy(&header_, &rhs.header_, sizeof(header_));
 
-        mData = std::move(rhs.mData);
-        mHeader.length = mData.Size();
+        data_ = std::move(rhs.data_);
+        header_.length = data_.Size();
     }
     return *this;
 }
 
 Package::Package(const uint32_t id, const std::string_view str)
     : Package() {
-    mHeader.id = id;
+    header_.id = id;
     SetData(str);
 }
 
@@ -66,27 +66,27 @@ Package::Package(const uint32_t id, const std::stringstream &ss)
 }
 
 void Package::Reset() {
-    memset(&mHeader, 0, sizeof(mHeader));
-    mData.Reset();
+    memset(&header_, 0, sizeof(header_));
+    data_.Reset();
 }
 
 void Package::Invalid() {
-    mHeader.id = MINIMUM_PACKAGE_ID - 1;
+    header_.id = MINIMUM_PACKAGE_ID - 1;
 }
 
 bool Package::IsAvailable() const {
-    return mHeader.id >= MINIMUM_PACKAGE_ID && mHeader.id <= MAXIMUM_PACKAGE_ID;
+    return header_.id >= MINIMUM_PACKAGE_ID && header_.id <= MAXIMUM_PACKAGE_ID;
 }
 
 Package &Package::SetPackageID(const uint32_t id) {
-    mHeader.id = id;
+    header_.id = id;
     return *this;
 }
 
 Package &Package::SetData(const std::string_view str) {
-    mData.Resize(str.size());
-    memcpy(mData.Data(), str.data(), str.size());
-    mHeader.length = str.size();
+    data_.Resize(str.size());
+    memcpy(data_.Data(), str.data(), str.size());
+    header_.length = str.size();
     return *this;
 }
 
@@ -95,34 +95,34 @@ Package &Package::SetData(const std::stringstream &ss) {
 }
 
 Package &Package::SetMagic(const uint32_t magic) {
-    mHeader.magic = magic;
+    header_.magic = magic;
     return *this;
 }
 
 Package &Package::SetVersion(const uint32_t version) {
-    mHeader.version = version;
+    header_.version = version;
     return *this;
 }
 
 uint32_t Package::GetMagic() const {
-    return mHeader.magic;
+    return header_.magic;
 }
 
 uint32_t Package::GetVersion() const {
-    return mHeader.version;
+    return header_.version;
 }
 
 Package &Package::SetMethod(const CodecMethod method) {
-    mHeader.method = method;
+    header_.method = method;
     return *this;
 }
 
 CodecMethod Package::GetMethod() const {
-    return mHeader.method;
+    return header_.method;
 }
 
 uint32_t Package::GetPackageID() const {
-    return mHeader.id;
+    return header_.id;
 }
 
 void Package::CopyFrom(IPackage *other) {
@@ -132,15 +132,15 @@ void Package::CopyFrom(IPackage *other) {
 }
 
 size_t Package::GetDataLength() const {
-    return mData.Size();
+    return data_.Size();
 }
 
 std::string Package::ToString() const {
-    return {mData.Begin(), mData.End()};
+    return {data_.Begin(), data_.End()};
 }
 
 const ByteArray &Package::GetByteArray() const {
-    return mData;
+    return data_;
 }
 
 void Package::SetPackageMagic(const uint32_t magic) {
@@ -189,5 +189,5 @@ void Package::InitPackage(IPackage *pkg) {
 }
 
 ByteArray &Package::RawByteArray() {
-    return mData;
+    return data_;
 }

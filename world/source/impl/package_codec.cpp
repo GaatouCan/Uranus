@@ -18,14 +18,14 @@ PackageCodec::PackageCodec(Connection *conn)
 awaitable<void> PackageCodec::EncodeT(Package *pkg) {
     Package::Header header{};
 
-    header.magic = htonl(pkg->mHeader.magic);
-    header.version = htonl(pkg->mHeader.version);
-    header.method = static_cast<CodecMethod>(htons(static_cast<uint16_t>(pkg->mHeader.method)));
+    header.magic = htonl(pkg->header_.magic);
+    header.version = htonl(pkg->header_.version);
+    header.method = static_cast<CodecMethod>(htons(static_cast<uint16_t>(pkg->header_.method)));
 
-    header.id = htonl(pkg->mHeader.id);
+    header.id = htonl(pkg->header_.id);
 
 #if defined(_WIN32) || defined(_WIN64)
-    header.length = htonll(pkg->mHeader.length);
+    header.length = htonll(pkg->header_.length);
 #else
     header.length = htobe64(pkg->mHeader.length);
 #endif
@@ -36,34 +36,34 @@ awaitable<void> PackageCodec::EncodeT(Package *pkg) {
         co_return;
     }
 
-    if (pkg->mHeader.length == 0)
+    if (pkg->header_.length == 0)
         co_return;
 
     co_await async_write(conn_->GetSocket(), asio::buffer(pkg->RawByteArray().GetRawRef()));
 }
 
 awaitable<void> PackageCodec::DecodeT(Package *pkg) {
-    if (const auto len = co_await async_read(conn_->GetSocket(), asio::buffer(&pkg->mHeader, Package::PACKAGE_HEADER_SIZE)); len == 0) {
+    if (const auto len = co_await async_read(conn_->GetSocket(), asio::buffer(&pkg->header_, Package::PACKAGE_HEADER_SIZE)); len == 0) {
         spdlog::warn("{} - Read package header length equal zero", __FUNCTION__);
         pkg->Invalid();
         co_return;
     }
 
-    pkg->mHeader.magic = ntohl(pkg->mHeader.magic);
-    pkg->mHeader.version = ntohl(pkg->mHeader.version);
-    pkg->mHeader.method = static_cast<CodecMethod>(ntohs(static_cast<uint16_t>(pkg->mHeader.method)));
+    pkg->header_.magic = ntohl(pkg->header_.magic);
+    pkg->header_.version = ntohl(pkg->header_.version);
+    pkg->header_.method = static_cast<CodecMethod>(ntohs(static_cast<uint16_t>(pkg->header_.method)));
 
-    pkg->mHeader.id = ntohl(pkg->mHeader.id);
+    pkg->header_.id = ntohl(pkg->header_.id);
 
 #if defined(_WIN32) || defined(_WIN64)
-    pkg->mHeader.length = ntohll(pkg->mHeader.length);
+    pkg->header_.length = ntohll(pkg->header_.length);
 #else
     pkg->mHeader.length = be64toh(pkg->mHeader.length);
 #endif
 
-    if (pkg->mHeader.length == 0)
+    if (pkg->header_.length == 0)
         co_return;
 
-    pkg->mData.Resize(pkg->mHeader.length);
+    pkg->data_.Resize(pkg->header_.length);
     co_await async_read(conn_->GetSocket(), asio::buffer(pkg->RawByteArray().GetRawRef()));
 }

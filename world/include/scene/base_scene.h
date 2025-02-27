@@ -12,11 +12,11 @@ class IBasePlayer;
 
 class BASE_API IBaseScene {
 
-    class SceneManager* mOwner;
-    const int32_t mSceneID;
+    class SceneManager* owner_;
+    const int32_t scene_id_;
 
-    std::map<int32_t, std::shared_ptr<IBasePlayer>> mPlayerMap;
-    mutable std::shared_mutex mMutex;
+    std::map<int32_t, std::shared_ptr<IBasePlayer>> player_map_;
+    mutable std::shared_mutex mtx_;
 
 public:
     IBaseScene() = delete;

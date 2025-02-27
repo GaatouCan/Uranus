@@ -3,24 +3,24 @@
 
 
 IReactor::~IReactor() {
-    if (mQueue != nullptr)
-        mQueue->OnReactorRelease();
+    if (queue_ != nullptr)
+        queue_->OnReactorRelease();
 }
 
 void IReactor::SetTaskQueue(const std::shared_ptr<TaskQueue> &queue) {
-    mQueue = queue;
+    queue_ = queue;
 }
 
 std::shared_ptr<TaskQueue> IReactor::GetTaskQueue() const {
-    return mQueue;
+    return queue_;
 }
 
 void IReactor::PushTask(const std::function<void(IReactor *)> &task) const {
-    if (mQueue != nullptr)
-        mQueue->PushTask(task);
+    if (queue_ != nullptr)
+        queue_->PushTask(task);
 }
 
 void IReactor::PushTask(std::function<void(IReactor *)> &&task) const {
-    if (mQueue != nullptr)
-        mQueue->PushTask(std::move(task));
+    if (queue_ != nullptr)
+        queue_->PushTask(std::move(task));
 }

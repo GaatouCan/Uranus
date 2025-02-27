@@ -9,7 +9,7 @@
 
 class BASE_API IReactor {
 
-    std::shared_ptr<class TaskQueue> mQueue;
+    std::shared_ptr<class TaskQueue> queue_;
 
 public:
     IReactor() = default;
