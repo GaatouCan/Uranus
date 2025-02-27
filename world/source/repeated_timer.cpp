@@ -7,7 +7,7 @@ RepeatedTimer::RepeatedTimer(asio::io_context &ctx)
     : ctx_(ctx),
       timer_(ctx),
       id_(),
-      d(0),
+      delay_(0),
       repeat_rate_(0),
       repeat_(false),
       running_(false) {
@@ -27,7 +27,7 @@ UniqueID RepeatedTimer::GetTimerID() const {
 }
 
 RepeatedTimer & RepeatedTimer::SetDelay(std::chrono::duration<uint32_t> delay) {
-    d = delay;
+    delay_ = delay;
     return *this;
 }
 
@@ -76,7 +76,7 @@ RepeatedTimer &RepeatedTimer::Start() {
     co_spawn(ctx_, [this]() mutable -> awaitable<void> {
         try {
             running_ = true;
-            auto point = NowTimePoint() + d;
+            auto point = NowTimePoint() + delay_;
 
             do {
                 timer_.expires_at(point);

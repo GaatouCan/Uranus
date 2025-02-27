@@ -5,10 +5,10 @@
 
 class BASE_API MainScene final : public IBaseScene {
 
-    class PackagePool* mPool;
+    class PackagePool* pool_;
 
-    asio::io_context mContext;
-    ThreadID mThreadID;
+    asio::io_context ctx_;
+    ThreadID thread_;
 
 public:
     MainScene(SceneManager *owner, int32_t id);

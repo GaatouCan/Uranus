@@ -7,21 +7,21 @@
 
 
 SceneManager::SceneManager(GameWorld* world)
-    : mWorld(world),
-      mNextMainIndex(0)
+    : world_(world),
+      next_main_idx_(0)
 {
 }
 
 SceneManager::~SceneManager()
 {
-    for (const auto it : mSceneMap | std::views::values)
+    for (const auto it : scene_map_ | std::views::values)
         delete it;
 
-    mWorkList.clear();
-    for (const auto it : mMainSceneList)
+    work_list_.clear();
+    for (const auto it : main_scene_list_)
         delete it;
 
-    for (auto& th : mThreadList)
+    for (auto& th : thread_list_)
     {
         if (th.joinable())
             th.join();
@@ -30,18 +30,18 @@ SceneManager::~SceneManager()
 
 void SceneManager::Init()
 {
-    const auto &cfg = mWorld->GetServerConfig();
+    const auto &cfg = world_->GetServerConfig();
     const auto num = cfg["server"]["io_thread"].as<int32_t>();
 
     for (int32_t idx = 0; idx < num; ++idx)
-        mMainSceneList.emplace_back(new MainScene(this, idx));
+        main_scene_list_.emplace_back(new MainScene(this, idx));
 
-    for (const auto val : mMainSceneList)
+    for (const auto val : main_scene_list_)
     {
         if (const auto scene = dynamic_cast<MainScene *>(val); scene != nullptr)
         {
-            mWorkList.emplace_back(scene->GetIOContext());
-            mThreadList.emplace_back([this, scene]
+            work_list_.emplace_back(scene->GetIOContext());
+            thread_list_.emplace_back([this, scene]
             {
                 asio::signal_set signals(scene->GetIOContext(), SIGINT, SIGTERM);
                 signals.async_wait([scene](auto, auto) {
@@ -60,16 +60,16 @@ void SceneManager::Init()
 
 GameWorld* SceneManager::GetWorld() const
 {
-    return mWorld;
+    return world_;
 }
 
 IBaseScene* SceneManager::GetNextMainScene()
 {
-    if (mMainSceneList.empty())
+    if (main_scene_list_.empty())
         throw std::runtime_error("No context node available");
 
-    const auto res = mMainSceneList[mNextMainIndex++];
-    mNextMainIndex = mNextMainIndex % mMainSceneList.size();
+    const auto res = main_scene_list_[next_main_idx_++];
+    next_main_idx_ = next_main_idx_ % main_scene_list_.size();
 
     return res;
 }
@@ -81,13 +81,13 @@ IBaseScene* SceneManager::GetScene(const int32_t sid) const
 
     if (sid < NORMAL_SCENE_ID_BEGIN)
     {
-        if (sid >= mMainSceneList.size())
+        if (sid >= main_scene_list_.size())
             return nullptr;
 
-        return mMainSceneList[sid];
+        return main_scene_list_[sid];
     }
 
-    if (const auto it = mSceneMap.find(sid); it != mSceneMap.end())
+    if (const auto it = scene_map_.find(sid); it != scene_map_.end())
         return it->second;
 
     return nullptr;

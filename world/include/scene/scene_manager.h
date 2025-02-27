@@ -33,13 +33,13 @@ public:
     IBaseScene *GetScene(int32_t sid) const;
 
 private:
-    GameWorld *mWorld;
+    GameWorld *world_;
 
-    std::vector<IBaseScene *> mMainSceneList;
-    std::vector<asio::io_context::work> mWorkList;
-    std::vector<std::thread> mThreadList;
+    std::vector<IBaseScene *> main_scene_list_;
+    std::vector<asio::io_context::work> work_list_;
+    std::vector<std::thread> thread_list_;
 
-    std::atomic_size_t mNextMainIndex;
+    std::atomic_size_t next_main_idx_;
 
-    std::unordered_map<int32_t, IBaseScene *> mSceneMap;
+    std::unordered_map<int32_t, IBaseScene *> scene_map_;
 };
