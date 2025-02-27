@@ -16,7 +16,9 @@ public:
     virtual void Serialize(const std::shared_ptr<class Serializer> &s) {}
     virtual void Deserialize(class Deserializer &ds) {}
 
-    [[nodiscard]] virtual std::vector<std::string> GetTableList() const = 0;
+    [[nodiscard]] virtual constexpr std::vector<std::string> GetTableList() const {
+        return {};
+    }
 
     [[nodiscard]] ComponentModule *GetModule() const;
     [[nodiscard]] class Player *GetOwner() const;
