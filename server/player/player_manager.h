@@ -47,7 +47,7 @@ public:
 
     awaitable<std::optional<CacheNode>> FindCacheNode(const PlayerID &pid);
 
-    void OnTick(TimePoint now) override;
+    void OnTick(TimePoint now, Duration interval) override;
 };
 
 #define SEND_TO_PLAYER_SET(mgr, set, proto, data) \

@@ -22,7 +22,7 @@ public:
     [[nodiscard]] ManagerSystem *GetOwner() const;
     [[nodiscard]] class GameWorld *GetWorld() const;
 
-    virtual void OnTick(TimePoint now);
+    virtual void OnTick(TimePoint now, Duration interval);
     virtual void OnDayChange();
 
 public:

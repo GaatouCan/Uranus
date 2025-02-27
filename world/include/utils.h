@@ -30,6 +30,7 @@ const auto NowTimePoint = std::chrono::system_clock::now;
 
 using ThreadID = std::thread::id;
 using TimePoint = std::chrono::time_point<std::chrono::system_clock>;
+using Duration = std::chrono::steady_clock::duration;
 
 #if defined(_WIN32) || defined(_WIN64)
 

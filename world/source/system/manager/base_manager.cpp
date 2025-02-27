@@ -17,7 +17,7 @@ GameWorld * IBaseManager::GetWorld() const {
     return owner_->GetWorld();
 }
 
-void IBaseManager::OnTick(TimePoint now) {
+void IBaseManager::OnTick(TimePoint now, Duration interval) {
 }
 
 void IBaseManager::OnDayChange() {

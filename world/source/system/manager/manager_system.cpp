@@ -32,7 +32,8 @@ void ManagerSystem::Init() {
 
     co_spawn(GetWorld()->GetIOContext(), [this]() mutable -> awaitable<void> {
         try {
-            auto point = NowTimePoint() + std::chrono::seconds(1);
+            tick_point_ = NowTimePoint();
+            auto point = tick_point_ + std::chrono::seconds(1);
             while (running_) {
                 tick_timer_.expires_at(point);
                 point += std::chrono::seconds(1);
@@ -49,12 +50,13 @@ void ManagerSystem::Init() {
 }
 
 
-void ManagerSystem::OnTick(TimePoint now) {
-    // spdlog::debug("{} - {}", __FUNCTION__, utils::ToUnixTime(now));
+void ManagerSystem::OnTick(const TimePoint now) {
     for (const auto mgr: manager_map_ | std::views::values) {
-        if (!mgr->tick_per_sec_) continue;
-        mgr->OnTick(now);
+        if (!mgr->tick_per_sec_)
+            continue;
+        mgr->OnTick(now, now - tick_point_);
     }
+    tick_point_ = now;
 
     static int day = 0;
 

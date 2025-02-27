@@ -196,7 +196,7 @@ awaitable<std::optional<CacheNode>> PlayerManager::FindCacheNode(const PlayerID 
     co_return std::nullopt;
 }
 
-void PlayerManager::OnTick(const TimePoint now) {
+void PlayerManager::OnTick(const TimePoint now, const Duration interval) {
     if (now - mLastUpdateTime < std::chrono::seconds(10))
         return;
 

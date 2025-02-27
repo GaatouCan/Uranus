@@ -11,6 +11,7 @@ class BASE_API ManagerSystem final : public ISubSystem {
     std::unordered_map<std::type_index, IBaseManager *> manager_map_;
 
     SystemTimer tick_timer_;
+    TimePoint tick_point_;
     bool running_;
 
 public:
