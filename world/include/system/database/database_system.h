@@ -46,7 +46,7 @@ public:
         auto init = [this](asio::completion_handler_for<void(QueryResultPtr)> auto handle, const QueryArray &query) {
             auto work = asio::make_work_guard(handle);
 
-            this->PushSelectTask(query, [handle = std::move(handle), work = std::move(work)](QueryResultPtr result) mutable {
+            PushSelectTask(query, [handle = std::move(handle), work = std::move(work)](QueryResultPtr result) mutable {
                 auto alloc = asio::get_associated_allocator(handle, asio::recycling_allocator<void>());
                 asio::dispatch(work.get_executor(), asio::bind_allocator(alloc, [handle = std::move(handle), result = std::forward<QueryResultPtr>(result)]() mutable {
                     std::move(handle)(std::move(result));
