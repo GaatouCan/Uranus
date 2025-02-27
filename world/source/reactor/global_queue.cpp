@@ -34,30 +34,30 @@ void GlobalQueue::Init() {
                 auto res = queue_.PopFront();
                 if (!res.has_value()) continue;
 
-                auto reactor = res.value();
-                if (reactor == nullptr)
+                auto task_queue = res.value();
+                if (task_queue == nullptr)
                     continue;
 
-                if (reactor->IsRemoved())
+                if (task_queue->IsRemoved())
                     continue;
 
-                reactor->OnPopFromGlobal();
-                reactor->OnStart();
-                reactor->HandleTask(10000);
+                task_queue->OnPopFromGlobal();
+                task_queue->OnStart();
+                task_queue->HandleTask(10000);
 
-                if (reactor->IsRemoved())
+                if (task_queue->IsRemoved())
                     continue;
 
-                reactor->OnStop();
+                task_queue->OnStop();
 
-                if (reactor->IsEmpty()) {
+                if (task_queue->IsEmpty()) {
                     std::unique_lock lock(empty_mtx_);
-                    empty_set_.emplace(reactor);
+                    empty_set_.emplace(task_queue);
                     continue;
                 }
 
-                queue_.PushBack(reactor);
-                reactor->OnPushToGlobal();
+                queue_.PushBack(task_queue);
+                task_queue->OnPushToGlobal();
             }
         });
     }

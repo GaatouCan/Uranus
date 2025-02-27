@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 
 #include "../byte_array.h"
 
@@ -9,6 +9,8 @@
 
 class BASE_API IReactor {
 
+    // 任务队列的生命周期由Reactor管理
+    // Reactor删除之后才会释放TaskQueue
     std::shared_ptr<class TaskQueue> queue_;
 
 public:
