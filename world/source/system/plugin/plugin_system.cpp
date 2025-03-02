@@ -111,8 +111,8 @@ bool PluginSystem::LoadPlugin(const std::string_view path) {
     }
 
     {
-        std::shared_lock lock(mMutex);
-        if (mPluginMap.contains(plugin->GetPluginName())) {
+        std::shared_lock lock(mtx_);
+        if (plugin_map_.contains(plugin->GetPluginName())) {
             spdlog::warn("{} - Plugin {} already exists", __FUNCTION__, plugin->GetPluginName());
             destroyer(plugin);
             dlclose(hModule);

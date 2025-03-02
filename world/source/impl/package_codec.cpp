@@ -27,7 +27,7 @@ awaitable<void> PackageCodec::EncodeT(Package *pkg) {
 #if defined(_WIN32) || defined(_WIN64)
     header.length = htonll(pkg->header_.length);
 #else
-    header.length = htobe64(pkg->mHeader.length);
+    header.length = htobe64(pkg->header_.length);
 #endif
 
     if (const auto len = co_await async_write(conn_.lock()->GetSocket(), asio::buffer(&header, Package::PACKAGE_HEADER_SIZE)); len == 0) {
@@ -58,7 +58,7 @@ awaitable<void> PackageCodec::DecodeT(Package *pkg) {
 #if defined(_WIN32) || defined(_WIN64)
     pkg->header_.length = ntohll(pkg->header_.length);
 #else
-    pkg->mHeader.length = be64toh(pkg->mHeader.length);
+    pkg->header_.length = be64toh(pkg->header_.length);
 #endif
 
     if (pkg->header_.length == 0)

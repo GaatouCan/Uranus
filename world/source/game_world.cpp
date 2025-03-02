@@ -79,7 +79,7 @@ GameWorld::~GameWorld() {
 #if defined(_WIN32) || defined(_WIN64)
         FreeLibrary(module_);
 #else
-        dlclose(mModule);
+        dlclose(module_);
 #endif
         spdlog::info("Free Server Dynamic-link Library.");
     }
@@ -239,19 +239,19 @@ bool GameWorld::LoadServerDLL(const std::string &path) {
     }
 
 #else
-    mModule = dlopen(path.c_str(), RTLD_LAZY);
+    module_ = dlopen(path.c_str(), RTLD_LAZY);
 
-    if (mModule == nullptr) {
+    if (module_== nullptr) {
         spdlog::error("Failed to load server dll: {}", path);
         return false;
     }
 
-    const auto creator = reinterpret_cast<ServerCreator>(dlsym(mModule, "CreateServer"));
-    const auto destroyer = reinterpret_cast<ServerDestroyer>(dlsym(mModule, "DestroyServer"));
+    const auto creator = reinterpret_cast<ServerCreator>(dlsym(module_, "CreateServer"));
+    const auto destroyer = reinterpret_cast<ServerDestroyer>(dlsym(module_, "DestroyServer"));
 
     if (creator == nullptr || destroyer == nullptr) {
         spdlog::error("Failed to load DLL function: {}", path);
-        dlclose(mModule);
+        dlclose(module_);
         return false;
     }
 #endif
@@ -354,7 +354,7 @@ void GameWorld::RemoveConnection(const std::string_view key) {
 #if defined(_WIN32) || defined(_WIN64)
     conn_map_.erase(key);
 #else
-    mConnectionMap.erase(std::string(key));
+    conn_map_.erase(std::string(key));
 #endif
 }
 
