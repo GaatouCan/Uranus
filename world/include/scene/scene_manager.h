@@ -62,4 +62,7 @@ private:
     std::unordered_map<int32_t, IBaseScene *> scene_map_;
     std::atomic_int32_t next_scene_id_;
     mutable std::shared_mutex scene_mtx_;
+
+    SystemTimer tick_timer_;
+    std::atomic_bool running_;
 };

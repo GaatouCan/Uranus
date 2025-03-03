@@ -9,7 +9,9 @@
 SceneManager::SceneManager(GameWorld *world)
     : world_(world),
       next_main_idx_(0),
-      next_scene_id_(NORMAL_SCENE_ID_BEGIN + 1) {
+      next_scene_id_(NORMAL_SCENE_ID_BEGIN + 1),
+      tick_timer_(world_->GetIOContext()),
+      running_(false) {
 }
 
 SceneManager::~SceneManager() {
@@ -89,6 +91,23 @@ void SceneManager::Init() {
     }
 
     spdlog::info("Started With {} Thread(s).", num);
+
+    co_spawn(GetWorld()->GetIOContext(), [this]() mutable -> awaitable<void> {
+        try {
+            auto point = NowTimePoint() + std::chrono::seconds(1);
+            while (running_) {
+                tick_timer_.expires_at(point);
+                co_await tick_timer_.async_wait();
+
+                if (running_)
+                    CollectScene(point);
+
+                point += std::chrono::seconds(1);
+            }
+        } catch (const std::exception &e) {
+            spdlog::error("SceneManager::Init() - Failed to run CollectScene {}", e.what());
+        }
+    }, asio::detached);
 }
 
 GameWorld *SceneManager::GetWorld() const {

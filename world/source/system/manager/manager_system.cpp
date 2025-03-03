@@ -34,14 +34,16 @@ void ManagerSystem::Init() {
         try {
             tick_point_ = NowTimePoint();
             auto point = tick_point_ + std::chrono::seconds(1);
+
             while (running_) {
                 tick_timer_.expires_at(point);
-                point += std::chrono::seconds(1);
-
                 co_await tick_timer_.async_wait();
 
                 if (running_)
                     OnTick(point);
+
+                tick_point_ = point;
+                point += std::chrono::seconds(1);
             }
         } catch (const std::exception &e) {
             spdlog::error("ManagerSystem::Init() - Failed to run OnTick {}", e.what());
