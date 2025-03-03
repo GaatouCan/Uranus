@@ -12,9 +12,15 @@ enum class PluginType {
 
 class BASE_API IBasePlugin {
 
+    class PluginSystem * owner_;
+
 public:
+    explicit IBasePlugin(PluginSystem * owner);
     virtual ~IBasePlugin() = default;
 
     [[nodiscard]] virtual PluginType GetType() const = 0;
     [[nodiscard]] virtual const char* GetPluginName() const = 0;
+
+    [[nodiscard]] PluginSystem * GetOwner() const;
+    [[nodiscard]] class  GameWorld *GetWorld() const;
 };

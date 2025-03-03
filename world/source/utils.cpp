@@ -6,14 +6,14 @@
 
 namespace utils {
 
-    static GameWorld *gWorldPtr = nullptr;
+    static GameWorld *gWorld = nullptr;
 
     void SetGameWorld(GameWorld *world) {
-        gWorldPtr = world;
+        gWorld = world;
     }
 
-    GameWorld * GetWorld() {
-        return gWorldPtr;
+    GameWorld* GetWorld() {
+        return gWorld;
     }
 
     void TraverseFolder(const std::string &folder, const std::function<void(const std::filesystem::directory_entry &)> &func) {
@@ -47,11 +47,11 @@ namespace utils {
         std::string result;
         result.reserve(src.size());
 
-        for (size_t i = 0; i < src.size(); ++i) {
-            if (i > 0 && isupper(src[i])) {
+        for (auto idx = 0; idx < src.size(); ++idx) {
+            if (idx > 0 && isupper(src[idx])) {
                 result.push_back('_');
             }
-            result.push_back(tolower(src[i]));
+            result.push_back(tolower(src[idx]));
         }
 
         return result;
