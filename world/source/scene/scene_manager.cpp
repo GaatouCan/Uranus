@@ -15,6 +15,8 @@ SceneManager::SceneManager(GameWorld *world)
 }
 
 SceneManager::~SceneManager() {
+    running_ = false;
+
     for (const auto it: scene_map_ | std::views::values)
         delete it;
 
@@ -89,6 +91,7 @@ void SceneManager::Init() {
             });
         }
     }
+    running_ = true;
 
     spdlog::info("Started With {} Thread(s).", num);
 
