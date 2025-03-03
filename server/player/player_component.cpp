@@ -4,18 +4,18 @@
 
 
 IPlayerComponent::IPlayerComponent(ComponentModule *module)
-    : mModule(module) {
+    : module_(module) {
 }
 
 IPlayerComponent::~IPlayerComponent() {
 }
 
 ComponentModule * IPlayerComponent::GetModule() const {
-    return mModule;
+    return module_;
 }
 
 Player * IPlayerComponent::GetOwner() const {
-    return mModule->GetOwner();
+    return module_->GetOwner();
 }
 
 GameWorld * IPlayerComponent::GetWorld() const {

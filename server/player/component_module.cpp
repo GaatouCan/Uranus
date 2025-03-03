@@ -11,24 +11,24 @@
 
 
 ComponentModule::ComponentModule(Player *plr)
-    : mOwner(plr){
+    : owner_(plr){
 
     CreateComponent<StateCT>();
     CreateComponent<AppearanceCT>();
 }
 
 ComponentModule::~ComponentModule() {
-    for (const auto &val : std::views::values(mComponentMap)) {
+    for (const auto &val : std::views::values(component_map_)) {
         delete val;
     }
 }
 
 Player * ComponentModule::GetOwner() const {
-    return mOwner;
+    return owner_;
 }
 
 void ComponentModule::OnDayChange() {
-    for (const auto &val : mComponentMap | std::views::values) {
+    for (const auto &val : component_map_ | std::views::values) {
         val->OnDayChange(false);
     }
 }
@@ -36,12 +36,12 @@ void ComponentModule::OnDayChange() {
 void ComponentModule::Serialize() {
     auto ser = std::make_shared<Serializer>();
 
-    for (const auto &val: std::views::values(mComponentMap)) {
+    for (const auto &val: std::views::values(component_map_)) {
         val->Serialize(ser);
     }
 
     if (const auto sys = GetOwner()->GetWorld()->GetSystem<DatabaseSystem>(); sys != nullptr) {
-        sys->PushTransaction([ser, pid = mOwner->GetFullID()](mysqlx::Schema &schema) {
+        sys->PushTransaction([ser, pid = owner_->GetFullID()](mysqlx::Schema &schema) {
             ser->Serialize(schema);
             spdlog::info("ComponentModule::Serialize() - Player[{}] Stored.", pid);
             return true;
@@ -54,7 +54,7 @@ awaitable<void> ComponentModule::Deserialize() {
         QueryArray query;
         std::string expr = fmt::format("pid = {}", GetOwner()->GetFullID());
 
-        for (const auto &val : mComponentMap | std::views::values) {
+        for (const auto &val : component_map_ | std::views::values) {
             for (const auto &table : val->GetTableList()) {
                 query.emplace_back(table, expr);
             }
@@ -63,7 +63,7 @@ awaitable<void> ComponentModule::Deserialize() {
         if (const auto sys = GetOwner()->GetWorld()->GetSystem<DatabaseSystem>(); sys != nullptr) {
             if (const auto res = co_await sys->AsyncSelect(query, asio::use_awaitable); res != nullptr) {
                 Deserializer der(res);
-                for (const auto &val : mComponentMap | std::views::values) {
+                for (const auto &val : component_map_ | std::views::values) {
                     val->Deserialize(der);
                 }
             }
@@ -74,7 +74,7 @@ awaitable<void> ComponentModule::Deserialize() {
 }
 
 void ComponentModule::OnLogin() {
-    for (const auto &val: std::views::values(mComponentMap)) {
+    for (const auto &val: std::views::values(component_map_)) {
         val->OnLogin();
     }
 
@@ -82,19 +82,19 @@ void ComponentModule::OnLogin() {
 }
 
 void ComponentModule::OnLogout() {
-    for (const auto &val: std::views::values(mComponentMap)) {
+    for (const auto &val: std::views::values(component_map_)) {
         val->OnLogout();
     }
 }
 
 PlayerID ComponentModule::GetPlayerID() const {
-    if (mOwner)
-        return mOwner->GetPlayerID();
+    if (owner_)
+        return owner_->GetPlayerID();
     return {};
 }
 
 void ComponentModule::SyncCache(CacheNode *node) {
-    for (const auto &val: std::views::values(mComponentMap)) {
+    for (const auto &val: std::views::values(component_map_)) {
         val->SyncCache(node);
     }
 }

@@ -22,7 +22,7 @@ PlayerManager::PlayerManager(ManagerSystem *owner)
 }
 
 PlayerManager::~PlayerManager() {
-    mPlayerMap.clear();
+    player_map_.clear();
 }
 
 void PlayerManager::Init() {
@@ -35,7 +35,7 @@ void PlayerManager::Init() {
             if (!pid.IsAvailable())
                 return;
 
-            if (auto *node = &mCacheMap[pid.local]; node != nullptr)
+            if (auto *node = &cache_map_[pid.local]; node != nullptr)
                 table.cache >> node;
         });
     }
@@ -43,7 +43,7 @@ void PlayerManager::Init() {
 }
 
 void PlayerManager::OnDayChange() {
-    for (const auto &plr: mPlayerMap | std::views::values) {
+    for (const auto &plr: player_map_ | std::views::values) {
         if (plr != nullptr && plr->IsOnline()) {
             plr->OnDayChange();
         }
@@ -58,8 +58,8 @@ awaitable<std::shared_ptr<Player>> PlayerManager::OnPlayerLogin(const std::share
 
     if (const auto plr = FindPlayer(id.local); plr != nullptr) {
         {
-            std::scoped_lock lock(mPlayerMutex);
-            mPlayerMap.erase(id.local);
+            std::scoped_lock lock(player_mtx_);
+            player_map_.erase(id.local);
         }
 
         spdlog::info("{} - Player[{}] Over Login", __FUNCTION__, plr->GetFullID());
@@ -77,8 +77,8 @@ awaitable<std::shared_ptr<Player>> PlayerManager::OnPlayerLogin(const std::share
     const auto plr = std::make_shared<Player>(conn);
 
     {
-        std::unique_lock lock(mPlayerMutex);
-        mPlayerMap[id.local] = plr;
+        std::unique_lock lock(player_mtx_);
+        player_map_[id.local] = plr;
     }
 
     spdlog::info("{} - New Player[{}] Login", __FUNCTION__, plr->GetFullID());
@@ -100,18 +100,18 @@ void PlayerManager::OnPlayerLogout(const PlayerID pid) {
 }
 
 std::shared_ptr<Player> PlayerManager::FindPlayer(const int32_t pid) {
-    std::shared_lock lock(mPlayerMutex);
-    if (const auto it = mPlayerMap.find(pid); it != mPlayerMap.end()) {
+    std::shared_lock lock(player_mtx_);
+    if (const auto it = player_map_.find(pid); it != player_map_.end()) {
         return it->second;
     }
     return nullptr;
 }
 
 std::shared_ptr<Player> PlayerManager::RemovePlayer(const int32_t pid) {
-    std::unique_lock lock(mPlayerMutex);
-    if (const auto it = mPlayerMap.find(pid); it != mPlayerMap.end()) {
+    std::unique_lock lock(player_mtx_);
+    if (const auto it = player_map_.find(pid); it != player_map_.end()) {
         auto res = it->second;
-        mPlayerMap.erase(it);
+        player_map_.erase(it);
         return res;
     }
     return nullptr;
@@ -136,8 +136,8 @@ void PlayerManager::SyncCache(const std::shared_ptr<Player> &plr) {
 
     CacheNode cache{};
     {
-        std::shared_lock lock(mCacheMutex);
-        if (const auto iter = mCacheMap.find(plr->GetLocalID()); iter != mCacheMap.end()) {
+        std::shared_lock lock(cache_mtx_);
+        if (const auto iter = cache_map_.find(plr->GetLocalID()); iter != cache_map_.end()) {
             cache = iter->second;
         }
     }
@@ -160,8 +160,8 @@ void PlayerManager::SyncCache(const CacheNode &node) {
     if (!pid.IsAvailable())
         return;
 
-    std::unique_lock lock(mCacheMutex);
-    mCacheMap[pid.local] = node;
+    std::unique_lock lock(cache_mtx_);
+    cache_map_[pid.local] = node;
 
     spdlog::trace("{} - Player[{}] Sync Success.", __FUNCTION__, pid.ToInt64());
 }
@@ -179,8 +179,8 @@ awaitable<std::optional<CacheNode>> PlayerManager::FindCacheNode(const PlayerID 
         SyncCache(plr);
     }
 
-    std::shared_lock lock(mCacheMutex);
-    if (const auto it = mCacheMap.find(pid.local); it != mCacheMap.end()) {
+    std::shared_lock lock(cache_mtx_);
+    if (const auto it = cache_map_.find(pid.local); it != cache_map_.end()) {
         co_return std::make_optional(it->second);
     }
 
@@ -188,7 +188,7 @@ awaitable<std::optional<CacheNode>> PlayerManager::FindCacheNode(const PlayerID 
 }
 
 void PlayerManager::OnTick(const TimePoint now, const Duration interval) {
-    if (now - mLastUpdateTime < std::chrono::seconds(10))
+    if (now - last_update_time_ < std::chrono::seconds(10))
         return;
 
     const auto ser = std::make_shared<Serializer>();
@@ -196,8 +196,8 @@ void PlayerManager::OnTick(const TimePoint now, const Duration interval) {
     {
         auto *array = ser->CreateTableVector<orm::DBTable_PlayerCache>("player_cache");
 
-        std::shared_lock lock(mCacheMutex);
-        for (const auto &val : mCacheMap | std::views::values) {
+        std::shared_lock lock(cache_mtx_);
+        for (const auto &val : cache_map_ | std::views::values) {
             orm::DBTable_PlayerCache table;
             table.pid = val.pid;
             table.cache << val;
@@ -212,6 +212,6 @@ void PlayerManager::OnTick(const TimePoint now, const Duration interval) {
         });
     }
 
-    mLastUpdateTime = now;
+    last_update_time_ = now;
     spdlog::trace("{} - Stored Cache.", __FUNCTION__);
 }

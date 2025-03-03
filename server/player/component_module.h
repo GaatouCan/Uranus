@@ -14,8 +14,8 @@
 
 class ComponentModule final {
 
-    Player *mOwner;
-    std::unordered_map<std::type_index, IPlayerComponent *> mComponentMap;
+    Player *owner_;
+    std::unordered_map<std::type_index, IPlayerComponent *> component_map_;
 
 public:
     ComponentModule() = delete;
@@ -31,7 +31,7 @@ public:
     requires std::derived_from<T, IPlayerComponent>
     T *CreateComponent() {
         const auto res = new T(this);
-        mComponentMap[typeid(T)] = res;
+        component_map_[typeid(T)] = res;
 
         return res;
     }
@@ -39,7 +39,7 @@ public:
     template<typename T>
     requires std::derived_from<T, IPlayerComponent>
     T *GetComponent() {
-        if (const auto it = mComponentMap.find(typeid(T)); it != mComponentMap.end()) {
+        if (const auto it = component_map_.find(typeid(T)); it != component_map_.end()) {
             return dynamic_cast<T *>(it->second);
         }
         return nullptr;

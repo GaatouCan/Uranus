@@ -13,8 +13,8 @@
 
 Player::Player(const ConnectionPointer &conn)
     : IBasePlayer(conn),
-      mComponentModule(this),
-      mEventModule(this) {
+      component_module_(this),
+      event_module_(this) {
 }
 
 Player::~Player() {
@@ -27,11 +27,11 @@ void Player::OnDayChange() {
         RunInThread(&Player::OnDayChange, this);
         return;
     }
-    mComponentModule.OnDayChange();
+    component_module_.OnDayChange();
 }
 
 awaitable<void> Player::OnLogin() {
-    mLoginTime = NowTimePoint();
+    login_time_ = NowTimePoint();
     spdlog::info("{} - Player[{}] Login Successfully.", __FUNCTION__, GetFullID());
 
     Login::LoginResponse response;
@@ -41,8 +41,8 @@ awaitable<void> Player::OnLogin() {
 
     SEND_PACKAGE(this, LoginResponse, response)
 
-    co_await mComponentModule.Deserialize();
-    mComponentModule.OnLogin();
+    co_await component_module_.Deserialize();
+    component_module_.OnLogin();
 
     const auto param = new EP_PlayerLogin;
     param->pid = GetFullID();
@@ -57,13 +57,13 @@ void Player::OnLogout(const bool is_force, const std::string &other_address) {
         RunInThread(&Player::OnLogout, this, is_force, other_address);
         return;
     }
-    mLogoutTime = NowTimePoint();
+    logout_time_ = NowTimePoint();
     CleanAllTimer();
 
-    mComponentModule.OnLogout();
+    component_module_.OnLogout();
     spdlog::info("{} - Player[{}] Logout.", __FUNCTION__, GetFullID());
 
-    mComponentModule.Serialize();
+    component_module_.Serialize();
 
     if (is_force) {
         Login::ForceLogoutResponse res;
@@ -83,9 +83,9 @@ bool Player::IsOnline() const {
     constexpr TimePoint zero_time_point{};
     const auto now = NowTimePoint();
 
-    return mLoginTime > zero_time_point && mLoginTime < now
-           && (mLogoutTime > zero_time_point && mLoginTime < now)
-           && mLogoutTime <= mLoginTime;
+    return login_time_ > zero_time_point && login_time_ < now
+           && (logout_time_ > zero_time_point && login_time_ < now)
+           && logout_time_ <= login_time_;
 }
 
 
@@ -107,13 +107,13 @@ void Player::Send(const uint32_t id, const std::stringstream &ss) const {
 
 void Player::SyncCache(CacheNode *node) {
     node->pid = GetFullID();
-    node->lastLoginTime = utils::ToUnixTime(mLoginTime);
-    if (mLogoutTime.time_since_epoch().count() > 0) {
-        node->lastLogoutTime = utils::ToUnixTime(mLogoutTime);
+    node->lastLoginTime = utils::ToUnixTime(login_time_);
+    if (logout_time_.time_since_epoch().count() > 0) {
+        node->lastLogoutTime = utils::ToUnixTime(logout_time_);
     }
-    mComponentModule.SyncCache(node);
+    component_module_.SyncCache(node);
 }
 
 void Player::DispatchEvent(const Event event, IEventParam *param, const DispatchType type) {
-    mEventModule.Dispatch(event, param, type);
+    event_module_.Dispatch(event, param, type);
 }

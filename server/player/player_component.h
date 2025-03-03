@@ -5,7 +5,7 @@
 
 class IPlayerComponent {
 
-    class ComponentModule *mModule;
+    class ComponentModule *module_;
 
 public:
     explicit IPlayerComponent(ComponentModule *module);

@@ -20,26 +20,26 @@ StateCT::~StateCT() {
 }
 
 void StateCT::OnLogin() {
-    if (mState.pid == 0)
-        mState.pid = GetOwner()->GetFullID();
+    if (state_.pid == 0)
+        state_.pid = GetOwner()->GetFullID();
 }
 
 int32_t StateCT::GetLevel() const {
-    return mState.level;
+    return state_.level;
 }
 
 int64_t StateCT::GetExp() const {
-    return mState.experience;
+    return state_.experience;
 }
 
 void StateCT::SyncCache(CacheNode* node) {
-    node->level = mState.level;
+    node->level = state_.level;
 }
 
 void StateCT::Serialize(const std::shared_ptr<Serializer> &s) {
-    WRITE_TABLE(s, State, mState)
+    WRITE_TABLE(s, State, state_)
 }
 
 void StateCT::Deserialize(Deserializer &ds) {
-    READ_TABLE(&ds, State, mState)
+    READ_TABLE(&ds, State, state_)
 }

@@ -10,7 +10,7 @@
 
 class StateCT final : public IPlayerComponent {
 
-    orm::DBTable_State mState;
+    orm::DBTable_State state_;
 
 public:
     explicit StateCT(ComponentModule *module);

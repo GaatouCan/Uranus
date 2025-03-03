@@ -4,7 +4,6 @@
 #include "event_module.h"
 
 #include "scene/base_player.h"
-#include "platform_info.h"
 
 
 struct EP_PlayerLogin final : IEventParam {
@@ -17,13 +16,11 @@ struct EP_PlayerLogout final : IEventParam {
 
 class Player final : public IBasePlayer {
 
-    TimePoint mLoginTime;
-    TimePoint mLogoutTime;
+    TimePoint login_time_;
+    TimePoint logout_time_;
 
-    ComponentModule mComponentModule;
-    EventModule mEventModule;
-
-    PlatformInfo mPlatform;
+    ComponentModule component_module_;
+    EventModule event_module_;
 
 public:
     Player() = delete;
@@ -31,8 +28,8 @@ public:
     explicit Player(const ConnectionPointer &conn);
     ~Player() override;
 
-    ComponentModule &GetComponentModule() noexcept { return mComponentModule; }
-    EventModule &GetEventModule() noexcept { return mEventModule; }
+    ComponentModule &GetComponentModule() noexcept { return component_module_; }
+    EventModule &GetEventModule() noexcept { return event_module_; }
 
     void OnDayChange();
 
@@ -51,7 +48,7 @@ public:
     template<typename T>
     requires std::derived_from<T, IPlayerComponent>
     T *GetComponent() {
-        return mComponentModule.GetComponent<T>();
+        return component_module_.GetComponent<T>();
     }
 };
 

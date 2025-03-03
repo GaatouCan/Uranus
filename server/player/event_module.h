@@ -14,19 +14,19 @@
 
 class EventModule final {
 
-    class Player *mOwner;
+    class Player *owner_;
 
     struct EventNode {
         Event event = Event::UNAVAILABLE;
         IEventParam *param = nullptr;
     };
 
-    std::queue<EventNode> mQueue;
-    mutable std::shared_mutex mEventMutex;
+    std::queue<EventNode> queue_;
+    mutable std::shared_mutex event_mtx_;
 
-    std::map<Event, std::map<void *, EventListener>> mListenerMap;
-    std::map<void *, EventListener> mCurListener;
-    std::mutex mListenerMutex;
+    std::map<Event, std::map<void *, EventListener>> listener_map_;
+    std::map<void *, EventListener> cur_listener_;
+    std::mutex listener_mtx_;
 
 public:
     EventModule() = delete;

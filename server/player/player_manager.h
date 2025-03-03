@@ -14,13 +14,13 @@ class Connection;
 
 class PlayerManager final : public IBaseManager {
 
-    std::unordered_map<int32_t, std::shared_ptr<Player>> mPlayerMap;
-    mutable std::shared_mutex mPlayerMutex;
+    std::unordered_map<int32_t, std::shared_ptr<Player>> player_map_;
+    mutable std::shared_mutex player_mtx_;
 
-    std::unordered_map<int32_t, CacheNode> mCacheMap;
-    mutable std::shared_mutex mCacheMutex;
+    std::unordered_map<int32_t, CacheNode> cache_map_;
+    mutable std::shared_mutex cache_mtx_;
 
-    TimePoint mLastUpdateTime;
+    TimePoint last_update_time_;
 
 public:
     explicit PlayerManager(ManagerSystem *owner);
