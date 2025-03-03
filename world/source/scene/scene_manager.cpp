@@ -27,16 +27,15 @@ SceneManager::~SceneManager() {
 }
 
 int32_t SceneManager::GenerateSceneID() {
-    int32_t id = NORMAL_SCENE_ID_BEGIN;
+    int32_t id;
 
     std::shared_lock lock(scene_mtx_);
-    if (scene_map_.size() >= (NORMAL_SCENE_ID_END - NORMAL_SCENE_ID_BEGIN))
+    if (scene_map_.size() >= (NORMAL_SCENE_ID_END - NORMAL_SCENE_ID_BEGIN - 1))
         return -1;
 
     do {
         if (next_scene_id_ >= NORMAL_SCENE_ID_END)
             next_scene_id_ = NORMAL_SCENE_ID_BEGIN + 1;
-
         id = next_scene_id_++;
     } while (scene_map_.contains(id));
 
