@@ -8,7 +8,8 @@
 
 SceneManager::SceneManager(GameWorld *world)
     : world_(world),
-      next_main_idx_(0) {
+      next_main_idx_(0),
+      next_scene_id_(NORMAL_SCENE_ID_BEGIN + 1) {
 }
 
 SceneManager::~SceneManager() {
@@ -22,6 +23,46 @@ SceneManager::~SceneManager() {
     for (auto &th: thread_list_) {
         if (th.joinable())
             th.join();
+    }
+}
+
+int32_t SceneManager::GenerateSceneID() {
+    int32_t id = NORMAL_SCENE_ID_BEGIN;
+
+    std::shared_lock lock(scene_mtx_);
+    if (scene_map_.size() >= (NORMAL_SCENE_ID_END - NORMAL_SCENE_ID_BEGIN))
+        return -1;
+
+    do {
+        if (next_scene_id_ >= NORMAL_SCENE_ID_END)
+            next_scene_id_ = NORMAL_SCENE_ID_BEGIN + 1;
+
+        id = next_scene_id_++;
+    } while (scene_map_.contains(id));
+
+    return id;
+}
+
+void SceneManager::EmplaceScene(IBaseScene *scene) {
+    if (scene == nullptr)
+        return;
+
+    std::unique_lock lock(scene_mtx_);
+    scene_map_[scene->GetSceneID()] = scene;
+}
+
+void SceneManager::CollectScene(const TimePoint time) {
+    std::unique_lock lock(scene_mtx_);
+    constexpr auto zero_time_point = TimePoint();
+
+    for (auto it = scene_map_.begin(); it != scene_map_.end();) {
+        if (it->second->destroy_time_point_ > zero_time_point && it->second->destroy_time_point_ < time && it->second->CanDestroy()) {
+            const auto *scene = it->second;
+            it = scene_map_.erase(it);
+            delete scene;
+            continue;
+        }
+        ++it;
     }
 }
 
@@ -76,6 +117,10 @@ IBaseScene *SceneManager::GetScene(const int32_t sid) const {
         return main_scene_list_[sid];
     }
 
+    if (sid <= NORMAL_SCENE_ID_BEGIN || sid >= NORMAL_SCENE_ID_END)
+        return nullptr;
+
+    std::shared_lock lock(scene_mtx_);
     if (const auto it = scene_map_.find(sid); it != scene_map_.end())
         return it->second;
 
