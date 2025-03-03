@@ -30,13 +30,13 @@ public:
     [[nodiscard]] ProtoFunctor FindProto(uint32_t proto) const;
     // [[nodiscard]] ACrossFunctor FindCross(uint32_t proto) const;
 
-    template<typename T>
+    template<typename T, typename... Args>
     requires std::derived_from<T, IProtocolHandler>
-    void SetHandler() {
+    void SetHandler(Args &&... args) {
         if (handler_ != nullptr)
             handler_.reset();
 
-        handler_ = std::make_unique<T>(this);
+        handler_ = std::make_unique<T>(this, std::forward<Args>(args)...);
     }
 
     void OnReadPackage(const std::shared_ptr<Connection> &conn, IPackage *pkg) const;

@@ -65,23 +65,23 @@ public:
 
     [[nodiscard]] bool IsSameThread() const;
 
-    template<typename T>
+    template<typename T, typename ... Args>
     requires std::derived_from<T, IPackageCodec>
-    Connection &SetPackageCodec() {
+    Connection &SetPackageCodec(Args &&... args) {
         if (codec_ != nullptr)
             codec_.reset();
 
-        codec_ = std::make_unique<T>(weak_from_this());
+        codec_ = std::make_unique<T>(weak_from_this(), std::forward<Args>(args)...);
         return *this;
     }
 
-    template<typename T>
+    template<typename T, typename ... Args>
     requires std::derived_from<T, IConnectionHandler>
-    Connection &SetHandler() {
+    Connection &SetHandler(Args &&... args) {
         if (handler_ != nullptr)
             handler_.reset();
 
-        handler_ = std::make_unique<T>(shared_from_this());
+        handler_ = std::make_unique<T>(shared_from_this(), std::forward<Args>(args)...);
         return *this;
     }
 
