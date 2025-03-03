@@ -6,9 +6,9 @@
 #include <utility>
 #include <ranges>
 
-IBasePlayer::IBasePlayer(ConnectionPointer conn)
+IBasePlayer::IBasePlayer(const ConnectionPointer &conn)
     : owner_(nullptr),
-      conn_(std::move(conn)),
+      conn_(conn),
       pid_(std::any_cast<PlayerID>(conn_->GetContext())) {
 
 }
@@ -19,11 +19,11 @@ IBasePlayer::~IBasePlayer() {
     }
 }
 
-bool IBasePlayer::SetConnection(ConnectionPointer conn) {
+bool IBasePlayer::SetConnection(const ConnectionPointer &conn) {
     if (std::any_cast<PlayerID>(conn_->GetContext()) != pid_) {
         return false;
     }
-    conn_ = std::move(conn);
+    conn_ = conn;
     return true;
 }
 
@@ -169,26 +169,26 @@ std::optional<UniqueID> IBasePlayer::AddTimer(RepeatedTimer *timer) {
     if (timer == nullptr)
         return std::nullopt;
 
-    UniqueID timerID = UniqueID::RandomGenerate();
+    UniqueID timer_id = UniqueID::RandomGenerate();
 
     {
         std::shared_lock lock(timer_mtx_);
-        while (timer_map_.contains(timerID)) {
-            timerID = UniqueID::RandomGenerate();
+        while (timer_map_.contains(timer_id)) {
+            timer_id = UniqueID::RandomGenerate();
         }
     }
 
     {
         std::unique_lock lock(timer_mtx_);
-        timer_map_[timerID] = timer;
+        timer_map_[timer_id] = timer;
     }
 
-    timer->SetTimerID(timerID).SetCompleteCallback([weak = weak_from_this()](const UniqueID &tid) mutable {
+    timer->SetTimerID(timer_id).SetCompleteCallback([weak = weak_from_this()](const UniqueID &tid) mutable {
         if (const auto self = weak.lock()) {
             self->RemoveTimer(tid);
         }
     });
-    return timerID;
+    return timer_id;
 }
 
 bool IBasePlayer::RemoveTimer(const UniqueID &tid) {

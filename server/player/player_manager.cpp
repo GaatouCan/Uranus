@@ -86,12 +86,6 @@ awaitable<std::shared_ptr<Player>> PlayerManager::OnPlayerLogin(const std::share
 
     // 同步玩家缓存数据
     SyncCache(plr);
-
-    {
-        std::unique_lock lock(mCacheMutex);
-        mCacheMap[id.local].lastLoginTime = utils::UnixTime();
-    }
-
     co_return plr;
 }
 
@@ -102,9 +96,6 @@ void PlayerManager::OnPlayerLogout(const PlayerID pid) {
         plr->OnLogout();
 
         SyncCache(plr);
-
-        std::unique_lock lock(mCacheMutex);
-        mCacheMap[pid.local].lastLogoutTime = utils::UnixTime();
     }
 }
 

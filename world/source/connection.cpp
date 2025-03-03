@@ -15,6 +15,8 @@ std::chrono::duration<uint32_t> Connection::kReadTimeout = 10s;
 Connection::Connection(TcpSocket socket, MainScene *scene)
     : socket_(std::move(socket)),
       scene_(scene),
+      codec_(nullptr),
+      handler_(nullptr),
       watchdog_(socket_.get_executor()) {
 }
 
@@ -117,10 +119,10 @@ IPackage *Connection::BuildPackage() const {
 }
 
 void Connection::Send(IPackage *pkg) {
-    const bool bEmpty = output_.IsEmpty();
+    const bool empty = output_.IsEmpty();
     output_.PushBack(pkg);
 
-    if (bEmpty)
+    if (empty)
         co_spawn(socket_.get_executor(), WritePackage(), detached);
 }
 

@@ -33,10 +33,10 @@ class BASE_API IBasePlayer : public Actor, public std::enable_shared_from_this<I
 public:
     IBasePlayer() = delete;
 
-    explicit IBasePlayer(ConnectionPointer conn);
+    explicit IBasePlayer(const ConnectionPointer &conn);
     ~IBasePlayer() override;
 
-    bool SetConnection(ConnectionPointer conn);
+    bool SetConnection(const ConnectionPointer &conn);
 
     [[nodiscard]] ConnectionPointer GetConnection() const;
     [[nodiscard]] TcpSocket &GetSocket() const;

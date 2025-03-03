@@ -99,3 +99,7 @@ std::set<std::shared_ptr<IBasePlayer>> IBaseScene::GetPlayerInScene() const {
     }
     return result;
 }
+
+bool IBaseScene::CanDestroy() const {
+    return true;
+}

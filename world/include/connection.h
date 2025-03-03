@@ -17,8 +17,8 @@ class BASE_API Connection final : public std::enable_shared_from_this<Connection
     TcpSocket socket_;
     class MainScene *scene_;
 
-    std::unique_ptr<IPackageCodec>      codec_ = nullptr;
-    std::unique_ptr<IConnectionHandler> handler_ = nullptr;
+    std::unique_ptr<IPackageCodec>      codec_;
+    std::unique_ptr<IConnectionHandler> handler_;
 
     ThreadSafeDeque<IPackage *> output_;
 

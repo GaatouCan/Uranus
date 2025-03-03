@@ -11,8 +11,8 @@
 #include <login.pb.h>
 
 
-Player::Player(ConnectionPointer conn)
-    : IBasePlayer(std::move(conn)),
+Player::Player(const ConnectionPointer &conn)
+    : IBasePlayer(conn),
       mComponentModule(this),
       mEventModule(this) {
 }
@@ -107,6 +107,10 @@ void Player::Send(const uint32_t id, const std::stringstream &ss) const {
 
 void Player::SyncCache(CacheNode *node) {
     node->pid = GetFullID();
+    node->lastLoginTime = utils::ToUnixTime(mLoginTime);
+    if (mLogoutTime.time_since_epoch().count() > 0) {
+        node->lastLogoutTime = utils::ToUnixTime(mLogoutTime);
+    }
     mComponentModule.SyncCache(node);
 }
 

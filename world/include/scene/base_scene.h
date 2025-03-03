@@ -51,6 +51,9 @@ public:
 
     std::set<std::shared_ptr<IBasePlayer>> GetPlayerInScene() const;
 
+    // Default true
+    virtual bool CanDestroy() const;
+
 public:
     TimePoint destroy_time_point_;
 };

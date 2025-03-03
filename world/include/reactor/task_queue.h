@@ -17,6 +17,7 @@ class GlobalQueue;
 class IReactor;
 using ReactorTask = std::function<void(IReactor*)>;
 
+
 class TaskQueue final : public std::enable_shared_from_this<TaskQueue> {
 
     GlobalQueue *global_;
@@ -25,7 +26,6 @@ class TaskQueue final : public std::enable_shared_from_this<TaskQueue> {
     std::queue<ReactorTask> cur_queue_;
     std::queue<ReactorTask> wait_queue_;
 
-    // std::mutex mMutex;
     mutable std::shared_mutex mtx_;
 
     std::atomic_bool running_;

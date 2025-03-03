@@ -28,7 +28,7 @@ class Player final : public IBasePlayer {
 public:
     Player() = delete;
 
-    explicit Player(ConnectionPointer conn);
+    explicit Player(const ConnectionPointer &conn);
     ~Player() override;
 
     ComponentModule &GetComponentModule() noexcept { return mComponentModule; }
