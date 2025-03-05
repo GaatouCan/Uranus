@@ -31,11 +31,11 @@ GameWorld::GameWorld()
       inited_(false),
       running_(false) {
 
-    cfg_mgr_ = new ConfigManager();
-    scene_mgr_ = new SceneManager(this);
-    global_queue_ = new GlobalQueue(this);
-    login_authenticator_ = new LoginAuthenticator(this);
-    proto_route_ = new ProtocolRoute(this);
+    cfg_mgr_                = new ConfigManager();
+    scene_mgr_              = new SceneManager(this);
+    global_queue_           = new GlobalQueue(this);
+    login_authenticator_    = new LoginAuthenticator(this);
+    proto_route_            = new ProtocolRoute(this);
 
     // Create Sub System
     CreateSystem<DatabaseSystem>(2);
@@ -161,6 +161,27 @@ GameWorld &GameWorld::Shutdown() {
     conn_map_.clear();
 
     return *this;
+}
+
+void GameWorld::ForceDisconnectAll() {
+    if (!running_)
+        return;
+
+    if (std::this_thread::get_id() != tid_) {
+        co_spawn(ctx_, [this]() mutable -> awaitable<void> {
+            for (const auto &conn : conn_map_ | std::views::values) {
+                conn->Disconnect();
+            }
+            conn_map_.clear();
+            co_return;
+        }, detached);
+        return;
+    }
+
+    for (const auto &conn : conn_map_ | std::views::values) {
+        conn->Disconnect();
+    }
+    conn_map_.clear();
 }
 
 void GameWorld::RemoveConnection(const std::string &key) {

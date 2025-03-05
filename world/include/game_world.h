@@ -85,6 +85,8 @@ public:
     GameWorld &Run();
     GameWorld &Shutdown();
 
+    void ForceDisconnectAll();
+
     void RemoveConnection(const std::string &key);
     void RemoveConnection(std::string_view key);
 
