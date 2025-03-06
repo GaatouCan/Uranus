@@ -85,37 +85,37 @@ public:
     template<typename T>
     requires kPODType<T>
     static ByteArray FromData(T data) {
-        ByteArray uint8_ts;
-        uint8_ts.CastFromData(std::forward<T>(data));
-        return uint8_ts;
+        ByteArray bytes;
+        bytes.CastFromData(std::forward<T>(data));
+        return bytes;
     }
 };
 
 template<typename T>
 requires ByteArray::kPODType<T>
 std::vector<uint8_t> BASE_API DataToByteArray(T data) {
-    std::vector<uint8_t> uint8_ts;
+    std::vector<uint8_t> bytes;
 
     constexpr auto size = std::is_pointer_v<T> ? sizeof(std::remove_pointer_t<T>) : sizeof(T);
-    uint8_ts.resize(size);
+    bytes.resize(size);
 
     if constexpr (std::is_pointer_v<T>) {
-        memcpy(uint8_ts.data(), data, size);
+        memcpy(bytes.data(), data, size);
     } else {
-        memcpy(uint8_ts.data(), &data, size);
+        memcpy(bytes.data(), &data, size);
     }
 
-    return uint8_ts;
+    return bytes;
 }
 
 template<typename T>
 requires ByteArray::kPODType<T>
-bool BASE_API ByteArrayToData(const std::vector<uint8_t> &uint8_ts, T *data) {
-    const bool ret = uint8_ts.size() >= sizeof(std::remove_pointer_t<T>);
-    const auto size = ret ? sizeof(std::remove_pointer_t<T>) : uint8_ts.size();
+bool BASE_API ByteArrayToData(const std::vector<uint8_t> &bytes, T *data) {
+    const bool ret = bytes.size() >= sizeof(std::remove_pointer_t<T>);
+    const auto size = ret ? sizeof(std::remove_pointer_t<T>) : bytes.size();
 
     memset(data, 0, size);
-    memcpy(data, uint8_ts.data(), size);
+    memcpy(data, bytes.data(), size);
 
     return ret;
 }
