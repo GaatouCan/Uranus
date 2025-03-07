@@ -4,27 +4,27 @@
 
 #include "../../../include/system/command/command_system.h"
 
-CommandSystem::CommandSystem(GameWorld *world)
+UCommandSystem::UCommandSystem(UGameWorld *world)
     : ISubSystem(world) {
 }
 
-CommandSystem::~CommandSystem() {
+UCommandSystem::~UCommandSystem() {
 
 }
 
-void CommandSystem::Init() {
+void UCommandSystem::Init() {
 
 }
 
-std::shared_ptr<IClientCommand> CommandSystem::CreateClientCMD(const std::string &type, const std::string &args) const {
+std::shared_ptr<IClientCommand> UCommandSystem::CreateClientCMD(const std::string &type, const std::string &args) const {
     if (const auto iter = client_map_.find(type); iter != client_map_.end())
-        return iter->second(CommandObject(type, args));
+        return iter->second(UCommandObject(type, args));
     return nullptr;
 }
 
-std::shared_ptr<IOperateCommand> CommandSystem::CreateOperateCMD(const std::string &type, const std::string &args) const {
+std::shared_ptr<IOperateCommand> UCommandSystem::CreateOperateCMD(const std::string &type, const std::string &args) const {
     if (const auto iter = operate_map_.find(type); iter != operate_map_.end())
-        return iter->second(CommandObject(type, args));
+        return iter->second(UCommandObject(type, args));
     return nullptr;
 }
 

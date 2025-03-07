@@ -4,11 +4,11 @@
 
 #include <spdlog/spdlog.h>
 
-DatabaseSystem::DatabaseSystem(GameWorld *world)
+UDatabaseSystem::UDatabaseSystem(UGameWorld *world)
     : ISubSystem(world) {
 }
 
-DatabaseSystem::~DatabaseSystem() {
+UDatabaseSystem::~UDatabaseSystem() {
     for (const auto &[th, sess, queue, tid] : sess_list_) {
         if (queue)
             queue->Quit();
@@ -20,11 +20,11 @@ DatabaseSystem::~DatabaseSystem() {
     }
 }
 
-void DatabaseSystem::Init() {
+void UDatabaseSystem::Init() {
     const auto &cfg = GetWorld()->GetServerConfig();
 
     const auto schemaName = cfg["database"]["mysql"]["schema"].as<std::string>();
-    sess_list_ = std::vector<SessionNode>(cfg["database"]["pool"].as<uint64_t>());
+    sess_list_ = std::vector<FSessionNode>(cfg["database"]["pool"].as<uint64_t>());
 
     auto host = cfg["database"]["mysql"]["host"].as<std::string>();
     auto port = cfg["database"]["mysql"]["port"].as<uint16_t>();
@@ -35,7 +35,7 @@ void DatabaseSystem::Init() {
 
     for (auto &node: sess_list_) {
         node.session = std::make_unique<mysqlx::Session>(host, port, user, passwd);
-        node.queue = std::make_unique<ThreadSafeDeque<IDatabaseTask *>>();
+        node.queue = std::make_unique<TDeque<IDatabaseTask *>>();
 
         node.thread = std::make_unique<std::thread>([this, &node, schemaName] {
             node.threadID = std::this_thread::get_id();
@@ -63,7 +63,7 @@ void DatabaseSystem::Init() {
     }
 }
 
-void DatabaseSystem::SyncSelect(const std::string &tableName, const std::string &where, const std::function<void(mysqlx::Row)> &cb) const {
+void UDatabaseSystem::SyncSelect(const std::string &tableName, const std::string &where, const std::function<void(mysqlx::Row)> &cb) const {
     if (sess_list_.empty()) {
         spdlog::error("{} - No Database Session Available.", __FUNCTION__);
         return;
@@ -95,8 +95,8 @@ void DatabaseSystem::SyncSelect(const std::string &tableName, const std::string 
     }
 }
 
-void DatabaseSystem::PushTransaction(const TransactionFunctor &func) {
+void UDatabaseSystem::PushTransaction(const ATransactionFunctor &func) {
     const auto &[th, sess, queue, tid] = sess_list_[next_node_idx_++];
     next_node_idx_ = next_node_idx_ % sess_list_.size();
-    queue->PushBack(new TransactionTask(func));
+    queue->PushBack(new UTransactionTask(func));
 }

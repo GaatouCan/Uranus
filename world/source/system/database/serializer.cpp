@@ -1,16 +1,16 @@
 #include "../../../include/system/database/serializer.h"
 
-Serializer::Serializer() {
+USerializer::USerializer() {
 
 }
 
-Serializer::~Serializer() {
+USerializer::~USerializer() {
     for (const auto& [val, expired] : table_vec_) {
         delete val;
     }
 }
 
-void Serializer::Serialize(mysqlx::Schema &schema) {
+void USerializer::Serialize(mysqlx::Schema &schema) {
     for (const auto &[val, expired] : table_vec_) {
         if (val == nullptr)
             continue;

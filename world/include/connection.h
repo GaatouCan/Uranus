@@ -2,7 +2,7 @@
 
 #include "package_codec.h"
 #include "connection_handler.h"
-#include "thread_safe_deque.h"
+#include "ts_deque.h"
 #include "utils.h"
 
 #include <asio/experimental/awaitable_operators.hpp>
@@ -12,20 +12,20 @@ using namespace std::literals::chrono_literals;
 using namespace asio::experimental::awaitable_operators;
 
 
-class BASE_API Connection final : public std::enable_shared_from_this<Connection> {
+class BASE_API UConnection final : public std::enable_shared_from_this<UConnection> {
 
-    TcpSocket socket_;
-    class MainScene *scene_;
+    ATcpSocket socket_;
+    class UMainScene *scene_;
 
     std::unique_ptr<IPackageCodec>      codec_;
     std::unique_ptr<IConnectionHandler> handler_;
 
-    ThreadSafeDeque<IPackage *> output_;
+    TDeque<IPackage *> output_;
 
     std::string key_;
 
-    SystemTimer watchdog_;
-    TimePoint deadline_;
+    ASystemTimer watchdog_;
+    ATimePoint deadline_;
 
     std::any context_;
     uint32_t context_null_count_ = 0;
@@ -37,27 +37,27 @@ class BASE_API Connection final : public std::enable_shared_from_this<Connection
     static constexpr int NULL_CONTEXT_MAX_COUNT = 3;
 
 public:
-    Connection() = delete;
+    UConnection() = delete;
 
-    Connection(TcpSocket socket, MainScene *scene);
-    ~Connection();
+    UConnection(ATcpSocket socket, UMainScene *scene);
+    ~UConnection();
 
-    DISABLE_COPY_MOVE(Connection)
+    DISABLE_COPY_MOVE(UConnection)
 
     void ConnectToClient();
     void Disconnect();
 
     [[nodiscard]] int32_t GetSceneID() const;
-    [[nodiscard]] ThreadID GetThreadID() const;
+    [[nodiscard]] AThreadID GetThreadID() const;
     [[nodiscard]] class PackagePool *GetPackagePool() const;
 
-    [[nodiscard]] MainScene *GetMainScene() const;
-    [[nodiscard]] class GameWorld *GetWorld() const;
+    [[nodiscard]] UMainScene *GetMainScene() const;
+    [[nodiscard]] class UGameWorld *GetWorld() const;
 
-    Connection &SetContext(const std::any &ctx);
-    Connection &ResetContext();
+    UConnection &SetContext(const std::any &ctx);
+    UConnection &ResetContext();
 
-    Connection &SetKey(const std::string &key);
+    UConnection &SetKey(const std::string &key);
 
     static void SetWatchdogTimeout(uint32_t sec);
     static void SetWriteTimeout(uint32_t sec);
@@ -67,7 +67,7 @@ public:
 
     template<typename T, typename ... Args>
     requires std::derived_from<T, IPackageCodec>
-    Connection &SetPackageCodec(Args &&... args) {
+    UConnection &SetPackageCodec(Args &&... args) {
         if (codec_ != nullptr)
             codec_.reset();
 
@@ -77,7 +77,7 @@ public:
 
     template<typename T, typename ... Args>
     requires std::derived_from<T, IConnectionHandler>
-    Connection &SetHandler(Args &&... args) {
+    UConnection &SetHandler(Args &&... args) {
         if (handler_ != nullptr)
             handler_.reset();
 
@@ -92,7 +92,7 @@ public:
     [[nodiscard]] bool IsConnected() const { return socket_.is_open(); }
 
     [[nodiscard]] std::string GetKey() const { return key_; }
-    [[nodiscard]] TcpSocket &GetSocket() { return socket_; }
+    [[nodiscard]] ATcpSocket &GetSocket() { return socket_; }
 
     [[nodiscard]] const std::any &GetContext() const { return context_; }
     [[nodiscard]] std::any GetMutableContext() const { return context_; }
@@ -108,4 +108,4 @@ private:
     static awaitable<void> Timeout(std::chrono::duration<uint32_t> expire);
 };
 
-using ConnectionPointer = std::shared_ptr<Connection>;
+using AConnectionPointer = std::shared_ptr<UConnection>;

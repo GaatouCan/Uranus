@@ -13,7 +13,7 @@
 class IPackage;
 class IBasePlayer;
 
-using ConnectionPointer = std::shared_ptr<class Connection>;
+using AConnectionPointer = std::shared_ptr<class UConnection>;
 
 namespace protocol {
 
@@ -29,7 +29,7 @@ namespace protocol {
 #include "proto_type.h"
 #include "protocol_route.h"
 
-inline void LoadProtocol(ProtocolRoute *route) {
+inline void LoadProtocol(UProtocolRoute *route) {
 
 	using namespace protocol;
 

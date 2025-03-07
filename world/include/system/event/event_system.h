@@ -13,12 +13,12 @@
 
 using asio::awaitable;
 
-enum class DispatchType {
+enum class EDispatchType {
     PUSH_QUEUE,
     DIRECT
 };
 
-class BASE_API EventSystem final : public ISubSystem {
+class BASE_API UEventSystem final : public ISubSystem {
 
     struct EventNode {
         uint32_t event = 0;
@@ -35,14 +35,14 @@ class BASE_API EventSystem final : public ISubSystem {
     std::mutex listener_mtx_;
 
 public:
-    explicit EventSystem(GameWorld *world);
-    ~EventSystem() override;
+    explicit UEventSystem(UGameWorld *world);
+    ~UEventSystem() override;
 
     GET_SYSTEM_NAME(EventSystem)
 
     void Init() override;
 
-    void Dispatch(uint32_t event, IEventParam *param, DispatchType type = DispatchType::PUSH_QUEUE);
+    void Dispatch(uint32_t event, IEventParam *param, EDispatchType type = EDispatchType::PUSH_QUEUE);
 
     template<typename TargetType, typename Callable>
     void RegisterListenerT(const uint32_t event, void *ptr, void *target, Callable &&func) {

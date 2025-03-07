@@ -6,12 +6,12 @@
 
 class BASE_API IBaseManager : public IReactor {
 
-    class ManagerSystem *owner_;
+    class UManagerSystem *owner_;
 
 public:
     IBaseManager() = delete;
 
-    explicit IBaseManager(ManagerSystem *owner);
+    explicit IBaseManager(UManagerSystem *owner);
     ~IBaseManager() override;
 
     DISABLE_COPY_MOVE(IBaseManager)
@@ -19,10 +19,10 @@ public:
     virtual void Init() = 0;
     [[nodiscard]] virtual const char *GetManagerName() const = 0;
 
-    [[nodiscard]] ManagerSystem *GetOwner() const;
-    [[nodiscard]] class GameWorld *GetWorld() const;
+    [[nodiscard]] UManagerSystem *GetOwner() const;
+    [[nodiscard]] class UGameWorld *GetWorld() const;
 
-    virtual void OnTick(TimePoint now, Duration interval);
+    virtual void OnTick(ATimePoint now, ADuration interval);
     virtual void OnDayChange();
 
 public:
@@ -48,4 +48,4 @@ mgr *mgr::Instance() { \
     exit(-1); \
 }
 
-#define GET_MANAGER(mgr) GetWorld()->GetSystem<ManagerSystem>()->GetManager<mgr>()
+#define GET_MANAGER(mgr) GetWorld()->GetSystem<UManagerSystem>()->GetManager<mgr>()

@@ -11,7 +11,7 @@ class BASE_API IOperateCommand : public IBaseCommand {
     std::string creator_;
 
 public:
-    IOperateCommand(CommandSystem *owner, CommandObject object);
+    IOperateCommand(UCommandSystem *owner, UCommandObject object);
 
     void SetCommandID(int64_t id);
     void SetCreateTime(int64_t time);

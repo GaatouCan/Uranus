@@ -9,47 +9,47 @@
 #include <shared_mutex>
 #include <spdlog/spdlog.h>
 
-class Connection;
+class UConnection;
 class IPackage;
 
-using ConnectionPointer = std::shared_ptr<Connection>;
+using AConnectionPointer = std::shared_ptr<UConnection>;
 
 
-class BASE_API IBasePlayer : public Actor, public std::enable_shared_from_this<IBasePlayer> {
+class BASE_API IBasePlayer : public UActor, public std::enable_shared_from_this<IBasePlayer> {
 
     class IBaseScene *owner_;
 
-    ConnectionPointer conn_;
-    PlayerID pid_;
+    AConnectionPointer conn_;
+    FPlayerID pid_;
 
-    TimePoint enter_time_;
-    TimePoint leave_time_;
+    ATimePoint enter_time_;
+    ATimePoint leave_time_;
 
-    PlatformInfo platform_;
+    FPlatformInfo platform_;
 
-    std::map<UniqueID, RepeatedTimer *> timer_map_;
+    std::map<FUniqueID, URepeatedTimer *> timer_map_;
     mutable std::shared_mutex timer_mtx_;
 
 public:
     IBasePlayer() = delete;
 
-    explicit IBasePlayer(const ConnectionPointer &conn);
+    explicit IBasePlayer(const AConnectionPointer &conn);
     ~IBasePlayer() override;
 
-    bool SetConnection(const ConnectionPointer &conn);
+    bool SetConnection(const AConnectionPointer &conn);
 
-    [[nodiscard]] ConnectionPointer GetConnection() const;
-    [[nodiscard]] TcpSocket &GetSocket() const;
+    [[nodiscard]] AConnectionPointer GetConnection() const;
+    [[nodiscard]] ATcpSocket &GetSocket() const;
     asio::io_context &GetIOContext() const;
 
-    [[nodiscard]] GameWorld *GetWorld() const;
+    [[nodiscard]] UGameWorld *GetWorld() const;
 
-    [[nodiscard]] ThreadID GetThreadID() const;
+    [[nodiscard]] AThreadID GetThreadID() const;
     bool IsSameThread() const;
 
     [[nodiscard]] int32_t GetLocalID() const;
     [[nodiscard]] int32_t GetCrossID() const;
-    [[nodiscard]] const PlayerID &GetPlayerID() const;
+    [[nodiscard]] const FPlayerID &GetPlayerID() const;
     [[nodiscard]] int64_t GetFullID() const;
 
     [[nodiscard]] IPackage *BuildPackage() const;
@@ -68,11 +68,11 @@ public:
 
     [[nodiscard]] IBaseScene *GetCurrentScene() const;
 
-    TimePoint GetEnterSceneTime() const;
-    TimePoint GetLeaveSceneTime() const;
+    ATimePoint GetEnterSceneTime() const;
+    ATimePoint GetLeaveSceneTime() const;
 
-    void SetPlatformInfo(const PlatformInfo &platform);
-    const PlatformInfo &GetPlatformInfo() const;
+    void SetPlatformInfo(const FPlatformInfo &platform);
+    const FPlatformInfo &GetPlatformInfo() const;
 
     template<typename Functor, typename... Args>
     void RunInThread(Functor &&func, Args &&... args) {
@@ -87,13 +87,13 @@ public:
     }
 
     template<typename Functor, typename... Args>
-    std::optional<UniqueID> SetTimer(
+    std::optional<FUniqueID> SetTimer(
         const std::chrono::duration<uint32_t> delay,
         const std::chrono::duration<uint32_t> rate,
         const bool repeat,
         Functor &&func, Args &&... args)
     {
-        const auto timer = new RepeatedTimer(GetIOContext());
+        const auto timer = new URepeatedTimer(GetIOContext());
 
         timer->SetDelay(delay)
             .SetRepeatRate(rate)
@@ -108,13 +108,13 @@ public:
     }
 
     template<typename Functor, typename Object, typename... Args>
-    std::optional<UniqueID> SetTimerForMember(
+    std::optional<FUniqueID> SetTimerForMember(
         const std::chrono::duration<uint32_t> delay,
         const std::chrono::duration<uint32_t> rate,
         const bool repeat,
         Functor &&func, Object *obj, Args &&... args)
     {
-        const auto timer = new RepeatedTimer(GetIOContext());
+        const auto timer = new URepeatedTimer(GetIOContext());
         timer->SetDelay(delay)
             .SetRepeatRate(rate)
             .SetIfRepeat(repeat)
@@ -127,12 +127,12 @@ public:
         return tid;
     }
 
-    bool StopTimer(const UniqueID &tid);
+    bool StopTimer(const FUniqueID &tid);
     void CleanAllTimer();
 
-    RepeatedTimer *GetTimer(const UniqueID &tid);
+    URepeatedTimer *GetTimer(const FUniqueID &tid);
 
 private:
-    std::optional<UniqueID> AddTimer(RepeatedTimer *timer);
-    bool RemoveTimer(const UniqueID &tid);
+    std::optional<FUniqueID> AddTimer(URepeatedTimer *timer);
+    bool RemoveTimer(const FUniqueID &tid);
 };

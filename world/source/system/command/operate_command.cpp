@@ -6,7 +6,7 @@
 #include "../../../include/system/command/command_system.h"
 
 
-IOperateCommand::IOperateCommand(CommandSystem *owner, CommandObject object)
+IOperateCommand::IOperateCommand(UCommandSystem *owner, UCommandObject object)
     : IBaseCommand(owner, std::move(object)),
       op_id_(-1),
       create_time_(0),

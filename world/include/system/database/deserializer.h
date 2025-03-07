@@ -2,19 +2,19 @@
 
 #include "table_result.h"
 
-class BASE_API Deserializer final {
+class BASE_API UDeserializer final {
 
-    std::unordered_map<std::string, TableResult *> result_map_;
+    std::unordered_map<std::string, UTableResult *> result_map_;
 
 public:
-    Deserializer() = default;
-    ~Deserializer();
+    UDeserializer() = default;
+    ~UDeserializer();
 
-    DISABLE_COPY_MOVE(Deserializer)
+    DISABLE_COPY_MOVE(UDeserializer)
 
-    explicit Deserializer(const std::shared_ptr<std::unordered_map<std::string, mysqlx::RowResult>> &result);
+    explicit UDeserializer(const std::shared_ptr<std::unordered_map<std::string, mysqlx::RowResult>> &result);
 
     void PushBack(const std::string& name, mysqlx::RowResult && res);
 
-    [[nodiscard]] TableResult* FetchResult(const std::string &name) const;
+    [[nodiscard]] UTableResult* FetchResult(const std::string &name) const;
 };

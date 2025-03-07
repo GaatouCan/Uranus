@@ -8,7 +8,7 @@
 using asio::awaitable;
 
 class IPackage;
-class Connection;
+class UConnection;
 
 
 class BASE_API IConnectionHandler {
@@ -16,7 +16,7 @@ class BASE_API IConnectionHandler {
 public:
     IConnectionHandler() = delete;
 
-    explicit IConnectionHandler(const std::weak_ptr<Connection> &conn);
+    explicit IConnectionHandler(const std::weak_ptr<UConnection> &conn);
     virtual ~IConnectionHandler() = default;
 
     virtual void OnConnected() {}
@@ -26,8 +26,8 @@ public:
 
     virtual void OnClosed() {}
 
-    [[nodiscard]] class GameWorld *GetWorld() const;
+    [[nodiscard]] class UGameWorld *GetWorld() const;
 
 protected:
-    std::weak_ptr<class Connection> conn_;
+    std::weak_ptr<UConnection> conn_;
 };

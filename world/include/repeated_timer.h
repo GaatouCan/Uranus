@@ -3,17 +3,17 @@
 #include "unique_id.h"
 #include "utils.h"
 
-using TimerFunctor = std::function<void(TimePoint)>;
+using ATimerFunctor = std::function<void(ATimePoint)>;
 
-class BASE_API RepeatedTimer final {
+class BASE_API URepeatedTimer final {
 
     asio::io_context &ctx_;
-    SystemTimer timer_;
+    ASystemTimer timer_;
 
-    UniqueID id_;
-    TimerFunctor functor_;
+    FUniqueID id_;
+    ATimerFunctor functor_;
 
-    std::function<void(const UniqueID &)> complete_functor_;
+    std::function<void(const FUniqueID &)> complete_functor_;
 
     std::chrono::duration<uint32_t> delay_;
     std::chrono::duration<uint32_t> repeat_rate_;
@@ -22,20 +22,20 @@ class BASE_API RepeatedTimer final {
     std::atomic<bool> running_;
 
 public:
-    RepeatedTimer() = delete;
+    URepeatedTimer() = delete;
 
-    explicit RepeatedTimer(asio::io_context &ctx);
-    ~RepeatedTimer();
+    explicit URepeatedTimer(asio::io_context &ctx);
+    ~URepeatedTimer();
 
-    DISABLE_COPY_MOVE(RepeatedTimer)
+    DISABLE_COPY_MOVE(URepeatedTimer)
 
-    RepeatedTimer &SetTimerID(UniqueID id);
-    [[nodiscard]] UniqueID GetTimerID() const;
+    URepeatedTimer &SetTimerID(FUniqueID id);
+    [[nodiscard]] FUniqueID GetTimerID() const;
 
-    RepeatedTimer &SetDelay(std::chrono::duration<uint32_t> delay);
+    URepeatedTimer &SetDelay(std::chrono::duration<uint32_t> delay);
 
-    RepeatedTimer &SetRepeatRate(std::chrono::duration<uint32_t> rate);
-    RepeatedTimer &SetIfRepeat(bool repeat);
+    URepeatedTimer &SetRepeatRate(std::chrono::duration<uint32_t> rate);
+    URepeatedTimer &SetIfRepeat(bool repeat);
 
     [[nodiscard]] bool IsRepeated() const;
 
@@ -43,24 +43,24 @@ public:
     [[nodiscard]] bool IsLooping() const;
 
     template<typename Functor, typename... Args>
-    RepeatedTimer &SetFunctor(Functor &&func, Args &&... args) {
-        functor_ = [func = std::forward<Functor>(func), ...args = std::forward<Args>(args)](TimePoint point) mutable {
+    URepeatedTimer &SetFunctor(Functor &&func, Args &&... args) {
+        functor_ = [func = std::forward<Functor>(func), ...args = std::forward<Args>(args)](ATimePoint point) mutable {
             std::invoke(func, point, args...);
         };
         return *this;
     }
 
     template<typename Functor, typename Object, typename... Args>
-    RepeatedTimer &SetMemberFunctor(Functor &&func, Object *obj, Args &&... args) {
-        functor_ = [func = std::forward<Functor>(func), obj, ...args = std::forward<Args>(args)](TimePoint point) mutable {
+    URepeatedTimer &SetMemberFunctor(Functor &&func, Object *obj, Args &&... args) {
+        functor_ = [func = std::forward<Functor>(func), obj, ...args = std::forward<Args>(args)](ATimePoint point) mutable {
             std::invoke(func, obj, point, args...);
         };
         return *this;
     }
 
-    RepeatedTimer &SetCompleteCallback(const std::function<void(const UniqueID &)> &func);
-    RepeatedTimer &SetCompleteCallback(std::function<void(const UniqueID &)> &&func);
+    URepeatedTimer &SetCompleteCallback(const std::function<void(const FUniqueID &)> &func);
+    URepeatedTimer &SetCompleteCallback(std::function<void(const FUniqueID &)> &&func);
 
-    RepeatedTimer &Start();
-    RepeatedTimer &Stop();
+    URepeatedTimer &Start();
+    URepeatedTimer &Stop();
 };

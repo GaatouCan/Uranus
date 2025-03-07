@@ -18,7 +18,7 @@ Player * IPlayerComponent::GetOwner() const {
     return module_->GetOwner();
 }
 
-GameWorld * IPlayerComponent::GetWorld() const {
+UGameWorld * IPlayerComponent::GetWorld() const {
     return GetOwner()->GetWorld();
 }
 

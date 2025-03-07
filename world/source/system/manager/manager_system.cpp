@@ -5,20 +5,20 @@
 #include <ranges>
 #include <spdlog/spdlog.h>
 
-ManagerSystem::ManagerSystem(GameWorld *world)
+UManagerSystem::UManagerSystem(UGameWorld *world)
     : ISubSystem(world),
       tick_timer_(GetWorld()->GetIOContext()),
       running_(false) {
 }
 
-ManagerSystem::~ManagerSystem() {
+UManagerSystem::~UManagerSystem() {
     running_ = false;
 
     for (const auto mgr: manager_map_ | std::views::values)
         delete mgr;
 }
 
-void ManagerSystem::Init() {
+void UManagerSystem::Init() {
     for (const auto mgr: manager_map_ | std::views::values) {
         GetWorld()->GetGlobalQueue()->RegisterReactor(mgr);
     }
@@ -52,7 +52,7 @@ void ManagerSystem::Init() {
 }
 
 
-void ManagerSystem::OnTick(const TimePoint now) {
+void UManagerSystem::OnTick(const ATimePoint now) {
     for (const auto mgr: manager_map_ | std::views::values) {
         if (!mgr->tick_per_sec_)
             continue;

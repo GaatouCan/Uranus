@@ -5,11 +5,11 @@
 
 #include <spdlog/spdlog.h>
 
-GlobalQueue::GlobalQueue(GameWorld *world)
+UGlobalQueue::UGlobalQueue(UGameWorld *world)
     : world_(world) {
 }
 
-GlobalQueue::~GlobalQueue() {
+UGlobalQueue::~UGlobalQueue() {
     spdlog::info("{} - Shutdown.", __FUNCTION__);
     queue_.Quit();
 
@@ -19,7 +19,7 @@ GlobalQueue::~GlobalQueue() {
     }
 }
 
-void GlobalQueue::Init() {
+void UGlobalQueue::Init() {
     const auto &cfg = world_->GetServerConfig();
     const int num = cfg["server"]["work_thread"].as<int>();
 
@@ -65,14 +65,14 @@ void GlobalQueue::Init() {
     spdlog::info("Global Queue Work With {} Thread(s).", num);
 }
 
-std::shared_ptr<TaskQueue> GlobalQueue::RegisterReactor(IReactor *reactor) {
+std::shared_ptr<UTaskQueue> UGlobalQueue::RegisterReactor(IReactor *reactor) {
     if (reactor == nullptr)
         return nullptr;
 
     if (const auto res = FindByReactor(reactor); res != nullptr)
         return res;
 
-    auto queue = std::make_shared<TaskQueue>(this, reactor);
+    auto queue = std::make_shared<UTaskQueue>(this, reactor);
     reactor->SetTaskQueue(queue);
 
     std::scoped_lock lock(reactor_mtx_, empty_mtx_);
@@ -82,7 +82,7 @@ std::shared_ptr<TaskQueue> GlobalQueue::RegisterReactor(IReactor *reactor) {
     return queue;
 }
 
-std::shared_ptr<TaskQueue> GlobalQueue::FindByReactor(const IReactor *reactor) const {
+std::shared_ptr<UTaskQueue> UGlobalQueue::FindByReactor(const IReactor *reactor) const {
     if (reactor == nullptr)
         return nullptr;
 
@@ -93,7 +93,7 @@ std::shared_ptr<TaskQueue> GlobalQueue::FindByReactor(const IReactor *reactor) c
     return nullptr;
 }
 
-void GlobalQueue::OnPushTask(const std::shared_ptr<TaskQueue> &queue) {
+void UGlobalQueue::OnPushTask(const std::shared_ptr<UTaskQueue> &queue) {
     if (queue == nullptr)
         return;
 
@@ -115,7 +115,7 @@ void GlobalQueue::OnPushTask(const std::shared_ptr<TaskQueue> &queue) {
     queue->OnPushToGlobal();
 }
 
-void GlobalQueue::RemoveReactor(const IReactor *reactor) {
+void UGlobalQueue::RemoveReactor(const IReactor *reactor) {
     const auto queue = FindByReactor(reactor);
     if (queue == nullptr)
         return;

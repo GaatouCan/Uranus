@@ -19,7 +19,7 @@ typedef void(*PackageInitializer)(IPackage*);
  */
 class PackagePool final {
 
-    friend class MainScene;
+    friend class UMainScene;
 
     explicit PackagePool(size_t capacity = kDefaultCapacity);
     ~PackagePool();
@@ -70,7 +70,7 @@ private:
 private:
     std::queue<IPackage *> queue_;
     std::set<IPackage *> pkg_set_;
-    std::atomic<TimePoint> collect_time_;
+    std::atomic<ATimePoint> collect_time_;
 
     // std::mutex mMutex;
     mutable std::shared_mutex mMutex;

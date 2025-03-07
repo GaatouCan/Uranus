@@ -9,7 +9,7 @@
 #endif
 
 
-TaskQueue::TaskQueue(GlobalQueue *global, IReactor *reactor)
+UTaskQueue::UTaskQueue(UGlobalQueue *global, IReactor *reactor)
     : global_(global),
       reactor_(reactor),
       running_(false),
@@ -17,11 +17,11 @@ TaskQueue::TaskQueue(GlobalQueue *global, IReactor *reactor)
       removed_(false) {
 }
 
-IReactor *TaskQueue::GetReactor() const {
+IReactor *UTaskQueue::GetReactor() const {
     return reactor_;
 }
 
-void TaskQueue::PushTask(const ReactorTask &task) {
+void UTaskQueue::PushTask(const AReactorTask &task) {
     if (running_) {
         std::unique_lock lock(mtx_);
         wait_queue_.push(task);
@@ -36,7 +36,7 @@ void TaskQueue::PushTask(const ReactorTask &task) {
     global_->OnPushTask(shared_from_this());
 }
 
-void TaskQueue::PushTask(ReactorTask &&task) {
+void UTaskQueue::PushTask(AReactorTask &&task) {
     if (running_) {
         std::unique_lock lock(mtx_);
         wait_queue_.emplace(std::move(task));
@@ -51,32 +51,32 @@ void TaskQueue::PushTask(ReactorTask &&task) {
     global_->OnPushTask(shared_from_this());
 }
 
-bool TaskQueue::IsEmpty() const {
+bool UTaskQueue::IsEmpty() const {
     std::shared_lock lock(mtx_);
     return running_ ? wait_queue_.empty() : cur_queue_.empty();
 }
 
-bool TaskQueue::IsRunning() const {
+bool UTaskQueue::IsRunning() const {
     return running_;
 }
 
-bool TaskQueue::IsRemoved() const {
+bool UTaskQueue::IsRemoved() const {
     return removed_;
 }
 
-void TaskQueue::OnPushToGlobal() {
+void UTaskQueue::OnPushToGlobal() {
     in_global_ = true;
 }
 
-void TaskQueue::OnPopFromGlobal() {
+void UTaskQueue::OnPopFromGlobal() {
     in_global_ = false;
 }
 
-bool TaskQueue::IsInGlobal() const {
+bool UTaskQueue::IsInGlobal() const {
     return in_global_;
 }
 
-void TaskQueue::HandleTask(const int rate) {
+void UTaskQueue::HandleTask(const int rate) {
     int num = std::ceil(cur_queue_.size() * (rate / 10000));
 
     const auto maxHandleTime = NowTimePoint() + TASK_QUEUE_MAX_HANDLE_SECOND;
@@ -91,11 +91,11 @@ void TaskQueue::HandleTask(const int rate) {
     }
 }
 
-void TaskQueue::OnStart() {
+void UTaskQueue::OnStart() {
     running_ = true;
 }
 
-void TaskQueue::OnStop() {
+void UTaskQueue::OnStop() {
     running_ = false;
 
     std::unique_lock lock(mtx_);
@@ -105,11 +105,11 @@ void TaskQueue::OnStop() {
     }
 }
 
-void TaskQueue::OnRemove() {
+void UTaskQueue::OnRemove() {
     removed_ = true;
 }
 
-void TaskQueue::OnReactorRelease() {
+void UTaskQueue::OnReactorRelease() {
     global_->RemoveReactor(reactor_);
     reactor_ = nullptr;
 }

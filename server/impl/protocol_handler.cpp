@@ -10,18 +10,18 @@
 #include <spdlog/spdlog.h>
 
 
-ProtocolHandler::ProtocolHandler(ProtocolRoute *route)
+ProtocolHandler::ProtocolHandler(UProtocolRoute *route)
     : IProtocolHandler(route) {
 }
 
-void ProtocolHandler::Invoke(const ProtoFunctor &func, const std::shared_ptr<Connection> &conn, IPackage *pkg) {
+void ProtocolHandler::Invoke(const ProtoFunctor &func, const std::shared_ptr<UConnection> &conn, IPackage *pkg) {
     const auto mgr = GET_MANAGER(PlayerManager);
     if (mgr == nullptr) {
         spdlog::critical("{} - PlayerManager not found", __FUNCTION__);
         return;
     }
 
-    const auto pid = std::any_cast<PlayerID>(conn->GetContext());
+    const auto pid = std::any_cast<FPlayerID>(conn->GetContext());
     if (const auto plr = mgr->FindPlayer(pid.local); plr != nullptr) {
         try {
             assert(plr->GetConnection() == conn);

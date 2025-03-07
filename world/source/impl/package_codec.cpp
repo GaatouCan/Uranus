@@ -11,16 +11,16 @@
 #endif
 
 
-PackageCodec::PackageCodec(const std::weak_ptr<Connection> &conn)
+UPackageCodec::UPackageCodec(const std::weak_ptr<UConnection> &conn)
     : TPackageCodec(conn) {
 }
 
-awaitable<void> PackageCodec::EncodeT(Package *pkg) {
-    Package::Header header{};
+awaitable<void> UPackageCodec::EncodeT(FPackage *pkg) {
+    FPackage::FHeader header{};
 
     header.magic = htonl(pkg->header_.magic);
     header.version = htonl(pkg->header_.version);
-    header.method = static_cast<CodecMethod>(htons(static_cast<uint16_t>(pkg->header_.method)));
+    header.method = static_cast<ECodecMethod>(htons(static_cast<uint16_t>(pkg->header_.method)));
 
     header.id = htonl(pkg->header_.id);
 
@@ -30,7 +30,7 @@ awaitable<void> PackageCodec::EncodeT(Package *pkg) {
     header.length = htobe64(pkg->header_.length);
 #endif
 
-    if (const auto len = co_await async_write(conn_.lock()->GetSocket(), asio::buffer(&header, Package::PACKAGE_HEADER_SIZE)); len == 0) {
+    if (const auto len = co_await async_write(conn_.lock()->GetSocket(), asio::buffer(&header, FPackage::PACKAGE_HEADER_SIZE)); len == 0) {
         spdlog::warn("{} - Write package header length equal zero", __FUNCTION__);
         pkg->Invalid();
         co_return;
@@ -42,8 +42,8 @@ awaitable<void> PackageCodec::EncodeT(Package *pkg) {
     co_await async_write(conn_.lock()->GetSocket(), asio::buffer(pkg->RawByteArray().GetRawRef()));
 }
 
-awaitable<void> PackageCodec::DecodeT(Package *pkg) {
-    if (const auto len = co_await async_read(conn_.lock()->GetSocket(), asio::buffer(&pkg->header_, Package::PACKAGE_HEADER_SIZE)); len == 0) {
+awaitable<void> UPackageCodec::DecodeT(FPackage *pkg) {
+    if (const auto len = co_await async_read(conn_.lock()->GetSocket(), asio::buffer(&pkg->header_, FPackage::PACKAGE_HEADER_SIZE)); len == 0) {
         spdlog::warn("{} - Read package header length equal zero", __FUNCTION__);
         pkg->Invalid();
         co_return;
@@ -51,7 +51,7 @@ awaitable<void> PackageCodec::DecodeT(Package *pkg) {
 
     pkg->header_.magic = ntohl(pkg->header_.magic);
     pkg->header_.version = ntohl(pkg->header_.version);
-    pkg->header_.method = static_cast<CodecMethod>(ntohs(static_cast<uint16_t>(pkg->header_.method)));
+    pkg->header_.method = static_cast<ECodecMethod>(ntohs(static_cast<uint16_t>(pkg->header_.method)));
 
     pkg->header_.id = ntohl(pkg->header_.id);
 

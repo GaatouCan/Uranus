@@ -6,17 +6,17 @@
 
 #include <typeindex>
 
-class BASE_API ManagerSystem final : public ISubSystem {
+class BASE_API UManagerSystem final : public ISubSystem {
 
     std::unordered_map<std::type_index, IBaseManager *> manager_map_;
 
-    SystemTimer tick_timer_;
-    TimePoint tick_point_;
+    ASystemTimer tick_timer_;
+    ATimePoint tick_point_;
     bool running_;
 
 public:
-    explicit ManagerSystem(GameWorld *world);
-    ~ManagerSystem() override;
+    explicit UManagerSystem(UGameWorld *world);
+    ~UManagerSystem() override;
 
     GET_SYSTEM_NAME(ManagerSystem)
 
@@ -38,7 +38,7 @@ public:
     }
 
 private:
-    void OnTick(TimePoint now);
+    void OnTick(ATimePoint now);
 };
 
 #define REGISTER_MANAGER(mgr) sys->CreateManager<mgr>();

@@ -2,7 +2,7 @@
 
 #include "common.h"
 
-class BASE_API Actor {
+class BASE_API UActor {
 public:
-    virtual ~Actor() = default;
+    virtual ~UActor() = default;
 };

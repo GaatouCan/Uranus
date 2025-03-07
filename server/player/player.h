@@ -16,8 +16,8 @@ struct EP_PlayerLogout final : IEventParam {
 
 class Player final : public IBasePlayer {
 
-    TimePoint login_time_;
-    TimePoint logout_time_;
+    ATimePoint login_time_;
+    ATimePoint logout_time_;
 
     ComponentModule component_module_;
     EventModule event_module_;
@@ -25,7 +25,7 @@ class Player final : public IBasePlayer {
 public:
     Player() = delete;
 
-    explicit Player(const ConnectionPointer &conn);
+    explicit Player(const AConnectionPointer &conn);
     ~Player() override;
 
     ComponentModule &GetComponentModule() noexcept { return component_module_; }
@@ -43,7 +43,7 @@ public:
 
     void SyncCache(CacheNode *node);
 
-    void DispatchEvent(Event event, IEventParam *param, DispatchType type = DispatchType::PUSH_QUEUE);
+    void DispatchEvent(Event event, IEventParam *param, EDispatchType type = EDispatchType::PUSH_QUEUE);
 
     template<typename T>
     requires std::derived_from<T, IPlayerComponent>

@@ -28,13 +28,13 @@ AppearanceCT::AppearanceCT(ComponentModule *module)
 AppearanceCT::~AppearanceCT() {
 }
 
-void AppearanceCT::Serialize(const std::shared_ptr<Serializer> &s) {
+void AppearanceCT::Serialize(const std::shared_ptr<USerializer> &s) {
     WRITE_TABLE(s, Appearance, appear_)
     WRITE_TABLE_MAP(s, Avatar, avatar_map_)
     WRITE_TABLE_MAP(s, AvatarFrame, avatar_frame_map_)
 }
 
-void AppearanceCT::Deserialize(Deserializer &ds) {
+void AppearanceCT::Deserialize(UDeserializer &ds) {
     READ_TABLE(&ds, Appearance, appear_)
     READ_TABLE_MAP(&ds, Avatar, avatar_map_)
     READ_TABLE_MAP(&ds, AvatarFrame, avatar_frame_map_)
@@ -190,7 +190,7 @@ void protocol::AppearanceRequest(const std::shared_ptr<IBasePlayer> &plr, IPacka
         return;
 
     Appearance::AppearanceRequest request;
-    request.ParseFromString(dynamic_cast<Package *>(pkg)->ToString());
+    request.ParseFromString(dynamic_cast<FPackage *>(pkg)->ToString());
 
     switch (request.operate_type()) {
         case Appearance::SEND_INFO: {

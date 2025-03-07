@@ -6,11 +6,11 @@
 #include <string>
 #include <mysqlx/xdevapi.h>
 
-using QueryArray = std::vector<std::pair<std::string, std::string>>;        // [表名, where表达式]
-using QueryResult = std::unordered_map<std::string, mysqlx::RowResult>;     // [表名, 查询结果]
-using QueryResultPtr = std::shared_ptr<QueryResult>;
+using AQueryArray = std::vector<std::pair<std::string, std::string>>;        // [表名, where表达式]
+using AQueryResult = std::unordered_map<std::string, mysqlx::RowResult>;     // [表名, 查询结果]
+using AQueryResultPtr = std::shared_ptr<AQueryResult>;
 
-using TransactionFunctor = std::function<void(mysqlx::Schema &)>;
+using ATransactionFunctor = std::function<void(mysqlx::Schema &)>;
 
 class BASE_API IDatabaseTask {
 public:
@@ -18,14 +18,14 @@ public:
     virtual void Execute(mysqlx::Schema &) = 0;
 };
 
-class BASE_API TransactionTask final : public IDatabaseTask {
+class BASE_API UTransactionTask final : public IDatabaseTask {
 
-    TransactionFunctor functor_;
+    ATransactionFunctor functor_;
 
 public:
-    TransactionTask() = delete;
+    UTransactionTask() = delete;
 
-    explicit TransactionTask(TransactionFunctor functor)
+    explicit UTransactionTask(ATransactionFunctor functor)
         : functor_(std::move(functor)) {
     }
 
@@ -38,21 +38,21 @@ public:
 
 
 template<class Callable>
-class BASE_API QueryTask final : public IDatabaseTask {
+class BASE_API UQueryTask final : public IDatabaseTask {
 
-    QueryArray array_;
+    AQueryArray array_;
     Callable cb_;
 
 public:
-    QueryTask() = delete;
+    UQueryTask() = delete;
 
-    QueryTask(QueryArray query, Callable &&cb)
+    UQueryTask(AQueryArray query, Callable &&cb)
         : array_(std::move(query)),
           cb_(std::forward<Callable>(cb)) {
     }
 
     void Execute(mysqlx::Schema &schema) override {
-        auto ret = std::make_shared<QueryResult>();
+        auto ret = std::make_shared<AQueryResult>();
         for (const auto &[name, expr]: array_) {
             auto table = schema.getTable(name, true);
             ret->insert_or_assign(name, expr.empty() ? table.select().execute() : table.select().where(expr).execute());

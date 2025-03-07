@@ -8,26 +8,26 @@
 #include <spdlog/spdlog.h>
 
 
-CommandObject::CommandObject(const std::string &type, const std::string &param)
+UCommandObject::UCommandObject(const std::string &type, const std::string &param)
     : type_(type),
       input_(param),
       idx_(0) {
     param_ = utils::SplitString(input_, '|');
 }
 
-std::string CommandObject::GetType() const {
+std::string UCommandObject::GetType() const {
     return type_;
 }
 
-std::string CommandObject::GetInputString() const {
+std::string UCommandObject::GetInputString() const {
     return input_;
 }
 
-void CommandObject::Reset() {
+void UCommandObject::Reset() {
     idx_ = 0;
 }
 
-int CommandObject::ReadInt() {
+int UCommandObject::ReadInt() {
     if (idx_ >= param_.size()) {
         spdlog::error("{} - index out of range", __FUNCTION__);
         return -1;
@@ -35,7 +35,7 @@ int CommandObject::ReadInt() {
     return std::stoi(param_[idx_++]);
 }
 
-unsigned int CommandObject::ReadUInt() {
+unsigned int UCommandObject::ReadUInt() {
     if (idx_ >= param_.size()) {
         spdlog::error("{} - index out of range", __FUNCTION__);
         return -1;
@@ -43,7 +43,7 @@ unsigned int CommandObject::ReadUInt() {
     return std::stoul(param_[idx_++]);
 }
 
-std::string CommandObject::ReadString() {
+std::string UCommandObject::ReadString() {
     if (idx_ >= param_.size()) {
         spdlog::error("{} - index out of range", __FUNCTION__);
         return {};

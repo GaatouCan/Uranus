@@ -9,15 +9,15 @@
 #endif
 
 
-class BASE_API ByteArray final {
+class BASE_API FByteArray final {
 
     std::vector<uint8_t> array_;
 
 public:
-    ByteArray() = default;
+    FByteArray() = default;
 
-    explicit ByteArray(size_t size);
-    explicit ByteArray(const std::vector<uint8_t> &bytes);
+    explicit FByteArray(size_t size);
+    explicit FByteArray(const std::vector<uint8_t> &bytes);
 
     explicit operator std::vector<uint8_t>() const;
 
@@ -58,7 +58,7 @@ public:
 
     template<typename T>
     requires kPODType<T>
-    ByteArray &operator << (T source) {
+    FByteArray &operator << (T source) {
         CastFromData(source);
         return *this;
     }
@@ -77,22 +77,22 @@ public:
 
     template<typename T>
     requires kPODType<T>
-    ByteArray &operator >> (T *target) {
+    FByteArray &operator >> (T *target) {
         CastToData(target);
         return *this;
     }
 
     template<typename T>
     requires kPODType<T>
-    static ByteArray FromData(T data) {
-        ByteArray bytes;
+    static FByteArray FromData(T data) {
+        FByteArray bytes;
         bytes.CastFromData(std::forward<T>(data));
         return bytes;
     }
 };
 
 template<typename T>
-requires ByteArray::kPODType<T>
+requires FByteArray::kPODType<T>
 std::vector<uint8_t> BASE_API DataToByteArray(T data) {
     std::vector<uint8_t> bytes;
 
@@ -109,7 +109,7 @@ std::vector<uint8_t> BASE_API DataToByteArray(T data) {
 }
 
 template<typename T>
-requires ByteArray::kPODType<T>
+requires FByteArray::kPODType<T>
 bool BASE_API ByteArrayToData(const std::vector<uint8_t> &bytes, T *data) {
     const bool ret = bytes.size() >= sizeof(std::remove_pointer_t<T>);
     const auto size = ret ? sizeof(std::remove_pointer_t<T>) : bytes.size();

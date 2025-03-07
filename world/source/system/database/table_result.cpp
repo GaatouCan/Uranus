@@ -1,25 +1,25 @@
 #include "../../../include/system/database/table_result.h"
 
 
-TableResult::TableResult(mysqlx::RowResult &&res)
+UTableResult::UTableResult(mysqlx::RowResult &&res)
     : result_(std::move(res)),
       total_(result_.count()) {
 }
 
-size_t TableResult::TotalRowsCount() const {
+size_t UTableResult::TotalRowsCount() const {
     return total_;
 }
 
-size_t TableResult::Count() {
+size_t UTableResult::Count() {
     return result_.count();
 }
 
-bool TableResult::HasMore() {
+bool UTableResult::HasMore() {
     cur_row_ = result_.fetchOne();
     return !cur_row_.isNull();
 }
 
-void TableResult::Deserialize(IDBTable* table) {
+void UTableResult::Deserialize(IDBTable* table) {
     if (cur_row_.isNull())
         cur_row_ = result_.fetchOne();
 

@@ -10,7 +10,7 @@
 
 
 class Player;
-class Connection;
+class UConnection;
 
 class PlayerManager final : public IBaseManager {
 
@@ -20,10 +20,10 @@ class PlayerManager final : public IBaseManager {
     std::unordered_map<int32_t, CacheNode> cache_map_;
     mutable std::shared_mutex cache_mtx_;
 
-    TimePoint last_update_time_;
+    ATimePoint last_update_time_;
 
 public:
-    explicit PlayerManager(ManagerSystem *owner);
+    explicit PlayerManager(UManagerSystem *owner);
     ~PlayerManager() override;
 
     void Init() override;
@@ -32,22 +32,22 @@ public:
 
     void OnDayChange() override;
 
-    awaitable<std::shared_ptr<Player>> OnPlayerLogin(const std::shared_ptr<Connection> &conn, const PlayerID &id);
+    awaitable<std::shared_ptr<Player>> OnPlayerLogin(const std::shared_ptr<UConnection> &conn, const FPlayerID &id);
 
-    void OnPlayerLogout(PlayerID pid);
+    void OnPlayerLogout(FPlayerID pid);
 
     std::shared_ptr<Player> FindPlayer(int32_t pid);
     std::shared_ptr<Player> RemovePlayer(int32_t pid);
 
-    void SendToList(const std::set<PlayerID>& players, int32_t id, std::string_view data);
+    void SendToList(const std::set<FPlayerID>& players, int32_t id, std::string_view data);
 
     void SyncCache(const std::shared_ptr<Player> &plr);
     void SyncCache(int32_t pid);
     void SyncCache(const CacheNode &node);
 
-    awaitable<std::optional<CacheNode>> FindCacheNode(const PlayerID &pid);
+    awaitable<std::optional<CacheNode>> FindCacheNode(const FPlayerID &pid);
 
-    void OnTick(TimePoint now, Duration interval) override;
+    void OnTick(ATimePoint now, ADuration interval) override;
 };
 
 #define SEND_TO_PLAYER_SET(mgr, set, proto, data) \

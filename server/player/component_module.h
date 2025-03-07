@@ -51,7 +51,7 @@ public:
     void OnLogin();
     void OnLogout();
 
-    [[nodiscard]] PlayerID GetPlayerID() const;
+    [[nodiscard]] FPlayerID GetPlayerID() const;
 
     void SyncCache(CacheNode *node);
 };

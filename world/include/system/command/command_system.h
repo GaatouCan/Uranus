@@ -7,17 +7,17 @@
 #include <concepts>
 
 
-class BASE_API CommandSystem final : public ISubSystem {
+class BASE_API UCommandSystem final : public ISubSystem {
 
-    using ClientCreator = std::function<std::shared_ptr<IClientCommand>(const CommandObject &)>;
-    using OperateCreator = std::function<std::shared_ptr<IOperateCommand>(const CommandObject &)>;
+    using AClientCreator = std::function<std::shared_ptr<IClientCommand>(const UCommandObject &)>;
+    using AOperateCreator = std::function<std::shared_ptr<IOperateCommand>(const UCommandObject &)>;
 
-    std::unordered_map<std::string, ClientCreator> client_map_;
-    std::unordered_map<std::string, OperateCreator> operate_map_;
+    std::unordered_map<std::string, AClientCreator> client_map_;
+    std::unordered_map<std::string, AOperateCreator> operate_map_;
 
 public:
-    explicit CommandSystem(GameWorld *world);
-    ~CommandSystem() override;
+    explicit UCommandSystem(UGameWorld *world);
+    ~UCommandSystem() override;
 
     GET_SYSTEM_NAME(CommandSystem)
 
@@ -29,7 +29,7 @@ public:
         if (client_map_.contains(type))
             return;
 
-        client_map_[type] = [this](const CommandObject &obj) -> std::shared_ptr<IClientCommand> {
+        client_map_[type] = [this](const UCommandObject &obj) -> std::shared_ptr<IClientCommand> {
             return std::make_shared<T>(this, obj);
         };
     }
@@ -40,7 +40,7 @@ public:
         if (operate_map_.contains(type))
             return;
 
-        operate_map_[type] = [this](const CommandObject &obj) -> std::shared_ptr<IOperateCommand> {
+        operate_map_[type] = [this](const UCommandObject &obj) -> std::shared_ptr<IOperateCommand> {
             return std::make_shared<T>(this, obj);
         };
     }

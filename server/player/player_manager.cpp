@@ -14,9 +14,9 @@
 #include "player_cache.orm.h"
 
 
-static_assert(ByteArray::kPODType<CacheNode>, "CacheNode Is Not POD Type");
+static_assert(FByteArray::kPODType<CacheNode>, "CacheNode Is Not POD Type");
 
-PlayerManager::PlayerManager(ManagerSystem *owner)
+PlayerManager::PlayerManager(UManagerSystem *owner)
     : IBaseManager(owner) {
 
 }
@@ -26,12 +26,12 @@ PlayerManager::~PlayerManager() {
 }
 
 void PlayerManager::Init() {
-    if (const auto sys = GetWorld()->GetSystem<DatabaseSystem>(); sys != nullptr) {
+    if (const auto sys = GetWorld()->GetSystem<UDatabaseSystem>(); sys != nullptr) {
         sys->SyncSelect("player_cache", "", [&](mysqlx::Row row) {
             orm::DBTable_PlayerCache table;
             table.Read(row);
 
-            const PlayerID pid(table.pid);
+            const FPlayerID pid(table.pid);
             if (!pid.IsAvailable())
                 return;
 
@@ -50,8 +50,8 @@ void PlayerManager::OnDayChange() {
     }
 }
 
-awaitable<std::shared_ptr<Player>> PlayerManager::OnPlayerLogin(const std::shared_ptr<Connection> &conn, const PlayerID &id) {
-    if (conn == nullptr || std::any_cast<PlayerID>(conn->GetContext()) != id) {
+awaitable<std::shared_ptr<Player>> PlayerManager::OnPlayerLogin(const std::shared_ptr<UConnection> &conn, const FPlayerID &id) {
+    if (conn == nullptr || std::any_cast<FPlayerID>(conn->GetContext()) != id) {
         spdlog::error("{} - Null Connection Pointer Or Player ID Not Equal.", __FUNCTION__);
         co_return nullptr;
     }
@@ -89,7 +89,7 @@ awaitable<std::shared_ptr<Player>> PlayerManager::OnPlayerLogin(const std::share
     co_return plr;
 }
 
-void PlayerManager::OnPlayerLogout(const PlayerID pid) {
+void PlayerManager::OnPlayerLogout(const FPlayerID pid) {
     spdlog::info("{} - Player[{}] Logout", __FUNCTION__, pid.ToInt64());
     if (const auto plr = RemovePlayer(pid.local); plr != nullptr) {
         plr->TryLeaveScene();
@@ -117,13 +117,13 @@ std::shared_ptr<Player> PlayerManager::RemovePlayer(const int32_t pid) {
     return nullptr;
 }
 
-void PlayerManager::SendToList(const std::set<PlayerID> &players, const int32_t id, const std::string_view data) {
+void PlayerManager::SendToList(const std::set<FPlayerID> &players, const int32_t id, const std::string_view data) {
     if (id <= MINIMUM_PACKAGE_ID || id >= static_cast<int32_t>(protocol::ProtoType::PROTO_TYPE_MAX))
         return;
 
     for (const auto [localID, crossID]: players) {
         if (const auto plr = FindPlayer(localID); plr != nullptr && plr->IsOnline()) {
-            const auto pkg = dynamic_cast<Package *>(plr->GetConnection()->BuildPackage());
+            const auto pkg = dynamic_cast<FPackage *>(plr->GetConnection()->BuildPackage());
             pkg->SetPackageID(id).SetData(data);
             plr->SendPackage(pkg);
         }
@@ -155,7 +155,7 @@ void PlayerManager::SyncCache(const int32_t pid) {
 }
 
 void PlayerManager::SyncCache(const CacheNode &node) {
-    const PlayerID pid(node.pid);
+    const FPlayerID pid(node.pid);
 
     if (!pid.IsAvailable())
         return;
@@ -166,7 +166,7 @@ void PlayerManager::SyncCache(const CacheNode &node) {
     spdlog::trace("{} - Player[{}] Sync Success.", __FUNCTION__, pid.ToInt64());
 }
 
-awaitable<std::optional<CacheNode>> PlayerManager::FindCacheNode(const PlayerID &pid) {
+awaitable<std::optional<CacheNode>> PlayerManager::FindCacheNode(const FPlayerID &pid) {
     if (!pid.IsAvailable())
         co_return std::nullopt;
 
@@ -187,11 +187,11 @@ awaitable<std::optional<CacheNode>> PlayerManager::FindCacheNode(const PlayerID 
     co_return std::nullopt;
 }
 
-void PlayerManager::OnTick(const TimePoint now, const Duration interval) {
+void PlayerManager::OnTick(const ATimePoint now, const ADuration interval) {
     if (now - last_update_time_ < std::chrono::seconds(10))
         return;
 
-    const auto ser = std::make_shared<Serializer>();
+    const auto ser = std::make_shared<USerializer>();
 
     {
         auto *array = ser->CreateTableVector<orm::DBTable_PlayerCache>("player_cache");
@@ -206,7 +206,7 @@ void PlayerManager::OnTick(const TimePoint now, const Duration interval) {
         }
     }
 
-    if (const auto sys = GetWorld()->GetSystem<DatabaseSystem>(); sys != nullptr) {
+    if (const auto sys = GetWorld()->GetSystem<UDatabaseSystem>(); sys != nullptr) {
         sys->PushTransaction([ser](mysqlx::Schema &schema) {
             ser->Serialize(schema);
         });

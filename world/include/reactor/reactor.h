@@ -11,7 +11,7 @@ class BASE_API IReactor {
 
     // 任务队列的生命周期由Reactor管理
     // Reactor删除之后才会释放TaskQueue
-    std::shared_ptr<class TaskQueue> queue_;
+    std::shared_ptr<class UTaskQueue> queue_;
 
 public:
     IReactor() = default;
@@ -19,9 +19,9 @@ public:
 
     DISABLE_COPY_MOVE(IReactor)
 
-    void SetTaskQueue(const std::shared_ptr<TaskQueue> &queue);
+    void SetTaskQueue(const std::shared_ptr<UTaskQueue> &queue);
 
-    [[nodiscard]] std::shared_ptr<TaskQueue> GetTaskQueue() const;
+    [[nodiscard]] std::shared_ptr<UTaskQueue> GetTaskQueue() const;
 
     void PushTask(const std::function<void(IReactor *)> &task) const;
     void PushTask(std::function<void(IReactor *)> &&task) const;
@@ -34,5 +34,5 @@ public:
         });
     }
 
-    virtual void Invoke(const std::string &func, ByteArray &&bytes) {}
+    virtual void Invoke(const std::string &func, FByteArray &&bytes) {}
 };

@@ -57,7 +57,7 @@ public:
     void RegisterListener(Event event, void *ptr, const EventListener &listener);
     void RemoveListener(Event event, void *ptr);
 
-    void Dispatch(Event event, IEventParam *param, DispatchType type = DispatchType::PUSH_QUEUE);
+    void Dispatch(Event event, IEventParam *param, EDispatchType type = EDispatchType::PUSH_QUEUE);
 
 private:
     asio::awaitable<void> HandleEvent();

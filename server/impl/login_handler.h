@@ -5,7 +5,7 @@
 
 class LoginHandler final : public ILoginHandler {
 public:
-    explicit LoginHandler(LoginAuthenticator *owner);
-    awaitable<std::shared_ptr<IBasePlayer>> OnPlayerLogin(const std::shared_ptr<Connection> &conn, const LoginInfo &info) override;
+    explicit LoginHandler(ULoginAuthenticator *owner);
+    awaitable<std::shared_ptr<IBasePlayer>> OnPlayerLogin(const std::shared_ptr<UConnection> &conn, const LoginInfo &info) override;
     awaitable<LoginInfo> ParseLoginInfo(IPackage *) override;
 };

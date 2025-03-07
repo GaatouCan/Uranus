@@ -8,11 +8,11 @@
 #include <spdlog/spdlog.h>
 
 
-std::chrono::duration<uint32_t> Connection::kExpireTime = 30s;
-std::chrono::duration<uint32_t> Connection::kWriteTimeout = 10s;
-std::chrono::duration<uint32_t> Connection::kReadTimeout = 10s;
+std::chrono::duration<uint32_t> UConnection::kExpireTime = 30s;
+std::chrono::duration<uint32_t> UConnection::kWriteTimeout = 10s;
+std::chrono::duration<uint32_t> UConnection::kReadTimeout = 10s;
 
-Connection::Connection(TcpSocket socket, MainScene *scene)
+UConnection::UConnection(ATcpSocket socket, UMainScene *scene)
     : socket_(std::move(socket)),
       scene_(scene),
       codec_(nullptr),
@@ -20,12 +20,12 @@ Connection::Connection(TcpSocket socket, MainScene *scene)
       watchdog_(socket_.get_executor()) {
 }
 
-Connection::~Connection() {
+UConnection::~UConnection() {
     Disconnect();
     spdlog::trace("{} - key[{}]", __FUNCTION__, key_.empty() ? "null" : key_);
 }
 
-void Connection::ConnectToClient() {
+void UConnection::ConnectToClient() {
     assert(codec_ != nullptr && handler_ != nullptr);
 
     deadline_ = NowTimePoint() + kExpireTime;
@@ -43,7 +43,7 @@ void Connection::ConnectToClient() {
     }, detached);
 }
 
-void Connection::Disconnect() {
+void UConnection::Disconnect() {
     GetWorld()->RemoveConnection(key_);
 
     if (socket_.is_open()) {
@@ -63,62 +63,62 @@ void Connection::Disconnect() {
     }
 }
 
-int32_t Connection::GetSceneID() const {
+int32_t UConnection::GetSceneID() const {
     return scene_->GetSceneID();
 }
 
-Connection &Connection::SetContext(const std::any &ctx) {
+UConnection &UConnection::SetContext(const std::any &ctx) {
     context_ = ctx;
     return *this;
 }
 
-Connection &Connection::ResetContext() {
+UConnection &UConnection::ResetContext() {
     context_.reset();
     return *this;
 }
 
-Connection &Connection::SetKey(const std::string &key) {
+UConnection &UConnection::SetKey(const std::string &key) {
     key_ = key;
     return *this;
 }
 
-void Connection::SetWatchdogTimeout(const uint32_t sec) {
+void UConnection::SetWatchdogTimeout(const uint32_t sec) {
     kExpireTime = std::chrono::seconds(sec);
 }
 
-void Connection::SetWriteTimeout(const uint32_t sec) {
+void UConnection::SetWriteTimeout(const uint32_t sec) {
     kWriteTimeout = std::chrono::seconds(sec);
 }
 
-void Connection::SetReadTimeout(const uint32_t sec) {
+void UConnection::SetReadTimeout(const uint32_t sec) {
     kReadTimeout = std::chrono::seconds(sec);
 }
 
-ThreadID Connection::GetThreadID() const {
+AThreadID UConnection::GetThreadID() const {
     return scene_->GetThreadID();
 }
 
-PackagePool *Connection::GetPackagePool() const {
+PackagePool *UConnection::GetPackagePool() const {
     return scene_->GetPackagePool();
 }
 
-MainScene *Connection::GetMainScene() const {
+UMainScene *UConnection::GetMainScene() const {
     return scene_;
 }
 
-GameWorld *Connection::GetWorld() const {
+UGameWorld *UConnection::GetWorld() const {
     return scene_->GetWorld();
 }
 
-bool Connection::IsSameThread() const {
+bool UConnection::IsSameThread() const {
     return GetThreadID() == std::this_thread::get_id();
 }
 
-IPackage *Connection::BuildPackage() const {
+IPackage *UConnection::BuildPackage() const {
     return GetPackagePool()->Acquire();
 }
 
-void Connection::Send(IPackage *pkg) {
+void UConnection::Send(IPackage *pkg) {
     const bool empty = output_.IsEmpty();
     output_.PushBack(pkg);
 
@@ -126,13 +126,13 @@ void Connection::Send(IPackage *pkg) {
         co_spawn(socket_.get_executor(), WritePackage(), detached);
 }
 
-asio::ip::address Connection::RemoteAddress() const {
+asio::ip::address UConnection::RemoteAddress() const {
     if (IsConnected())
         return socket_.remote_endpoint().address();
     return {};
 }
 
-awaitable<void> Connection::Watchdog() {
+awaitable<void> UConnection::Watchdog() {
     try {
         decltype(deadline_) now;
         do {
@@ -157,7 +157,7 @@ awaitable<void> Connection::Watchdog() {
     }
 }
 
-awaitable<void> Connection::WritePackage() {
+awaitable<void> UConnection::WritePackage() {
     try {
         if (codec_ == nullptr) {
             spdlog::critical("{} - codec undefined - key[{}]", __FUNCTION__, key_.empty() ? "null" : key_);
@@ -190,7 +190,7 @@ awaitable<void> Connection::WritePackage() {
     }
 }
 
-awaitable<void> Connection::ReadPackage() {
+awaitable<void> UConnection::ReadPackage() {
     try {
         if (codec_ == nullptr) {
             spdlog::error("{} - PackageCodec Undefined - key[{}]", __FUNCTION__, key_.empty() ? "null" : key_);
@@ -226,8 +226,8 @@ awaitable<void> Connection::ReadPackage() {
     }
 }
 
-awaitable<void> Connection::Timeout(const std::chrono::duration<uint32_t> expire) {
-    SystemTimer timer(co_await asio::this_coro::executor);
+awaitable<void> UConnection::Timeout(const std::chrono::duration<uint32_t> expire) {
+    ASystemTimer timer(co_await asio::this_coro::executor);
     timer.expires_after(expire);
     co_await timer.async_wait();
 }

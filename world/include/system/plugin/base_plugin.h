@@ -3,7 +3,7 @@
 #include "../../common.h"
 
 
-enum class PluginType {
+enum class EPluginType {
     INITIALIZE,
     RUNTIME,
     RECEIVE_DATA,
@@ -12,15 +12,15 @@ enum class PluginType {
 
 class BASE_API IBasePlugin {
 
-    class PluginSystem * owner_;
+    class UPluginSystem * owner_;
 
 public:
-    explicit IBasePlugin(PluginSystem * owner);
+    explicit IBasePlugin(UPluginSystem * owner);
     virtual ~IBasePlugin() = default;
 
-    [[nodiscard]] virtual PluginType GetType() const = 0;
+    [[nodiscard]] virtual EPluginType GetType() const = 0;
     [[nodiscard]] virtual const char* GetPluginName() const = 0;
 
-    [[nodiscard]] PluginSystem * GetOwner() const;
-    [[nodiscard]] class  GameWorld *GetWorld() const;
+    [[nodiscard]] UPluginSystem * GetOwner() const;
+    [[nodiscard]] class  UGameWorld *GetWorld() const;
 };

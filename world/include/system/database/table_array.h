@@ -21,19 +21,19 @@ public:
     [[nodiscard]] std::string GetTableName() const { return table_name_; }
 
 protected:
-    friend class Serializer;
+    friend class USerializer;
 
     virtual void SerializeInternal(mysqlx::Table &table) = 0;
     virtual void RemoveExpiredRow(mysqlx::Table &table, const std::string &expr) = 0;
 };
 
-template<DBTableType T>
-class BASE_API TableArray final : public ITableArray {
+template<DB_TABLE_TYPE T>
+class BASE_API TTableArray final : public ITableArray {
 
     std::vector<T> mData;
 
 public:
-    explicit TableArray(std::string name)
+    explicit TTableArray(std::string name)
         : ITableArray(std::move(name)) {
     }
 
@@ -51,7 +51,7 @@ public:
     }
 
 private:
-    friend class Serializer;
+    friend class USerializer;
 
     void SerializeInternal(mysqlx::Table &table) override {
         for (auto &value: mData) {

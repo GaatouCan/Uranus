@@ -7,19 +7,19 @@
 
 class BASE_API IBaseCommand {
 
-    class CommandSystem *owner_;
+    class UCommandSystem *owner_;
 
 protected:
-    CommandObject object_;
+    UCommandObject object_;
 
 public:
     IBaseCommand() = delete;
 
-    IBaseCommand(CommandSystem *owner, CommandObject object);
+    IBaseCommand(UCommandSystem *owner, UCommandObject object);
     virtual ~IBaseCommand() = default;
 
     virtual asio::awaitable<void> Execute() = 0;
 
-    [[nodiscard]] CommandSystem *GetOwner() const;
-    [[nodiscard]] class GameWorld *GetWorld() const;
+    [[nodiscard]] UCommandSystem *GetOwner() const;
+    [[nodiscard]] class UGameWorld *GetWorld() const;
 };

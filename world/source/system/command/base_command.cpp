@@ -5,15 +5,15 @@
 #include "../../../include/system/command/base_command.h"
 #include "../../../include/system/command/command_system.h"
 
-IBaseCommand::IBaseCommand(CommandSystem *owner, CommandObject object)
+IBaseCommand::IBaseCommand(UCommandSystem *owner, UCommandObject object)
     : owner_(owner),
       object_(std::move(object)) {
 }
 
-CommandSystem * IBaseCommand::GetOwner() const {
+UCommandSystem * IBaseCommand::GetOwner() const {
     return owner_;
 }
 
-GameWorld * IBaseCommand::GetWorld() const {
+UGameWorld * IBaseCommand::GetWorld() const {
     return owner_->GetWorld();
 }

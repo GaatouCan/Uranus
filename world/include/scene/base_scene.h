@@ -12,7 +12,7 @@ class IBasePlayer;
 
 class BASE_API IBaseScene {
 
-    class SceneManager* owner_;
+    class USceneManager* owner_;
     const int32_t scene_id_;
 
     std::map<int32_t, std::shared_ptr<IBasePlayer>> player_map_;
@@ -21,12 +21,12 @@ class BASE_API IBaseScene {
 public:
     IBaseScene() = delete;
 
-    IBaseScene(SceneManager *owner, int32_t id);
+    IBaseScene(USceneManager *owner, int32_t id);
     virtual ~IBaseScene();
 
     [[nodiscard]] int32_t GetSceneID() const;
-    [[nodiscard]] SceneManager* GetOwner() const;
-    [[nodiscard]] GameWorld *GetWorld() const;
+    [[nodiscard]] USceneManager* GetOwner() const;
+    [[nodiscard]] UGameWorld *GetWorld() const;
 
     void PlayerEnterScene(const std::shared_ptr<IBasePlayer> &player);
     void PlayerLeaveScene(const std::shared_ptr<IBasePlayer> &player, bool bChange = false);
@@ -55,5 +55,5 @@ public:
     virtual bool CanDestroy() const;
 
 public:
-    TimePoint destroy_time_point_;
+    ATimePoint destroy_time_point_;
 };

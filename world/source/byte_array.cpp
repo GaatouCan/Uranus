@@ -1,54 +1,54 @@
 #include "../include/byte_array.h"
 
-ByteArray::ByteArray(const size_t size)
+FByteArray::FByteArray(const size_t size)
     : array_(size) {
 }
 
-ByteArray::ByteArray(const std::vector<uint8_t> &bytes)
+FByteArray::FByteArray(const std::vector<uint8_t> &bytes)
     : array_(bytes) {
 }
 
-ByteArray::operator std::vector<unsigned char>() const {
+FByteArray::operator std::vector<unsigned char>() const {
     return array_;
 }
 
-void ByteArray::Reset() {
+void FByteArray::Reset() {
     array_.clear();
     array_.shrink_to_fit();
 }
 
-size_t ByteArray::Size() const {
+size_t FByteArray::Size() const {
     return array_.size();
 }
 
-void ByteArray::Resize(const size_t size) {
+void FByteArray::Resize(const size_t size) {
     array_.resize(size);
 }
 
-uint8_t * ByteArray::Data() {
+uint8_t * FByteArray::Data() {
     return array_.data();
 }
 
-std::vector<uint8_t> & ByteArray::GetRawRef() {
+std::vector<uint8_t> & FByteArray::GetRawRef() {
     return array_;
 }
 
-auto ByteArray::Begin() -> decltype(array_)::iterator {
+auto FByteArray::Begin() -> decltype(array_)::iterator {
     return array_.begin();
 }
 
-auto ByteArray::End() -> decltype(array_)::iterator {
+auto FByteArray::End() -> decltype(array_)::iterator {
     return array_.end();
 }
 
-auto ByteArray::Begin() const -> decltype(array_)::const_iterator {
+auto FByteArray::Begin() const -> decltype(array_)::const_iterator {
     return array_.begin();
 }
 
-auto ByteArray::End() const -> decltype(array_)::const_iterator {
+auto FByteArray::End() const -> decltype(array_)::const_iterator {
     return array_.end();
 }
 
-uint8_t ByteArray::operator[](const size_t pos) const noexcept {
+uint8_t FByteArray::operator[](const size_t pos) const noexcept {
     return array_[pos];
 }

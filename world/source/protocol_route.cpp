@@ -3,23 +3,23 @@
 
 #include <spdlog/spdlog.h>
 
-ProtocolRoute::ProtocolRoute(GameWorld *world)
+UProtocolRoute::UProtocolRoute(UGameWorld *world)
     : world_(world) {
 }
 
-ProtocolRoute::~ProtocolRoute() {
+UProtocolRoute::~UProtocolRoute() {
 
 }
 
-void ProtocolRoute::Init() {
+void UProtocolRoute::Init() {
 }
 
-GameWorld *ProtocolRoute::GetWorld() const {
+UGameWorld *UProtocolRoute::GetWorld() const {
     return world_;
 }
 
 
-void ProtocolRoute::RegisterProtocol(const uint32_t type, const ProtoFunctor &func) {
+void UProtocolRoute::RegisterProtocol(const uint32_t type, const ProtoFunctor &func) {
     proto_map_[type] = func;
 }
 
@@ -34,14 +34,14 @@ void ProtocolRoute::RegisterProtocol(const uint32_t type, const ProtoFunctor &fu
 //     return nullptr;
 // }
 
-ProtoFunctor ProtocolRoute::FindProto(const uint32_t proto) const {
+ProtoFunctor UProtocolRoute::FindProto(const uint32_t proto) const {
     if (const auto it = proto_map_.find(proto); it != proto_map_.end()) {
         return it->second;
     }
     return nullptr;
 }
 
-void ProtocolRoute::OnReadPackage(const std::shared_ptr<Connection> &conn, IPackage *pkg) const {
+void UProtocolRoute::OnReadPackage(const std::shared_ptr<UConnection> &conn, IPackage *pkg) const {
     // if (mHandler == nullptr) {
     //     spdlog::critical("{} - handler not set.", __FUNCTION__);
     //     return;
@@ -58,7 +58,7 @@ void ProtocolRoute::OnReadPackage(const std::shared_ptr<Connection> &conn, IPack
         spdlog::warn("{} - Package[{}] Protocol functor unavailable.", __FUNCTION__, pkg->GetPackageID());
 }
 
-void ProtocolRoute::AbortHandler() const {
+void UProtocolRoute::AbortHandler() const {
     assert(handler_ != nullptr);
 }
 

@@ -2,7 +2,7 @@
 
 #include "db_table.h"
 
-class BASE_API TableResult final {
+class BASE_API UTableResult final {
 
     mysqlx::RowResult result_;
     mysqlx::Row cur_row_;
@@ -10,9 +10,9 @@ class BASE_API TableResult final {
     const size_t total_;
 
 public:
-    explicit TableResult(mysqlx::RowResult &&res);
+    explicit UTableResult(mysqlx::RowResult &&res);
 
-    DISABLE_COPY_MOVE(TableResult)
+    DISABLE_COPY_MOVE(UTableResult)
 
     [[nodiscard]] size_t TotalRowsCount() const;
 
@@ -20,7 +20,7 @@ public:
 
     bool HasMore();
 
-    template<DBTableType T>
+    template<DB_TABLE_TYPE T>
     T DeserializeT() {
         T res;
         Deserialize(&res);

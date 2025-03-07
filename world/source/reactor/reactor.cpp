@@ -7,11 +7,11 @@ IReactor::~IReactor() {
         queue_->OnReactorRelease();
 }
 
-void IReactor::SetTaskQueue(const std::shared_ptr<TaskQueue> &queue) {
+void IReactor::SetTaskQueue(const std::shared_ptr<UTaskQueue> &queue) {
     queue_ = queue;
 }
 
-std::shared_ptr<TaskQueue> IReactor::GetTaskQueue() const {
+std::shared_ptr<UTaskQueue> IReactor::GetTaskQueue() const {
     return queue_;
 }
 

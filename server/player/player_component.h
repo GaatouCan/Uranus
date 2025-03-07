@@ -13,8 +13,8 @@ public:
 
     IPlayerComponent() = delete;
 
-    virtual void Serialize(const std::shared_ptr<class Serializer> &s) {}
-    virtual void Deserialize(class Deserializer &ds) {}
+    virtual void Serialize(const std::shared_ptr<class USerializer> &s) {}
+    virtual void Deserialize(class UDeserializer &ds) {}
 
     [[nodiscard]] virtual constexpr std::vector<std::string> GetTableList() const {
         return {};
@@ -22,7 +22,7 @@ public:
 
     [[nodiscard]] ComponentModule *GetModule() const;
     [[nodiscard]] class Player *GetOwner() const;
-    [[nodiscard]] class GameWorld *GetWorld() const;
+    [[nodiscard]] class UGameWorld *GetWorld() const;
 
     virtual void OnLogin();
     virtual void OnLogout();

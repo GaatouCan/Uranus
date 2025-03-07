@@ -6,7 +6,7 @@
 #include "../../../include/system/command/command_system.h"
 
 
-IClientCommand::IClientCommand(CommandSystem *owner, CommandObject object)
+IClientCommand::IClientCommand(UCommandSystem *owner, UCommandObject object)
     : IBaseCommand(owner, std::move(object)),
       sender_(-1) {
 }

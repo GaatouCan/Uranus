@@ -6,22 +6,22 @@
 
 class BASE_API IServerLogic {
 
-    class GameWorld* world_;
+    class UGameWorld* world_;
 
 public:
     IServerLogic() = delete;
 
-    explicit IServerLogic(GameWorld* world);
+    explicit IServerLogic(UGameWorld* world);
     virtual ~IServerLogic();
 
     DISABLE_COPY_MOVE(IServerLogic)
 
-    [[nodiscard]] GameWorld* GetWorld() const;
+    [[nodiscard]] UGameWorld* GetWorld() const;
 
     virtual void InitGameWorld() = 0;
 
-    virtual void SetConnectionHandler(const std::shared_ptr<class Connection> &conn) = 0;
+    virtual void SetConnectionHandler(const std::shared_ptr<class UConnection> &conn) = 0;
 
     // 默认数据包编解码 如果使用了自定义数据包 那么需要重写这个函数 为Connection指定一个数据包编解码器
-    virtual void SetConnectionCodec(const std::shared_ptr<Connection> &conn);
+    virtual void SetConnectionCodec(const std::shared_ptr<UConnection> &conn);
 };

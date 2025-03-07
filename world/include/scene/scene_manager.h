@@ -13,26 +13,26 @@
 static constexpr int32_t NORMAL_SCENE_ID_BEGIN = 1000;
 static constexpr int32_t NORMAL_SCENE_ID_END = 99999;
 
-class BASE_API SceneManager final
+class BASE_API USceneManager final
 {
-    friend class GameWorld;
+    friend class UGameWorld;
 
-    explicit SceneManager(GameWorld *world);
-    ~SceneManager();
+    explicit USceneManager(UGameWorld *world);
+    ~USceneManager();
 
     int32_t GenerateSceneID();
 
     void EmplaceScene(IBaseScene *scene);
-    void CollectScene(TimePoint time);
+    void CollectScene(ATimePoint time);
 
 public:
-    SceneManager() = delete;
+    USceneManager() = delete;
 
-    DISABLE_COPY_MOVE(SceneManager)
+    DISABLE_COPY_MOVE(USceneManager)
 
     void Init();
 
-    GameWorld *GetWorld() const;
+    UGameWorld *GetWorld() const;
     IBaseScene *GetNextMainScene();
 
     IBaseScene *GetScene(int32_t sid) const;
@@ -51,7 +51,7 @@ public:
     }
 
 private:
-    GameWorld *world_;
+    UGameWorld *world_;
 
     std::vector<IBaseScene *> main_scene_list_;
     std::vector<asio::io_context::work> work_list_;
@@ -63,6 +63,6 @@ private:
     std::atomic_int32_t next_scene_id_;
     mutable std::shared_mutex scene_mtx_;
 
-    SystemTimer tick_timer_;
+    ASystemTimer tick_timer_;
     std::atomic_bool running_;
 };

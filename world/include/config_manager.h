@@ -7,16 +7,16 @@
 #include <nlohmann/json.hpp>
 
 
-class ConfigManager;
+class UConfigManager;
 
-typedef void(*LogicConfigLoader)(ConfigManager *);
-typedef void(*LoggerLoader)(const YAML::Node&);
+typedef void(*ALogicConfigLoader)(UConfigManager *);
+typedef void(*ALoggerLoader)(const YAML::Node&);
 
 constexpr auto SERVER_CONFIG_FILE = "/server.yaml";
 constexpr auto SERVER_CONFIG_JSON = "/json";
 
 
-class BASE_API ConfigManager final {
+class BASE_API UConfigManager final {
 
     std::string yaml_path_;
     std::string json_path_;
@@ -27,22 +27,22 @@ class BASE_API ConfigManager final {
     std::unordered_map<std::type_index, std::vector<std::string>> logic_load_map_;
     std::unordered_map<std::type_index, ILogicConfig *> logic_config_map_;
 
-    LogicConfigLoader logic_config_loader_;
-    LoggerLoader logger_loader_;
+    ALogicConfigLoader logic_config_loader_;
+    ALoggerLoader logger_loader_;
 
     bool loaded_ = false;
 
 public:
-    ConfigManager();
-    ~ConfigManager();
+    UConfigManager();
+    ~UConfigManager();
 
     void Init();
 
     void SetYAMLPath(const std::string &path);
     void SetJSONPath(const std::string &path);
 
-    void SetLogicConfigLoader(LogicConfigLoader loader);
-    void SetLoggerLoader(LoggerLoader loader);
+    void SetLogicConfigLoader(ALogicConfigLoader loader);
+    void SetLoggerLoader(ALoggerLoader loader);
 
     void Abort() const;
 

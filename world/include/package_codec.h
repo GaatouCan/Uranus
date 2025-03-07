@@ -10,11 +10,11 @@ using asio::awaitable;
 class IPackageCodec {
 
 protected:
-    std::weak_ptr<class Connection> conn_;
+    std::weak_ptr<class UConnection> conn_;
 
 public:
     IPackageCodec() = delete;
-    explicit IPackageCodec(const std::weak_ptr<Connection> &conn) : conn_(conn) {}
+    explicit IPackageCodec(const std::weak_ptr<UConnection> &conn) : conn_(conn) {}
 
     virtual ~IPackageCodec() = default;
 
@@ -23,10 +23,10 @@ public:
 };
 
 
-template<PackageType T>
+template<PACKAGE_TYPE T>
 class BASE_API TPackageCodec : public IPackageCodec {
 public:
-    explicit TPackageCodec(const std::weak_ptr<Connection> &conn) : IPackageCodec(conn) {}
+    explicit TPackageCodec(const std::weak_ptr<UConnection> &conn) : IPackageCodec(conn) {}
     ~TPackageCodec() override = default;
 
     awaitable<void> Encode(IPackage *pkg) override {

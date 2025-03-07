@@ -54,10 +54,10 @@ void EventModule::RemoveListener(const Event event, void *ptr) {
     }
 }
 
-void EventModule::Dispatch(Event event, IEventParam *param, DispatchType type) {
+void EventModule::Dispatch(Event event, IEventParam *param, EDispatchType type) {
     spdlog::debug("{} - Player[{}] dispatch event[{}]", __FUNCTION__, owner_->GetFullID(), static_cast<uint32_t>(event));
 
-    if (type == DispatchType::DIRECT && GetOwner()->IsSameThread()) {
+    if (type == EDispatchType::DIRECT && GetOwner()->IsSameThread()) {
         {
             std::scoped_lock lock(listener_mtx_);
             if (const auto iter = listener_map_.find(event); iter != listener_map_.end()) {

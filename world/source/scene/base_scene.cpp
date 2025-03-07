@@ -6,7 +6,7 @@
 #include <ranges>
 
 
-IBaseScene::IBaseScene(SceneManager *owner, const int32_t id)
+IBaseScene::IBaseScene(USceneManager *owner, const int32_t id)
     : owner_(owner),
       scene_id_(id) {
 }
@@ -18,11 +18,11 @@ int32_t IBaseScene::GetSceneID() const {
     return scene_id_;
 }
 
-SceneManager *IBaseScene::GetOwner() const {
+USceneManager *IBaseScene::GetOwner() const {
     return owner_;
 }
 
-GameWorld *IBaseScene::GetWorld() const {
+UGameWorld *IBaseScene::GetWorld() const {
     return owner_->GetWorld();
 }
 

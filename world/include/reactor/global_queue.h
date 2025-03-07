@@ -1,7 +1,7 @@
 #pragma once
 
 #include "../common.h"
-#include "../thread_safe_deque.h"
+#include "../ts_deque.h"
 
 #include <memory>
 #include <set>
@@ -10,46 +10,46 @@
 
 
 class IReactor;
-class TaskQueue;
-class GameWorld;
+class UTaskQueue;
+class UGameWorld;
 
-struct WeakPointerRawAddressCompare {
+struct FWeakPointerCompare {
     template <typename T>
     bool operator()(const std::weak_ptr<T>& lhs, const std::weak_ptr<T>& rhs) const {
         return lhs.lock().get() < rhs.lock().get();
     }
 };
 
-class GlobalQueue final {
+class UGlobalQueue final {
 
-    friend class GameWorld;
+    friend class UGameWorld;
 
-    explicit GlobalQueue(GameWorld *world);
-    ~GlobalQueue();
+    explicit UGlobalQueue(UGameWorld *world);
+    ~UGlobalQueue();
 
 public:
-    GlobalQueue() = delete;
+    UGlobalQueue() = delete;
 
-    DISABLE_COPY_MOVE(GlobalQueue)
+    DISABLE_COPY_MOVE(UGlobalQueue)
 
     void Init();
 
-    std::shared_ptr<TaskQueue> RegisterReactor(IReactor *reactor);
-    std::shared_ptr<TaskQueue> FindByReactor(const IReactor *reactor) const;
+    std::shared_ptr<UTaskQueue> RegisterReactor(IReactor *reactor);
+    std::shared_ptr<UTaskQueue> FindByReactor(const IReactor *reactor) const;
 
     void RemoveReactor(const IReactor *reactor);
 
-    void OnPushTask(const std::shared_ptr<TaskQueue> &queue);
+    void OnPushTask(const std::shared_ptr<UTaskQueue> &queue);
 
 private:
-    GameWorld *world_;
+    UGameWorld *world_;
 
-    ThreadSafeDeque<std::shared_ptr<TaskQueue>> queue_;
+    TDeque<std::shared_ptr<UTaskQueue>> queue_;
     std::vector<std::thread> worker_vec_;
 
-    std::map<IReactor *, std::weak_ptr<TaskQueue>> reactor_map_;
+    std::map<IReactor *, std::weak_ptr<UTaskQueue>> reactor_map_;
     mutable std::shared_mutex reactor_mtx_;
 
-    std::set<std::weak_ptr<TaskQueue>, WeakPointerRawAddressCompare> empty_set_;
+    std::set<std::weak_ptr<UTaskQueue>, FWeakPointerCompare> empty_set_;
     mutable std::shared_mutex empty_mtx_;
 };

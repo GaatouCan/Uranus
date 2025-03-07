@@ -2,24 +2,24 @@
 
 #include "table_array.h"
 
-class BASE_API Serializer final {
+class BASE_API USerializer final {
 
-    struct TableNode {
+    struct FTableNode {
         ITableArray *array = nullptr;
         std::string expired_expr; // 清理过期数据的where语句
     };
 
-    std::vector<TableNode> table_vec_;
+    std::vector<FTableNode> table_vec_;
 
 public:
-    Serializer();
-    ~Serializer();
+    USerializer();
+    ~USerializer();
 
-    DISABLE_COPY_MOVE(Serializer)
+    DISABLE_COPY_MOVE(USerializer)
 
-    template<DBTableType T>
-    TableArray<T> *CreateTableVector(const std::string &name, const std::string &expired = {}) {
-        auto res = new TableArray<T>(name);
+    template<DB_TABLE_TYPE T>
+    TTableArray<T> *CreateTableVector(const std::string &name, const std::string &expired = {}) {
+        auto res = new TTableArray<T>(name);
         table_vec_.emplace_back(res, expired);
         return res;
     }

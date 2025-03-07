@@ -8,33 +8,33 @@
 
 #include <spdlog/spdlog.h>
 
-LoginAuthenticator::LoginAuthenticator(GameWorld *world)
+ULoginAuthenticator::ULoginAuthenticator(UGameWorld *world)
     : world_(world) {
 }
 
-LoginAuthenticator::~LoginAuthenticator() {
+ULoginAuthenticator::~ULoginAuthenticator() {
     spdlog::info("{} - Shutdown.", __FUNCTION__);
 }
 
-void LoginAuthenticator::Init() {
+void ULoginAuthenticator::Init() {
     assert(handler_ != nullptr);
 }
 
-GameWorld * LoginAuthenticator::GetWorld() const {
+UGameWorld * ULoginAuthenticator::GetWorld() const {
     return world_;
 }
 
-bool LoginAuthenticator::VerifyAddress(const asio::ip::address &addr) {
+bool ULoginAuthenticator::VerifyAddress(const asio::ip::address &addr) {
     // TODO
     return true;
 }
 
-PlayerID LoginAuthenticator::VerifyToken(PlayerID pid, const std::string &token) {
+FPlayerID ULoginAuthenticator::VerifyToken(FPlayerID pid, const std::string &token) {
     // TODO
     return pid;
 }
 
-awaitable<void> LoginAuthenticator::OnLogin(const ConnectionPointer &conn, IPackage *pkg) {
+awaitable<void> ULoginAuthenticator::OnLogin(const AConnectionPointer &conn, IPackage *pkg) {
     if (conn == nullptr || pkg == nullptr)
         co_return;
 
@@ -46,7 +46,7 @@ awaitable<void> LoginAuthenticator::OnLogin(const ConnectionPointer &conn, IPack
 
     spdlog::debug("{} - Player id: {}, token: {}", __FUNCTION__, info.pid.ToInt64(), info.token);
     if (const auto pid = VerifyToken(info.pid, info.token); pid.IsAvailable() && pid.cross == world_->GetServerID()) {
-        conn->SetContext(std::make_any<PlayerID>(pid));
+        conn->SetContext(std::make_any<FPlayerID>(pid));
 
         if (const auto plr = co_await handler_->OnPlayerLogin(conn, info); plr != nullptr) {
             if (const auto manager = world_->GetSceneManager(); manager != nullptr) {
@@ -65,6 +65,6 @@ awaitable<void> LoginAuthenticator::OnLogin(const ConnectionPointer &conn, IPack
     conn->Disconnect();
 }
 
-void LoginAuthenticator::AbortHandler() const {
+void ULoginAuthenticator::AbortHandler() const {
     assert(handler_ != nullptr);
 }

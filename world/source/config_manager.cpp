@@ -5,18 +5,18 @@
 #include <spdlog/spdlog.h>
 
 
-ConfigManager::ConfigManager()
+UConfigManager::UConfigManager()
     : logic_config_loader_(nullptr),
       logger_loader_(nullptr) {
 }
 
-ConfigManager::~ConfigManager() {
+UConfigManager::~UConfigManager() {
     for (const auto &loader: std::views::values(logic_config_map_)) {
         delete loader;
     }
 }
 
-void ConfigManager::Init() {
+void UConfigManager::Init() {
     spdlog::info("Using Server Configuration File: {}.", yaml_path_ + SERVER_CONFIG_FILE);
 
     cfg_ = YAML::LoadFile(yaml_path_ + SERVER_CONFIG_FILE);
@@ -82,35 +82,35 @@ void ConfigManager::Init() {
     loaded_ = true;
 }
 
-void ConfigManager::SetYAMLPath(const std::string &path) {
+void UConfigManager::SetYAMLPath(const std::string &path) {
     yaml_path_ = path;
 }
 
-void ConfigManager::SetJSONPath(const std::string &path) {
+void UConfigManager::SetJSONPath(const std::string &path) {
     json_path_ = path;
 }
 
-void ConfigManager::SetLogicConfigLoader(const LogicConfigLoader loader) {
+void UConfigManager::SetLogicConfigLoader(const ALogicConfigLoader loader) {
     logic_config_loader_ = loader;
 }
 
-void ConfigManager::SetLoggerLoader(const LoggerLoader loader) {
+void UConfigManager::SetLoggerLoader(const ALoggerLoader loader) {
     logger_loader_ = loader;
 }
 
-void ConfigManager::Abort() const {
+void UConfigManager::Abort() const {
     assert(logic_config_loader_ != nullptr && logger_loader_ != nullptr);
 }
 
-bool ConfigManager::IsLoaded() const {
+bool UConfigManager::IsLoaded() const {
     return loaded_;
 }
 
-const YAML::Node &ConfigManager::GetServerConfig() const {
+const YAML::Node &UConfigManager::GetServerConfig() const {
     return cfg_;
 }
 
-std::optional<nlohmann::json> ConfigManager::FindConfig(const std::string &path, const uint64_t id) const {
+std::optional<nlohmann::json> UConfigManager::FindConfig(const std::string &path, const uint64_t id) const {
     if (const auto it = json_map_.find(path); it != json_map_.end()) {
         if (it->second.contains(std::to_string(id)))
             return it->second[std::to_string(id)];
@@ -119,7 +119,7 @@ std::optional<nlohmann::json> ConfigManager::FindConfig(const std::string &path,
     return std::nullopt;
 }
 
-void ConfigManager::ReloadConfig() {
+void UConfigManager::ReloadConfig() {
     cfg_ = YAML::LoadFile(yaml_path_ + SERVER_CONFIG_FILE);
 
     json_map_.clear();

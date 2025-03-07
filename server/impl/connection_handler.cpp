@@ -7,7 +7,7 @@
 #include "../common/proto_type.h"
 #include "../player/player_manager.h"
 
-ConnectionHandler::ConnectionHandler(const std::weak_ptr<Connection> &conn)
+ConnectionHandler::ConnectionHandler(const std::weak_ptr<UConnection> &conn)
     : IConnectionHandler(conn){
 
 }
@@ -19,7 +19,7 @@ void ConnectionHandler::OnClosed() {
     if (!conn_.lock()->GetContext().has_value())
         return;
 
-    const auto pid = std::any_cast<PlayerID>(conn_.lock()->GetContext());
+    const auto pid = std::any_cast<FPlayerID>(conn_.lock()->GetContext());
 
     if (const auto mgr = GET_MANAGER(PlayerManager); mgr != nullptr) {
         mgr->OnPlayerLogout(pid);

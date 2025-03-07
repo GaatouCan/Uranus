@@ -36,10 +36,10 @@ void StateCT::SyncCache(CacheNode* node) {
     node->level = state_.level;
 }
 
-void StateCT::Serialize(const std::shared_ptr<Serializer> &s) {
+void StateCT::Serialize(const std::shared_ptr<USerializer> &s) {
     WRITE_TABLE(s, State, state_)
 }
 
-void StateCT::Deserialize(Deserializer &ds) {
+void StateCT::Deserialize(UDeserializer &ds) {
     READ_TABLE(&ds, State, state_)
 }

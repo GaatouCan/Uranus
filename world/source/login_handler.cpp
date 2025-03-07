@@ -2,16 +2,16 @@
 #include "../include/login_authenticator.h"
 
 
-ILoginHandler::ILoginHandler(LoginAuthenticator *owner)
+ILoginHandler::ILoginHandler(ULoginAuthenticator *owner)
     : owner_(owner) {
 
 }
 
-LoginAuthenticator * ILoginHandler::GetOwner() const {
+ULoginAuthenticator * ILoginHandler::GetOwner() const {
     return owner_;
 }
 
-GameWorld *ILoginHandler::GetWorld() const {
+UGameWorld *ILoginHandler::GetWorld() const {
     return owner_->GetWorld();
 }
 

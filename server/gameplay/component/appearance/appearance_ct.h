@@ -23,8 +23,8 @@ public:
         return {"appearance", "avatar", "avatar_frame"};
     }
 
-    void Serialize(const std::shared_ptr<Serializer> &s) override;
-    void Deserialize(Deserializer &ds) override;
+    void Serialize(const std::shared_ptr<USerializer> &s) override;
+    void Deserialize(UDeserializer &ds) override;
 
     void OnLogin() override;
 

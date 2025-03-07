@@ -9,13 +9,13 @@
 
 class IServerLogic;
 
-using ConnectionPointer = std::shared_ptr<class Connection>;
+using AConnectionPointer = std::shared_ptr<class UConnection>;
 
-typedef IServerLogic*(*ServerCreator)(GameWorld*);
-typedef void(*ServerDestroyer)(IServerLogic*);
+typedef IServerLogic*(*AServerCreator)(UGameWorld*);
+typedef void(*AServerDestroyer)(IServerLogic*);
 
 
-struct StringViewHash {
+struct FStringViewHash {
     using is_transparent = void;
 
     std::size_t operator()(const std::string_view sv) const {
@@ -23,7 +23,7 @@ struct StringViewHash {
     }
 };
 
-struct StringViewEqual {
+struct FStringViewEqual {
     using is_transparent = void;
 
     bool operator()(const std::string_view lhs, const std::string_view rhs) const {
@@ -32,24 +32,24 @@ struct StringViewEqual {
 };
 
 
-class BASE_API GameWorld final {
+class BASE_API UGameWorld final {
 
     asio::io_context ctx_;
-    TcpAcceptor acceptor_;
+    ATcpAcceptor acceptor_;
 
-    ModuleHandle        module_;
+    AModuleHandle        module_;
     IServerLogic *      server_;
-    ServerDestroyer     destroyer_;
+    AServerDestroyer     destroyer_;
 
-    class ConfigManager *       cfg_mgr_;
-    class LoginAuthenticator *  login_authenticator_;
-    class SceneManager *        scene_mgr_;
-    class GlobalQueue *         global_queue_;
-    class ProtocolRoute *       proto_route_;
+    class UConfigManager *       cfg_mgr_;
+    class ULoginAuthenticator *  login_authenticator_;
+    class USceneManager *        scene_mgr_;
+    class UGlobalQueue *         global_queue_;
+    class UProtocolRoute *       proto_route_;
 
-    std::unordered_map<std::string, ConnectionPointer, StringViewHash, StringViewEqual> conn_map_;
+    std::unordered_map<std::string, AConnectionPointer, FStringViewHash, FStringViewEqual> conn_map_;
 
-    SystemTimer full_timer_;
+    ASystemTimer full_timer_;
 
     struct SystemPriority {
         int priority;
@@ -68,22 +68,22 @@ class BASE_API GameWorld final {
     std::priority_queue<SystemPriority, std::vector<SystemPriority>, std::less<>>       dest_priority_;
 
     std::unordered_map<std::type_index, ISubSystem *>                               sys_map_;
-    std::unordered_map<std::string, ISubSystem *, StringViewHash, StringViewEqual>  name_to_sys_;
+    std::unordered_map<std::string, ISubSystem *, FStringViewHash, FStringViewEqual>  name_to_sys_;
 
-    ThreadID tid_;
+    AThreadID tid_;
 
     bool                inited_;
     std::atomic_bool    running_;
 
 public:
-    GameWorld();
-    ~GameWorld();
+    UGameWorld();
+    ~UGameWorld();
 
-    DISABLE_COPY_MOVE(GameWorld)
+    DISABLE_COPY_MOVE(UGameWorld)
 
-    GameWorld &Init(const std::string &path);
-    GameWorld &Run();
-    GameWorld &Shutdown();
+    UGameWorld &Init(const std::string &path);
+    UGameWorld &Run();
+    UGameWorld &Shutdown();
 
     void ForceDisconnectAll();
 
@@ -92,21 +92,21 @@ public:
 
     asio::io_context &GetIOContext();
 
-    ThreadID GetThreadID() const;
+    AThreadID GetThreadID() const;
     [[nodiscard]] bool IsMainThread() const;
 
-    template<SystemType T>
+    template<SYSTEM_TYPE T>
     T *GetSystem() const noexcept {
         if (const auto iter = sys_map_.find(typeid(T)); iter != sys_map_.end())
             return dynamic_cast<T *>(iter->second);
         return nullptr;
     }
 
-    [[nodiscard]] ConfigManager *       GetConfigManager() const;
-    [[nodiscard]] SceneManager *        GetSceneManager() const;
-    [[nodiscard]] LoginAuthenticator *  GetLoginAuthenticator() const;
-    [[nodiscard]] ProtocolRoute *       GetProtocolRoute() const;
-    [[nodiscard]] GlobalQueue *         GetGlobalQueue() const;
+    [[nodiscard]] UConfigManager *       GetConfigManager() const;
+    [[nodiscard]] USceneManager *        GetSceneManager() const;
+    [[nodiscard]] ULoginAuthenticator *  GetLoginAuthenticator() const;
+    [[nodiscard]] UProtocolRoute *       GetProtocolRoute() const;
+    [[nodiscard]] UGlobalQueue *         GetGlobalQueue() const;
 
     ISubSystem *GetSystemByName(std::string_view sys) const;
 
@@ -117,7 +117,7 @@ private:
     bool LoadServerDLL(const std::string &path);
     awaitable<void> WaitForConnect();
 
-    template<SystemType T>
+    template<SYSTEM_TYPE T>
     T *CreateSystem(const int priority = 0) {
         if (inited_)
             return nullptr;

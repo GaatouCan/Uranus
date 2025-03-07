@@ -3,10 +3,10 @@
 #include "../package_codec.h"
 #include "package.h"
 
-class PackageCodec final : public TPackageCodec<Package> {
+class UPackageCodec final : public TPackageCodec<FPackage> {
 public:
-    explicit PackageCodec(const std::weak_ptr<Connection> &conn);
+    explicit UPackageCodec(const std::weak_ptr<UConnection> &conn);
 
-    awaitable<void> EncodeT(Package *pkg) override;
-    awaitable<void> DecodeT(Package *pkg) override;
+    awaitable<void> EncodeT(FPackage *pkg) override;
+    awaitable<void> DecodeT(FPackage *pkg) override;
 };

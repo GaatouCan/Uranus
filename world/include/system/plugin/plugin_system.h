@@ -8,13 +8,13 @@
 
 class IBasePlugin;
 
-class BASE_API PluginSystem final : public ISubSystem {
+class BASE_API UPluginSystem final : public ISubSystem {
 
-    typedef IBasePlugin* (*PluginCreator)(PluginSystem *);
+    typedef IBasePlugin* (*PluginCreator)(UPluginSystem *);
     typedef void (*PluginDestroyer)(IBasePlugin *);
 
     struct PluginNode {
-        ModuleHandle    module;
+        AModuleHandle    module;
         PluginDestroyer destroyer;
         IBasePlugin *   plugin;
     };
@@ -23,8 +23,8 @@ class BASE_API PluginSystem final : public ISubSystem {
     mutable std::shared_mutex mtx_;
 
 public:
-    explicit PluginSystem(GameWorld *world);
-    ~PluginSystem() override;
+    explicit UPluginSystem(UGameWorld *world);
+    ~UPluginSystem() override;
 
     GET_SYSTEM_NAME(PluginSystem)
 

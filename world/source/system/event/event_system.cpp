@@ -3,11 +3,11 @@
 
 #include <ranges>
 
-EventSystem::EventSystem(GameWorld *world)
+UEventSystem::UEventSystem(UGameWorld *world)
     : ISubSystem(world) {
 }
 
-EventSystem::~EventSystem() {
+UEventSystem::~UEventSystem() {
     listener_map_.clear();
 
     while (!event_queue_.empty()) {
@@ -17,11 +17,11 @@ EventSystem::~EventSystem() {
     }
 }
 
-void EventSystem::Init() {
+void UEventSystem::Init() {
 }
 
 
-awaitable<void> EventSystem::HandleEvent() {
+awaitable<void> UEventSystem::HandleEvent() {
     while (!IsQueueEmpty()) {
         EventNode node;
 
@@ -58,13 +58,13 @@ awaitable<void> EventSystem::HandleEvent() {
     co_return;
 }
 
-bool EventSystem::IsQueueEmpty() const {
+bool UEventSystem::IsQueueEmpty() const {
     std::shared_lock lock(event_mtx_);
     return event_queue_.empty();
 }
 
-void EventSystem::Dispatch(const uint32_t event, IEventParam *param, const DispatchType type) {
-   if (type == DispatchType::DIRECT && GetWorld()->IsMainThread()) {
+void UEventSystem::Dispatch(const uint32_t event, IEventParam *param, const EDispatchType type) {
+   if (type == EDispatchType::DIRECT && GetWorld()->IsMainThread()) {
        {
            std::scoped_lock lock(listener_mtx_);
            if (const auto iter = listener_map_.find(event); iter != listener_map_.end()) {
@@ -91,7 +91,7 @@ void EventSystem::Dispatch(const uint32_t event, IEventParam *param, const Dispa
         co_spawn(GetWorld()->GetIOContext(), HandleEvent(), detached);
 }
 
-void EventSystem::RegisterListener(const uint32_t event, void *ptr, const EventListener &listener) {
+void UEventSystem::RegisterListener(const uint32_t event, void *ptr, const EventListener &listener) {
     if (event == 0 || ptr == nullptr)
         return;
 
@@ -102,7 +102,7 @@ void EventSystem::RegisterListener(const uint32_t event, void *ptr, const EventL
     listener_map_[event][ptr] = listener;
 }
 
-void EventSystem::RemoveListener(const uint32_t event, void *ptr) {
+void UEventSystem::RemoveListener(const uint32_t event, void *ptr) {
     if (ptr == nullptr)
         return;
 

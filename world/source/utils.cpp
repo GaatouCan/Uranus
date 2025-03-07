@@ -6,13 +6,13 @@
 
 namespace utils {
 
-    static GameWorld *gWorld = nullptr;
+    static UGameWorld *gWorld = nullptr;
 
-    void SetGameWorld(GameWorld *world) {
+    void SetGameWorld(UGameWorld *world) {
         gWorld = world;
     }
 
-    GameWorld* GetWorld() {
+    UGameWorld* GetWorld() {
         return gWorld;
     }
 
@@ -64,7 +64,7 @@ namespace utils {
         return secondsSinceEpoch.count();
     }
 
-    long long ToUnixTime(const TimePoint point) {
+    long long ToUnixTime(const ATimePoint point) {
         const auto durationSinceEpoch = point.time_since_epoch();
         const auto secondsSinceEpoch = std::chrono::duration_cast<std::chrono::seconds>(durationSinceEpoch);
         return secondsSinceEpoch.count();
@@ -114,7 +114,7 @@ namespace utils {
         return result;
     }
 
-    int GetDayOfWeek(const TimePoint point) {
+    int GetDayOfWeek(const ATimePoint point) {
         const std::time_t currentTime = std::chrono::system_clock::to_time_t(point);
         std::tm tm{};
 #if defined(_WIN32) || defined(_WIN64)
@@ -125,13 +125,13 @@ namespace utils {
         return tm.tm_wday;
     }
 
-    unsigned GetDayOfMonth(const TimePoint point) {
+    unsigned GetDayOfMonth(const ATimePoint point) {
         const auto localTime = std::chrono::current_zone()->to_local(point);
         const std::chrono::year_month_day ymd(std::chrono::floor<std::chrono::days>(localTime));
         return static_cast<unsigned>(ymd.day());
     }
 
-    int GetDayOfYear(const TimePoint point) {
+    int GetDayOfYear(const ATimePoint point) {
         const auto localTime = std::chrono::current_zone()->to_local(point);
 
         const auto today = std::chrono::floor<std::chrono::days>(localTime);
@@ -142,7 +142,7 @@ namespace utils {
         return today.time_since_epoch().count() - firstDayOfYear.time_since_epoch().count() + 1;
     }
 
-    int GetDaysGone(const TimePoint former, const TimePoint latter) {
+    int GetDaysGone(const ATimePoint former, const ATimePoint latter) {
         if (latter <= former)
             return 0;
 
@@ -155,7 +155,7 @@ namespace utils {
         return latterDays.time_since_epoch().count() - formerDays.time_since_epoch().count();
     }
 
-    TimePoint GetDayZeroTime(const TimePoint point) {
+    ATimePoint GetDayZeroTime(const ATimePoint point) {
         const auto zeroLocalTime =  std::chrono::floor<std::chrono::days>(std::chrono::current_zone()->to_local(point));
         return std::chrono::current_zone()->to_sys(zeroLocalTime);
     }

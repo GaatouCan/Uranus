@@ -6,23 +6,23 @@
 #include <unordered_map>
 
 
-class Connection;
+class UConnection;
 
-class BASE_API ProtocolRoute final {
+class BASE_API UProtocolRoute final {
 
-    friend class GameWorld;
+    friend class UGameWorld;
 
-    explicit ProtocolRoute(GameWorld* world);
-    ~ProtocolRoute();
+    explicit UProtocolRoute(UGameWorld* world);
+    ~UProtocolRoute();
 
 public:
-    ProtocolRoute() = delete;
+    UProtocolRoute() = delete;
 
-    DISABLE_COPY_MOVE(ProtocolRoute)
+    DISABLE_COPY_MOVE(UProtocolRoute)
 
     void Init();
 
-    [[nodiscard]] GameWorld* GetWorld() const;
+    [[nodiscard]] UGameWorld* GetWorld() const;
 
     void RegisterProtocol(uint32_t type, const ProtoFunctor &func);
     // void RegisterCrossProtocol(uint32_t type, const ACrossFunctor &func);
@@ -39,12 +39,12 @@ public:
         handler_ = std::make_unique<T>(this, std::forward<Args>(args)...);
     }
 
-    void OnReadPackage(const std::shared_ptr<Connection> &conn, IPackage *pkg) const;
+    void OnReadPackage(const std::shared_ptr<UConnection> &conn, IPackage *pkg) const;
     // awaitable<void> OnCrossPackage(IPackage *pkg) const;
 
     void AbortHandler() const;
 private:
-    GameWorld *world_;
+    UGameWorld *world_;
 
     std::unordered_map<uint32_t, ProtoFunctor> proto_map_;
     // std::unordered_map<uint32_t, ACrossFunctor> mCrossMap;

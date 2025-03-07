@@ -6,7 +6,7 @@
 #include <spdlog/spdlog.h>
 
 
-SceneManager::SceneManager(GameWorld *world)
+USceneManager::USceneManager(UGameWorld *world)
     : world_(world),
       next_main_idx_(0),
       next_scene_id_(NORMAL_SCENE_ID_BEGIN + 1),
@@ -14,7 +14,7 @@ SceneManager::SceneManager(GameWorld *world)
       running_(false) {
 }
 
-SceneManager::~SceneManager() {
+USceneManager::~USceneManager() {
     running_ = false;
 
     for (const auto it: scene_map_ | std::views::values)
@@ -30,7 +30,7 @@ SceneManager::~SceneManager() {
     }
 }
 
-int32_t SceneManager::GenerateSceneID() {
+int32_t USceneManager::GenerateSceneID() {
     int32_t id;
 
     std::shared_lock lock(scene_mtx_);
@@ -46,7 +46,7 @@ int32_t SceneManager::GenerateSceneID() {
     return id;
 }
 
-void SceneManager::EmplaceScene(IBaseScene *scene) {
+void USceneManager::EmplaceScene(IBaseScene *scene) {
     if (scene == nullptr)
         return;
 
@@ -54,9 +54,9 @@ void SceneManager::EmplaceScene(IBaseScene *scene) {
     scene_map_[scene->GetSceneID()] = scene;
 }
 
-void SceneManager::CollectScene(const TimePoint time) {
+void USceneManager::CollectScene(const ATimePoint time) {
     std::unique_lock lock(scene_mtx_);
-    constexpr auto zero_time_point = TimePoint();
+    constexpr auto zero_time_point = ATimePoint();
 
     for (auto it = scene_map_.begin(); it != scene_map_.end();) {
         if (it->second->destroy_time_point_ > zero_time_point && it->second->destroy_time_point_ < time && it->second->CanDestroy()) {
@@ -69,15 +69,15 @@ void SceneManager::CollectScene(const TimePoint time) {
     }
 }
 
-void SceneManager::Init() {
+void USceneManager::Init() {
     const auto &cfg = world_->GetServerConfig();
     const auto num = cfg["server"]["io_thread"].as<int32_t>();
 
     for (int32_t idx = 0; idx < num; ++idx)
-        main_scene_list_.emplace_back(new MainScene(this, idx));
+        main_scene_list_.emplace_back(new UMainScene(this, idx));
 
     for (const auto val: main_scene_list_) {
-        if (const auto scene = dynamic_cast<MainScene *>(val); scene != nullptr) {
+        if (const auto scene = dynamic_cast<UMainScene *>(val); scene != nullptr) {
             work_list_.emplace_back(scene->GetIOContext());
             thread_list_.emplace_back([this, scene] {
                 asio::signal_set signals(scene->GetIOContext(), SIGINT, SIGTERM);
@@ -113,11 +113,11 @@ void SceneManager::Init() {
     }, asio::detached);
 }
 
-GameWorld *SceneManager::GetWorld() const {
+UGameWorld *USceneManager::GetWorld() const {
     return world_;
 }
 
-IBaseScene *SceneManager::GetNextMainScene() {
+IBaseScene *USceneManager::GetNextMainScene() {
     if (main_scene_list_.empty())
         throw std::runtime_error("No context node available");
 
@@ -127,7 +127,7 @@ IBaseScene *SceneManager::GetNextMainScene() {
     return res;
 }
 
-IBaseScene *SceneManager::GetScene(const int32_t sid) const {
+IBaseScene *USceneManager::GetScene(const int32_t sid) const {
     if (sid < 0)
         return nullptr;
 

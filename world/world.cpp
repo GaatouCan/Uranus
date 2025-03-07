@@ -21,7 +21,7 @@ int main(const int argc, char *argv[]) {
         }
     }
 
-    const auto world = new GameWorld();
+    const auto world = new UGameWorld();
 
     utils::SetGameWorld(world);
 

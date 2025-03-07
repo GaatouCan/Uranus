@@ -28,7 +28,7 @@ public:
 };
 
 template <typename T>
-concept DBTableType = std::derived_from<T, IDBTable>;
+concept DB_TABLE_TYPE = std::derived_from<T, IDBTable>;
 
 #define DB_CAST_FROM_BLOB(field, value) \
 { \

@@ -7,11 +7,11 @@
 
 constexpr auto PLUGIN_DIRECTORY = "plugins";
 
-PluginSystem::PluginSystem(GameWorld *world)
+UPluginSystem::UPluginSystem(UGameWorld *world)
     : ISubSystem(world) {
 }
 
-PluginSystem::~PluginSystem() {
+UPluginSystem::~UPluginSystem() {
     for (const auto &[module, destroyer, plugin] : plugin_map_ | std::views::values) {
         if (destroyer) {
             destroyer(plugin);
@@ -24,7 +24,7 @@ PluginSystem::~PluginSystem() {
     }
 }
 
-void PluginSystem::Init() {
+void UPluginSystem::Init() {
     if (!std::filesystem::exists(PLUGIN_DIRECTORY)) {
         try {
             std::filesystem::create_directory(PLUGIN_DIRECTORY);
@@ -43,7 +43,7 @@ void PluginSystem::Init() {
     }
 }
 
-PluginSystem::PluginNode PluginSystem::FindPlugin(const std::string &name) {
+UPluginSystem::PluginNode UPluginSystem::FindPlugin(const std::string &name) {
     std::shared_lock lock(mtx_);
     if (const auto it = plugin_map_.find(name); it != plugin_map_.end()) {
         return it->second;
@@ -51,9 +51,9 @@ PluginSystem::PluginNode PluginSystem::FindPlugin(const std::string &name) {
     return {nullptr, nullptr, nullptr};
 }
 
-bool PluginSystem::LoadPlugin(const std::string_view path) {
+bool UPluginSystem::LoadPlugin(const std::string_view path) {
 #if defined(_WIN32) || defined(_WIN64)
-    const ModuleHandle hModule = LoadLibrary(path.data());
+    const AModuleHandle hModule = LoadLibrary(path.data());
 
     if (hModule == nullptr) {
         spdlog::error("{} - Failed to load plugin {}", __FUNCTION__,  path.data());
@@ -131,7 +131,7 @@ bool PluginSystem::LoadPlugin(const std::string_view path) {
     return true;
 }
 
-bool PluginSystem::UnloadPlugin(const std::string &name) {
+bool UPluginSystem::UnloadPlugin(const std::string &name) {
     const auto [module, destroyer, plugin] = FindPlugin(name);
     if (plugin == nullptr || destroyer == nullptr || module == nullptr) {
         spdlog::error("{} - Failed to find plugin {}", __FUNCTION__, name.data());

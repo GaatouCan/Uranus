@@ -34,13 +34,13 @@ void ComponentModule::OnDayChange() {
 }
 
 void ComponentModule::Serialize() {
-    auto ser = std::make_shared<Serializer>();
+    auto ser = std::make_shared<USerializer>();
 
     for (const auto &val: std::views::values(component_map_)) {
         val->Serialize(ser);
     }
 
-    if (const auto sys = GetOwner()->GetWorld()->GetSystem<DatabaseSystem>(); sys != nullptr) {
+    if (const auto sys = GetOwner()->GetWorld()->GetSystem<UDatabaseSystem>(); sys != nullptr) {
         sys->PushTransaction([ser, pid = owner_->GetFullID()](mysqlx::Schema &schema) {
             ser->Serialize(schema);
             spdlog::info("ComponentModule::Serialize() - Player[{}] Stored.", pid);
@@ -51,7 +51,7 @@ void ComponentModule::Serialize() {
 
 awaitable<void> ComponentModule::Deserialize() {
     try {
-        QueryArray query;
+        AQueryArray query;
         std::string expr = fmt::format("pid = {}", GetOwner()->GetFullID());
 
         for (const auto &val : component_map_ | std::views::values) {
@@ -60,9 +60,9 @@ awaitable<void> ComponentModule::Deserialize() {
             }
         }
 
-        if (const auto sys = GetOwner()->GetWorld()->GetSystem<DatabaseSystem>(); sys != nullptr) {
+        if (const auto sys = GetOwner()->GetWorld()->GetSystem<UDatabaseSystem>(); sys != nullptr) {
             if (const auto res = co_await sys->AsyncSelect(query, asio::use_awaitable); res != nullptr) {
-                Deserializer der(res);
+                UDeserializer der(res);
                 for (const auto &val : component_map_ | std::views::values) {
                     val->Deserialize(der);
                 }
@@ -87,7 +87,7 @@ void ComponentModule::OnLogout() {
     }
 }
 
-PlayerID ComponentModule::GetPlayerID() const {
+FPlayerID ComponentModule::GetPlayerID() const {
     if (owner_)
         return owner_->GetPlayerID();
     return {};
