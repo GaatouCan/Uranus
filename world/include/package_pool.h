@@ -17,15 +17,15 @@ typedef void(*PackageInitializer)(IPackage*);
 /**
  * 数据包池
  */
-class PackagePool final {
+class UPackagePool final {
 
     friend class UMainScene;
 
-    explicit PackagePool(size_t capacity = kDefaultCapacity);
-    ~PackagePool();
+    explicit UPackagePool(size_t capacity = kDefaultCapacity);
+    ~UPackagePool();
 
 public:
-    DISABLE_COPY_MOVE(PackagePool)
+    DISABLE_COPY_MOVE(UPackagePool)
 
     [[nodiscard]] size_t Capacity() const;
 
@@ -69,11 +69,11 @@ private:
 
 private:
     std::queue<IPackage *> queue_;
-    std::set<IPackage *> pkg_set_;
-    std::atomic<ATimePoint> collect_time_;
+    std::set<IPackage *> packageSet_;
+    std::atomic<ATimePoint> collectTime_;
 
     // std::mutex mMutex;
-    mutable std::shared_mutex mMutex;
+    mutable std::shared_mutex mutex_;
 
     // 扩容和收缩临界点和比例
     // 每个线程下的数据包池行为目前设计为一致

@@ -101,13 +101,13 @@ UGameWorld &UGameWorld::Init(const std::string &path) {
 
     const auto &config = GetServerConfig();
 
-    PackagePool::LoadConfig(config);
+    UPackagePool::LoadConfig(config);
 
     // 如果DLL未指定自定义数据包 则使用默认数据包
-    if (!PackagePool::HasAssignedBuilder()) {
+    if (!UPackagePool::HasAssignedBuilder()) {
         FPackage::LoadConfig(config);
-        PackagePool::SetPackageBuilder(&FPackage::CreatePackage);
-        PackagePool::SetPackageInitializer(&FPackage::InitPackage);
+        UPackagePool::SetPackageBuilder(&FPackage::CreatePackage);
+        UPackagePool::SetPackageInitializer(&FPackage::InitPackage);
     }
 
     scene_mgr_->Init();

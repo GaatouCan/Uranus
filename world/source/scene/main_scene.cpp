@@ -3,7 +3,7 @@
 
 UMainScene::UMainScene(USceneManager *owner, const int32_t id)
     : IBaseScene(owner, id),
-      pool_(new PackagePool()) {
+      pool_(new UPackagePool()) {
 }
 
 UMainScene::~UMainScene() {
@@ -22,6 +22,6 @@ asio::io_context & UMainScene::GetIOContext() {
     return ctx_;
 }
 
-PackagePool * UMainScene::GetPackagePool() const {
+UPackagePool * UMainScene::GetPackagePool() const {
     return pool_;
 }

@@ -49,7 +49,7 @@ public:
 
     [[nodiscard]] int32_t GetSceneID() const;
     [[nodiscard]] AThreadID GetThreadID() const;
-    [[nodiscard]] class PackagePool *GetPackagePool() const;
+    [[nodiscard]] class UPackagePool *GetPackagePool() const;
 
     [[nodiscard]] UMainScene *GetMainScene() const;
     [[nodiscard]] class UGameWorld *GetWorld() const;

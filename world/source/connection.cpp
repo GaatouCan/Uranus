@@ -98,7 +98,7 @@ AThreadID UConnection::GetThreadID() const {
     return scene_->GetThreadID();
 }
 
-PackagePool *UConnection::GetPackagePool() const {
+UPackagePool *UConnection::GetPackagePool() const {
     return scene_->GetPackagePool();
 }
 
