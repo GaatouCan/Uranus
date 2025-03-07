@@ -69,11 +69,11 @@ private:
 
 private:
     std::queue<IPackage *> queue_;
-    std::set<IPackage *> packageSet_;
-    std::atomic<ATimePoint> collectTime_;
+    std::set<IPackage *> pkg_set_;
+    std::atomic<ATimePoint> collect_time_;
 
     // std::mutex mMutex;
-    mutable std::shared_mutex mutex_;
+    mutable std::shared_mutex mtx_;
 
     // 扩容和收缩临界点和比例
     // 每个线程下的数据包池行为目前设计为一致
