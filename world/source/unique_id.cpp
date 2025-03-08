@@ -4,11 +4,11 @@
 #include <spdlog/fmt/fmt.h>
 #include <random>
 
-std::string FUniqueID::ToString() const {
+std::string FUniqueID::toString() const {
     return fmt::format("{}-{}", time, random);
 }
 
-FUniqueID & FUniqueID::FromString(const std::string &str) {
+FUniqueID & FUniqueID::fromString(const std::string &str) {
     const std::vector<std::string> res = utils::SplitString(str, '-');
 
     if (res.size() < 2)
@@ -20,7 +20,7 @@ FUniqueID & FUniqueID::FromString(const std::string &str) {
     return *this;
 }
 
-FUniqueID FUniqueID::RandomGenerate() {
+FUniqueID FUniqueID::randomGenerate() {
     std::random_device random_device;
     std::mt19937 generator(random_device());
     std::uniform_int_distribution distribution(100000, 999999);

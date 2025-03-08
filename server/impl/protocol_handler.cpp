@@ -24,13 +24,13 @@ void ProtocolHandler::Invoke(const ProtoFunctor &func, const std::shared_ptr<UCo
     const auto pid = std::any_cast<FPlayerID>(conn->GetContext());
     if (const auto plr = mgr->FindPlayer(pid.local); plr != nullptr) {
         try {
-            assert(plr->GetConnection() == conn);
+            assert(plr->getConnection() == conn);
             std::invoke(func, plr, pkg);
         } catch (std::exception &e) {
-            spdlog::error("{} - Player[{}] Invoke Protocol Handler Error: {}", __FUNCTION__, plr->GetLocalID(), e.what());
+            spdlog::error("{} - Player[{}] Invoke Protocol Handler Error: {}", __FUNCTION__, plr->getLocalID(), e.what());
         }
     } else {
-        spdlog::warn("{} - Player[{}] Not Found", __FUNCTION__, pid.GetLocalID());
+        spdlog::warn("{} - Player[{}] Not Found", __FUNCTION__, pid.getLocalID());
     }
 }
 

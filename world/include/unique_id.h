@@ -18,11 +18,11 @@ struct BASE_API FUniqueID {
     long long time;
     int64_t random;
 
-    [[nodiscard]] std::string ToString() const;
+    [[nodiscard]] std::string toString() const;
 
-    FUniqueID &FromString(const std::string &str);
+    FUniqueID &fromString(const std::string &str);
 
-    static FUniqueID RandomGenerate();
+    static FUniqueID randomGenerate();
 
     bool operator<(const FUniqueID &other) const;
 

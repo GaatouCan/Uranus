@@ -19,20 +19,20 @@ public:
 
     DISABLE_COPY_MOVE(IReactor)
 
-    void SetTaskQueue(const std::shared_ptr<UTaskQueue> &queue);
+    void setTaskQueue(const std::shared_ptr<UTaskQueue> &queue);
 
-    [[nodiscard]] std::shared_ptr<UTaskQueue> GetTaskQueue() const;
+    [[nodiscard]] std::shared_ptr<UTaskQueue> getTaskQueue() const;
 
-    void PushTask(const std::function<void(IReactor *)> &task) const;
-    void PushTask(std::function<void(IReactor *)> &&task) const;
+    void pushTask(const std::function<void(IReactor *)> &task) const;
+    void pushTask(std::function<void(IReactor *)> &&task) const;
 
     template<typename ReactorType, typename Functor, typename... Args>
     requires std::derived_from<ReactorType, IReactor>
-    void PushTask(Functor &&func, Args &&... args) const {
-        PushTask([this, func = std::forward<Functor>(func), ...args = std::forward<Args>(args)](IReactor *reactor) mutable {
+    void pushTask(Functor &&func, Args &&... args) const {
+        pushTask([this, func = std::forward<Functor>(func), ...args = std::forward<Args>(args)](IReactor *reactor) mutable {
             std::invoke(func, dynamic_cast<ReactorType *>(reactor), args...);
         });
     }
 
-    virtual void Invoke(const std::string &func, FByteArray &&bytes) {}
+    virtual void invoke(const std::string &func, FByteArray &&bytes) {}
 };

@@ -23,13 +23,13 @@ class UTaskQueue final : public std::enable_shared_from_this<UTaskQueue> {
     UGlobalQueue *global_;
     IReactor *reactor_;
 
-    std::queue<AReactorTask> cur_queue_;
-    std::queue<AReactorTask> wait_queue_;
+    std::queue<AReactorTask> curQueue_;
+    std::queue<AReactorTask> waitQueue_;
 
-    mutable std::shared_mutex mtx_;
+    mutable std::shared_mutex mutex_;
 
     std::atomic_bool running_;
-    std::atomic_bool in_global_;
+    std::atomic_bool inGlobal_;
     std::atomic_bool removed_;
 
 public:
@@ -39,25 +39,25 @@ public:
 
     DISABLE_COPY_MOVE(UTaskQueue)
 
-    [[nodiscard]] IReactor *GetReactor() const;
+    [[nodiscard]] IReactor *getReactor() const;
 
-    void PushTask(const AReactorTask &task);
-    void PushTask(AReactorTask &&task);
+    void pushTask(const AReactorTask &task);
+    void pushTask(AReactorTask &&task);
 
-    [[nodiscard]] bool IsEmpty() const;
-    [[nodiscard]] bool IsRunning() const;
-    [[nodiscard]] bool IsRemoved() const;
+    [[nodiscard]] bool empty() const;
+    [[nodiscard]] bool running() const;
+    [[nodiscard]] bool removed() const;
 
-    void OnPushToGlobal();
-    void OnPopFromGlobal();
+    void onPushToGlobal();
+    void onPopFromGlobal();
 
-    [[nodiscard]] bool IsInGlobal() const;
+    [[nodiscard]] bool isInGlobal() const;
 
-    void HandleTask(int rate);
+    void handleTask(int rate);
 
-    void OnStart();
-    void OnStop();
-    void OnRemove();
+    void onStart();
+    void onStop();
+    void onRemove();
 
-    void OnReactorRelease();
+    void onReactorRelease();
 };

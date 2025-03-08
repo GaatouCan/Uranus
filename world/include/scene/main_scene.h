@@ -7,16 +7,16 @@ class BASE_API UMainScene final : public IBaseScene {
 
     class UPackagePool* pool_;
 
-    asio::io_context ctx_;
+    asio::io_context context_;
     AThreadID thread_;
 
 public:
     UMainScene(USceneManager *owner, int32_t id);
     ~UMainScene() override;
 
-    void SetThreadID(AThreadID tid);
-    [[nodiscard]] AThreadID GetThreadID() const;
+    void setThreadID(AThreadID tid);
+    [[nodiscard]] AThreadID getThreadID() const;
 
-    asio::io_context& GetIOContext();
-    [[nodiscard]] UPackagePool* GetPackagePool() const;
+    asio::io_context& getIOContext();
+    [[nodiscard]] UPackagePool* getPackagePool() const;
 };

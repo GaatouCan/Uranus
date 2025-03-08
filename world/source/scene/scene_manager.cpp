@@ -8,60 +8,60 @@
 
 USceneManager::USceneManager(UGameWorld *world)
     : world_(world),
-      next_main_idx_(0),
-      next_scene_id_(NORMAL_SCENE_ID_BEGIN + 1),
-      tick_timer_(world_->GetIOContext()),
+      nextMainIndex_(0),
+      nextSceneID_(NORMAL_SCENE_ID_BEGIN + 1),
+      tickTimer_(world_->GetIOContext()),
       running_(false) {
 }
 
 USceneManager::~USceneManager() {
     running_ = false;
 
-    for (const auto it: scene_map_ | std::views::values)
+    for (const auto it: sceneMap_ | std::views::values)
         delete it;
 
-    work_list_.clear();
-    for (const auto it: main_scene_list_)
+    workList_.clear();
+    for (const auto it: mainSceneList_)
         delete it;
 
-    for (auto &th: thread_list_) {
+    for (auto &th: threads_) {
         if (th.joinable())
             th.join();
     }
 }
 
-int32_t USceneManager::GenerateSceneID() {
+int32_t USceneManager::generateSceneID() {
     int32_t id;
 
-    std::shared_lock lock(scene_mtx_);
-    if (scene_map_.size() >= (NORMAL_SCENE_ID_END - NORMAL_SCENE_ID_BEGIN - 1))
+    std::shared_lock lock(sceneMutex_);
+    if (sceneMap_.size() >= (NORMAL_SCENE_ID_END - NORMAL_SCENE_ID_BEGIN - 1))
         return -1;
 
     do {
-        if (next_scene_id_ >= NORMAL_SCENE_ID_END)
-            next_scene_id_ = NORMAL_SCENE_ID_BEGIN + 1;
-        id = next_scene_id_++;
-    } while (scene_map_.contains(id));
+        if (nextSceneID_ >= NORMAL_SCENE_ID_END)
+            nextSceneID_ = NORMAL_SCENE_ID_BEGIN + 1;
+        id = nextSceneID_++;
+    } while (sceneMap_.contains(id));
 
     return id;
 }
 
-void USceneManager::EmplaceScene(IBaseScene *scene) {
+void USceneManager::emplaceScene(IBaseScene *scene) {
     if (scene == nullptr)
         return;
 
-    std::unique_lock lock(scene_mtx_);
-    scene_map_[scene->GetSceneID()] = scene;
+    std::unique_lock lock(sceneMutex_);
+    sceneMap_[scene->getSceneID()] = scene;
 }
 
-void USceneManager::CollectScene(const ATimePoint time) {
-    std::unique_lock lock(scene_mtx_);
+void USceneManager::collectScene(const ATimePoint time) {
+    std::unique_lock lock(sceneMutex_);
     constexpr auto zero_time_point = ATimePoint();
 
-    for (auto it = scene_map_.begin(); it != scene_map_.end();) {
-        if (it->second->destroy_time_point_ > zero_time_point && it->second->destroy_time_point_ < time && it->second->CanDestroy()) {
+    for (auto it = sceneMap_.begin(); it != sceneMap_.end();) {
+        if (it->second->destroyTimePoint_ > zero_time_point && it->second->destroyTimePoint_ < time && it->second->canDestroy()) {
             const auto *scene = it->second;
-            it = scene_map_.erase(it);
+            it = sceneMap_.erase(it);
             delete scene;
             continue;
         }
@@ -69,25 +69,25 @@ void USceneManager::CollectScene(const ATimePoint time) {
     }
 }
 
-void USceneManager::Init() {
+void USceneManager::init() {
     const auto &cfg = world_->GetServerConfig();
     const auto num = cfg["server"]["io_thread"].as<int32_t>();
 
     for (int32_t idx = 0; idx < num; ++idx)
-        main_scene_list_.emplace_back(new UMainScene(this, idx));
+        mainSceneList_.emplace_back(new UMainScene(this, idx));
 
-    for (const auto val: main_scene_list_) {
+    for (const auto val: mainSceneList_) {
         if (const auto scene = dynamic_cast<UMainScene *>(val); scene != nullptr) {
-            work_list_.emplace_back(scene->GetIOContext());
-            thread_list_.emplace_back([this, scene] {
-                asio::signal_set signals(scene->GetIOContext(), SIGINT, SIGTERM);
+            workList_.emplace_back(scene->getIOContext());
+            threads_.emplace_back([this, scene] {
+                asio::signal_set signals(scene->getIOContext(), SIGINT, SIGTERM);
                 signals.async_wait([scene](auto, auto) {
-                    scene->GetIOContext().stop();
-                    spdlog::info("Main Scene[{}] Shutdown.", scene->GetSceneID());
+                    scene->getIOContext().stop();
+                    spdlog::info("Main Scene[{}] Shutdown.", scene->getSceneID());
                 });
 
-                scene->SetThreadID(std::this_thread::get_id());
-                scene->GetIOContext().run();
+                scene->setThreadID(std::this_thread::get_id());
+                scene->getIOContext().run();
             });
         }
     }
@@ -95,15 +95,15 @@ void USceneManager::Init() {
 
     spdlog::info("Started With {} Thread(s).", num);
 
-    co_spawn(GetWorld()->GetIOContext(), [this]() mutable -> awaitable<void> {
+    co_spawn(getWorld()->GetIOContext(), [this]() mutable -> awaitable<void> {
         try {
             auto point = NowTimePoint() + std::chrono::seconds(1);
             while (running_) {
-                tick_timer_.expires_at(point);
-                co_await tick_timer_.async_wait();
+                tickTimer_.expires_at(point);
+                co_await tickTimer_.async_wait();
 
                 if (running_)
-                    CollectScene(point);
+                    collectScene(point);
 
                 point += std::chrono::seconds(1);
             }
@@ -113,36 +113,36 @@ void USceneManager::Init() {
     }, asio::detached);
 }
 
-UGameWorld *USceneManager::GetWorld() const {
+UGameWorld *USceneManager::getWorld() const {
     return world_;
 }
 
-IBaseScene *USceneManager::GetNextMainScene() {
-    if (main_scene_list_.empty())
+IBaseScene *USceneManager::getNextMainScene() {
+    if (mainSceneList_.empty())
         throw std::runtime_error("No context node available");
 
-    const auto res = main_scene_list_[next_main_idx_++];
-    next_main_idx_ = next_main_idx_ % main_scene_list_.size();
+    const auto res = mainSceneList_[nextMainIndex_++];
+    nextMainIndex_ = nextMainIndex_ % mainSceneList_.size();
 
     return res;
 }
 
-IBaseScene *USceneManager::GetScene(const int32_t sid) const {
+IBaseScene *USceneManager::getScene(const int32_t sid) const {
     if (sid < 0)
         return nullptr;
 
     if (sid < NORMAL_SCENE_ID_BEGIN) {
-        if (sid >= main_scene_list_.size())
+        if (sid >= mainSceneList_.size())
             return nullptr;
 
-        return main_scene_list_[sid];
+        return mainSceneList_[sid];
     }
 
     if (sid <= NORMAL_SCENE_ID_BEGIN || sid >= NORMAL_SCENE_ID_END)
         return nullptr;
 
-    std::shared_lock lock(scene_mtx_);
-    if (const auto it = scene_map_.find(sid); it != scene_map_.end())
+    std::shared_lock lock(sceneMutex_);
+    if (const auto it = sceneMap_.find(sid); it != sceneMap_.end())
         return it->second;
 
     return nullptr;

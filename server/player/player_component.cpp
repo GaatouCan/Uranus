@@ -19,7 +19,7 @@ Player * IPlayerComponent::GetOwner() const {
 }
 
 UGameWorld * IPlayerComponent::GetWorld() const {
-    return GetOwner()->GetWorld();
+    return GetOwner()->getWorld();
 }
 
 void IPlayerComponent::OnLogin() {
@@ -36,7 +36,7 @@ void IPlayerComponent::SyncCache(CacheNode *node) {
 
 void IPlayerComponent::Send(IPackage *pkg) const {
     if (const auto plr = GetOwner(); plr != nullptr) {
-        plr->SendPackage(pkg);
+        plr->sendPackage(pkg);
     }
 }
 

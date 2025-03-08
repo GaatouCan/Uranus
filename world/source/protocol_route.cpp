@@ -47,15 +47,15 @@ void UProtocolRoute::OnReadPackage(const std::shared_ptr<UConnection> &conn, IPa
     //     return;
     // }
 
-    if (!pkg->IsAvailable()) {
+    if (!pkg->available()) {
         spdlog::warn("{} - Package unavailable", __FUNCTION__);
         return;
     }
 
-    if (const auto func = FindProto(pkg->GetPackageID()); func)
+    if (const auto func = FindProto(pkg->getPackageID()); func)
         handler_->Invoke(func, conn, pkg);
     else
-        spdlog::warn("{} - Package[{}] Protocol functor unavailable.", __FUNCTION__, pkg->GetPackageID());
+        spdlog::warn("{} - Package[{}] Protocol functor unavailable.", __FUNCTION__, pkg->getPackageID());
 }
 
 void UProtocolRoute::AbortHandler() const {

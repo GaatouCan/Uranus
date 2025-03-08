@@ -110,8 +110,8 @@ UGameWorld &UGameWorld::Init(const std::string &path) {
         UPackagePool::SetPackageInitializer(&FPackage::InitPackage);
     }
 
-    scene_mgr_->Init();
-    global_queue_->Init();
+    scene_mgr_->init();
+    global_queue_->init();
     login_authenticator_->Init();
 
     while (!init_priority_.empty()) {
@@ -302,14 +302,14 @@ awaitable<void> UGameWorld::WaitForConnect() {
         spdlog::info("Waiting For Client To Connect - Server Port: {}", config["server"]["port"].as<uint16_t>());
 
         while (running_) {
-            const auto scene = dynamic_cast<UMainScene *>(scene_mgr_->GetNextMainScene());
+            const auto scene = dynamic_cast<UMainScene *>(scene_mgr_->getNextMainScene());
             if (scene == nullptr) {
                 spdlog::critical("{} - Failed to get main scene.", __FUNCTION__);
                 Shutdown();
                 exit(-1);
             }
 
-            if (auto socket = co_await acceptor_.async_accept(scene->GetIOContext()); socket.is_open()) {
+            if (auto socket = co_await acceptor_.async_accept(scene->getIOContext()); socket.is_open()) {
                 const auto addr = socket.remote_endpoint().address();
                 spdlog::info("New Connection From: {}", addr.to_string());
 

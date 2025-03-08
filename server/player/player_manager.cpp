@@ -32,7 +32,7 @@ void PlayerManager::Init() {
             table.Read(row);
 
             const FPlayerID pid(table.pid);
-            if (!pid.IsAvailable())
+            if (!pid.available())
                 return;
 
             if (auto *node = &cache_map_[pid.local]; node != nullptr)
@@ -62,12 +62,12 @@ awaitable<std::shared_ptr<Player>> PlayerManager::OnPlayerLogin(const std::share
             player_map_.erase(id.local);
         }
 
-        spdlog::info("{} - Player[{}] Over Login", __FUNCTION__, plr->GetFullID());
+        spdlog::info("{} - Player[{}] Over Login", __FUNCTION__, plr->getFullID());
 
-        plr->GetConnection()->ResetContext();
-        plr->GetConnection()->Disconnect();
+        plr->getConnection()->ResetContext();
+        plr->getConnection()->Disconnect();
 
-        plr->TryLeaveScene();
+        plr->tryLeaveScene();
 
         if (plr->IsOnline()) {
             plr->OnLogout(true, conn->RemoteAddress().to_string());
@@ -81,7 +81,7 @@ awaitable<std::shared_ptr<Player>> PlayerManager::OnPlayerLogin(const std::share
         player_map_[id.local] = plr;
     }
 
-    spdlog::info("{} - New Player[{}] Login", __FUNCTION__, plr->GetFullID());
+    spdlog::info("{} - New Player[{}] Login", __FUNCTION__, plr->getFullID());
     co_await plr->OnLogin();
 
     // 同步玩家缓存数据
@@ -90,9 +90,9 @@ awaitable<std::shared_ptr<Player>> PlayerManager::OnPlayerLogin(const std::share
 }
 
 void PlayerManager::OnPlayerLogout(const FPlayerID pid) {
-    spdlog::info("{} - Player[{}] Logout", __FUNCTION__, pid.ToInt64());
+    spdlog::info("{} - Player[{}] Logout", __FUNCTION__, pid.toInt64());
     if (const auto plr = RemovePlayer(pid.local); plr != nullptr) {
-        plr->TryLeaveScene();
+        plr->tryLeaveScene();
         plr->OnLogout();
 
         SyncCache(plr);
@@ -123,9 +123,9 @@ void PlayerManager::SendToList(const std::set<FPlayerID> &players, const int32_t
 
     for (const auto [localID, crossID]: players) {
         if (const auto plr = FindPlayer(localID); plr != nullptr && plr->IsOnline()) {
-            const auto pkg = dynamic_cast<FPackage *>(plr->GetConnection()->BuildPackage());
-            pkg->SetPackageID(id).SetData(data);
-            plr->SendPackage(pkg);
+            const auto pkg = dynamic_cast<FPackage *>(plr->getConnection()->BuildPackage());
+            pkg->setPackageID(id).setData(data);
+            plr->sendPackage(pkg);
         }
     }
 }
@@ -137,7 +137,7 @@ void PlayerManager::SyncCache(const std::shared_ptr<Player> &plr) {
     CacheNode cache{};
     {
         std::shared_lock lock(cache_mtx_);
-        if (const auto iter = cache_map_.find(plr->GetLocalID()); iter != cache_map_.end()) {
+        if (const auto iter = cache_map_.find(plr->getLocalID()); iter != cache_map_.end()) {
             cache = iter->second;
         }
     }
@@ -157,17 +157,17 @@ void PlayerManager::SyncCache(const int32_t pid) {
 void PlayerManager::SyncCache(const CacheNode &node) {
     const FPlayerID pid(node.pid);
 
-    if (!pid.IsAvailable())
+    if (!pid.available())
         return;
 
     std::unique_lock lock(cache_mtx_);
     cache_map_[pid.local] = node;
 
-    spdlog::trace("{} - Player[{}] Sync Success.", __FUNCTION__, pid.ToInt64());
+    spdlog::trace("{} - Player[{}] Sync Success.", __FUNCTION__, pid.toInt64());
 }
 
 awaitable<std::optional<CacheNode>> PlayerManager::FindCacheNode(const FPlayerID &pid) {
-    if (!pid.IsAvailable())
+    if (!pid.available())
         co_return std::nullopt;
 
     if (pid.cross != GetWorld()->GetServerID()) {

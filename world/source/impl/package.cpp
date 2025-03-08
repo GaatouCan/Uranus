@@ -58,88 +58,88 @@ FPackage &FPackage::operator=(FPackage &&rhs) noexcept {
 FPackage::FPackage(const uint32_t id, const std::string_view str)
     : FPackage() {
     header_.id = id;
-    SetData(str);
+    setData(str);
 }
 
 FPackage::FPackage(const uint32_t id, const std::stringstream &ss)
     : FPackage(id, ss.str()) {
 }
 
-void FPackage::Reset() {
+void FPackage::reset() {
     memset(&header_, 0, sizeof(header_));
     data_.reset();
 }
 
-void FPackage::Invalid() {
+void FPackage::invalid() {
     header_.id = MINIMUM_PACKAGE_ID - 1;
 }
 
-bool FPackage::IsAvailable() const {
+bool FPackage::available() const {
     return header_.id >= MINIMUM_PACKAGE_ID && header_.id <= MAXIMUM_PACKAGE_ID;
 }
 
-FPackage &FPackage::SetPackageID(const uint32_t id) {
+FPackage &FPackage::setPackageID(const uint32_t id) {
     header_.id = id;
     return *this;
 }
 
-FPackage &FPackage::SetData(const std::string_view str) {
+FPackage &FPackage::setData(const std::string_view str) {
     data_.resize(str.size());
     memcpy(data_.data(), str.data(), str.size());
     header_.length = str.size();
     return *this;
 }
 
-FPackage &FPackage::SetData(const std::stringstream &ss) {
-    return SetData(ss.str());
+FPackage &FPackage::setData(const std::stringstream &ss) {
+    return setData(ss.str());
 }
 
-FPackage &FPackage::SetMagic(const uint32_t magic) {
+FPackage &FPackage::setMagic(const uint32_t magic) {
     header_.magic = magic;
     return *this;
 }
 
-FPackage &FPackage::SetVersion(const uint32_t version) {
+FPackage &FPackage::setVersion(const uint32_t version) {
     header_.version = version;
     return *this;
 }
 
-uint32_t FPackage::GetMagic() const {
+uint32_t FPackage::getMagic() const {
     return header_.magic;
 }
 
-uint32_t FPackage::GetVersion() const {
+uint32_t FPackage::getVersion() const {
     return header_.version;
 }
 
-FPackage &FPackage::SetMethod(const ECodecMethod method) {
+FPackage &FPackage::setMethod(const ECodecMethod method) {
     header_.method = method;
     return *this;
 }
 
-ECodecMethod FPackage::GetMethod() const {
+ECodecMethod FPackage::getMethod() const {
     return header_.method;
 }
 
-uint32_t FPackage::GetPackageID() const {
+uint32_t FPackage::getPackageID() const {
     return header_.id;
 }
 
-void FPackage::CopyFrom(IPackage *other) {
+void FPackage::copyFrom(IPackage *other) {
     if (const auto tmp = dynamic_cast<FPackage *>(other); tmp != nullptr && tmp != this) {
         *this = *tmp;
     }
 }
 
-size_t FPackage::GetDataLength() const {
+size_t FPackage::getDataLength() const {
     return data_.size();
 }
 
-std::string FPackage::ToString() const {
+std::string FPackage::toString() const {
     return {data_.begin(), data_.end()};
 }
 
-const FByteArray &FPackage::GetByteArray() const {
+const FByteArray &FPackage::getByteArray() const {
     return data_;
 }
 
@@ -179,15 +179,15 @@ void FPackage::InitPackage(IPackage *pkg) {
     if (temp == nullptr)
         return;
 
-    temp->SetMagic(kPackageMagic);
-    temp->SetVersion(kPackageVersion);
+    temp->setMagic(kPackageMagic);
+    temp->setVersion(kPackageVersion);
 
     if (kPackageMethod == "LineBased")
-        temp->SetMethod(ECodecMethod::BASE_LINE);
+        temp->setMethod(ECodecMethod::BASE_LINE);
     if (kPackageMethod == "Protobuf")
-        temp->SetMethod(ECodecMethod::PROTOBUF);
+        temp->setMethod(ECodecMethod::PROTOBUF);
 }
 
-FByteArray &FPackage::RawByteArray() {
+FByteArray &FPackage::rawByteArray() {
     return data_;
 }

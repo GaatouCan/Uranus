@@ -18,13 +18,13 @@ Player::Player(const AConnectionPointer &conn)
 }
 
 Player::~Player() {
-    spdlog::trace("{} - {}", __FUNCTION__, GetFullID());
+    spdlog::trace("{} - {}", __FUNCTION__, getFullID());
 }
 
 
 void Player::OnDayChange() {
-    if (!IsSameThread()) {
-        RunInThread(&Player::OnDayChange, this);
+    if (!isSameThread()) {
+        runInThread(&Player::OnDayChange, this);
         return;
     }
     component_module_.OnDayChange();
@@ -32,7 +32,7 @@ void Player::OnDayChange() {
 
 awaitable<void> Player::OnLogin() {
     login_time_ = NowTimePoint();
-    spdlog::info("{} - Player[{}] Login Successfully.", __FUNCTION__, GetFullID());
+    spdlog::info("{} - Player[{}] Login Successfully.", __FUNCTION__, getFullID());
 
     Login::LoginResponse response;
     response.set_result(true);
@@ -45,7 +45,7 @@ awaitable<void> Player::OnLogin() {
     component_module_.OnLogin();
 
     const auto param = new EP_PlayerLogin;
-    param->pid = GetFullID();
+    param->pid = getFullID();
 
     DISPATCH_EVENT(PLAYER_LOGIN, param)
 
@@ -53,28 +53,28 @@ awaitable<void> Player::OnLogin() {
 }
 
 void Player::OnLogout(const bool is_force, const std::string &other_address) {
-    if (!IsSameThread()) {
-        RunInThread(&Player::OnLogout, this, is_force, other_address);
+    if (!isSameThread()) {
+        runInThread(&Player::OnLogout, this, is_force, other_address);
         return;
     }
     logout_time_ = NowTimePoint();
-    CleanAllTimer();
+    cleanAllTimer();
 
     component_module_.OnLogout();
-    spdlog::info("{} - Player[{}] Logout.", __FUNCTION__, GetFullID());
+    spdlog::info("{} - Player[{}] Logout.", __FUNCTION__, getFullID());
 
     component_module_.Serialize();
 
     if (is_force) {
         Login::ForceLogoutResponse res;
-        res.set_player_id(GetFullID());
+        res.set_player_id(getFullID());
         res.set_address(other_address);
 
         SEND_PACKAGE(this, ForceLogoutResponse, res)
     }
 
     const auto param = new EP_PlayerLogout;
-    param->pid = GetFullID();
+    param->pid = getFullID();
 
     DISPATCH_EVENT(PLAYER_LOGOUT, param);
 }
@@ -90,23 +90,23 @@ bool Player::IsOnline() const {
 
 
 void Player::Send(const uint32_t id, const std::string_view data) const {
-    const auto pkg = dynamic_cast<FPackage *>(BuildPackage());
-    pkg->SetPackageID(id).SetData(data);
+    const auto pkg = dynamic_cast<FPackage *>(buildPackage());
+    pkg->setPackageID(id).setData(data);
 
     spdlog::trace("{} - [{}]", __FUNCTION__, ProtoTypeToString(static_cast<protocol::ProtoType>(id)));
-    SendPackage(pkg);
+    sendPackage(pkg);
 }
 
 void Player::Send(const uint32_t id, const std::stringstream &ss) const {
-    const auto pkg = dynamic_cast<FPackage *>(BuildPackage());
-    pkg->SetPackageID(id).SetData(ss.str());
+    const auto pkg = dynamic_cast<FPackage *>(buildPackage());
+    pkg->setPackageID(id).setData(ss.str());
 
     spdlog::trace("{} - [{}]", __FUNCTION__, ProtoTypeToString(static_cast<protocol::ProtoType>(id)));
-    SendPackage(pkg);
+    sendPackage(pkg);
 }
 
 void Player::SyncCache(CacheNode *node) {
-    node->pid = GetFullID();
+    node->pid = getFullID();
     node->lastLoginTime = utils::ToUnixTime(login_time_);
     if (logout_time_.time_since_epoch().count() > 0) {
         node->lastLogoutTime = utils::ToUnixTime(logout_time_);

@@ -15,7 +15,7 @@ UPackageCodec::UPackageCodec(const std::weak_ptr<UConnection> &conn)
     : TPackageCodec(conn) {
 }
 
-awaitable<void> UPackageCodec::EncodeT(FPackage *pkg) {
+awaitable<void> UPackageCodec::encodeT(FPackage *pkg) {
     FPackage::FHeader header{};
 
     header.magic = htonl(pkg->header_.magic);
@@ -32,20 +32,20 @@ awaitable<void> UPackageCodec::EncodeT(FPackage *pkg) {
 
     if (const auto len = co_await async_write(conn_.lock()->GetSocket(), asio::buffer(&header, FPackage::PACKAGE_HEADER_SIZE)); len == 0) {
         spdlog::warn("{} - Write package header length equal zero", __FUNCTION__);
-        pkg->Invalid();
+        pkg->invalid();
         co_return;
     }
 
     if (pkg->header_.length == 0)
         co_return;
 
-    co_await async_write(conn_.lock()->GetSocket(), asio::buffer(pkg->RawByteArray().rawRef()));
+    co_await async_write(conn_.lock()->GetSocket(), asio::buffer(pkg->rawByteArray().rawRef()));
 }
 
-awaitable<void> UPackageCodec::DecodeT(FPackage *pkg) {
+awaitable<void> UPackageCodec::decodeT(FPackage *pkg) {
     if (const auto len = co_await async_read(conn_.lock()->GetSocket(), asio::buffer(&pkg->header_, FPackage::PACKAGE_HEADER_SIZE)); len == 0) {
         spdlog::warn("{} - Read package header length equal zero", __FUNCTION__);
-        pkg->Invalid();
+        pkg->invalid();
         co_return;
     }
 
@@ -65,5 +65,5 @@ awaitable<void> UPackageCodec::DecodeT(FPackage *pkg) {
         co_return;
 
     pkg->data_.resize(pkg->header_.length);
-    co_await async_read(conn_.lock()->GetSocket(), asio::buffer(pkg->RawByteArray().rawRef()));
+    co_await async_read(conn_.lock()->GetSocket(), asio::buffer(pkg->rawByteArray().rawRef()));
 }

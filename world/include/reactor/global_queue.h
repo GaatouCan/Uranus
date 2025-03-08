@@ -32,24 +32,24 @@ public:
 
     DISABLE_COPY_MOVE(UGlobalQueue)
 
-    void Init();
+    void init();
 
-    std::shared_ptr<UTaskQueue> RegisterReactor(IReactor *reactor);
-    std::shared_ptr<UTaskQueue> FindByReactor(const IReactor *reactor) const;
+    std::shared_ptr<UTaskQueue> registerReactor(IReactor *reactor);
+    std::shared_ptr<UTaskQueue> findByReactor(const IReactor *reactor) const;
 
-    void RemoveReactor(const IReactor *reactor);
+    void removeReactor(const IReactor *reactor);
 
-    void OnPushTask(const std::shared_ptr<UTaskQueue> &queue);
+    void onPushTask(const std::shared_ptr<UTaskQueue> &queue);
 
 private:
     UGameWorld *world_;
 
     TDeque<std::shared_ptr<UTaskQueue>> queue_;
-    std::vector<std::thread> worker_vec_;
+    std::vector<std::thread> threads_;
 
-    std::map<IReactor *, std::weak_ptr<UTaskQueue>> reactor_map_;
-    mutable std::shared_mutex reactor_mtx_;
+    std::map<IReactor *, std::weak_ptr<UTaskQueue>> reactorMap_;
+    mutable std::shared_mutex reactorMutex_;
 
-    std::set<std::weak_ptr<UTaskQueue>, FWeakPointerCompare> empty_set_;
-    mutable std::shared_mutex empty_mtx_;
+    std::set<std::weak_ptr<UTaskQueue>, FWeakPointerCompare> emptySet_;
+    mutable std::shared_mutex emptyMutex_;
 };

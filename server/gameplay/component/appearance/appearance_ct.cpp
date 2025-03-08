@@ -42,7 +42,7 @@ void AppearanceCT::Deserialize(UDeserializer &ds) {
 
 void AppearanceCT::OnLogin() {
     if (appear_.pid == 0)
-        appear_.pid = GetOwner()->GetFullID();
+        appear_.pid = GetOwner()->getFullID();
 }
 
 void AppearanceCT::SendInfo() const {
@@ -82,7 +82,7 @@ void AppearanceCT::ActiveAvatar(const int index, const bool bAutoUse) {
     // const auto cfg = cfg_op.value();
     orm::DBTable_Avatar avatar;
 
-    avatar.pid = GetOwner()->GetFullID();
+    avatar.pid = GetOwner()->getFullID();
     avatar.index = index;
     avatar.activated = true;
     avatar.expired_time = utils::UnixTime() + 1000000;
@@ -120,7 +120,7 @@ void AppearanceCT::ActiveAvatarFrame(const int index, bool bAutoUse) {
     // const auto cfg = cfg_op.value();
     orm::DBTable_AvatarFrame frame;
 
-    frame.pid = GetOwner()->GetFullID();
+    frame.pid = GetOwner()->getFullID();
     frame.index = index;
     frame.activated = true;
     frame.expired_time = utils::UnixTime() + 1000000;
@@ -190,7 +190,7 @@ void protocol::AppearanceRequest(const std::shared_ptr<IBasePlayer> &plr, IPacka
         return;
 
     Appearance::AppearanceRequest request;
-    request.ParseFromString(dynamic_cast<FPackage *>(pkg)->ToString());
+    request.ParseFromString(dynamic_cast<FPackage *>(pkg)->toString());
 
     switch (request.operate_type()) {
         case Appearance::SEND_INFO: {

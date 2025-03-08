@@ -13,18 +13,18 @@ UGlobalQueue::~UGlobalQueue() {
     spdlog::info("{} - Shutdown.", __FUNCTION__);
     queue_.quit();
 
-    for (auto &th: worker_vec_) {
+    for (auto &th: threads_) {
         if (th.joinable())
             th.join();
     }
 }
 
-void UGlobalQueue::Init() {
+void UGlobalQueue::init() {
     const auto &cfg = world_->GetServerConfig();
     const int num = cfg["server"]["work_thread"].as<int>();
 
     for (int idx = 0; idx < num; idx++) {
-        worker_vec_.emplace_back([this] {
+        threads_.emplace_back([this] {
             while (queue_.running()) {
                 queue_.wait();
 
@@ -38,26 +38,26 @@ void UGlobalQueue::Init() {
                 if (task_queue == nullptr)
                     continue;
 
-                if (task_queue->IsRemoved())
+                if (task_queue->removed())
                     continue;
 
-                task_queue->OnPopFromGlobal();
-                task_queue->OnStart();
-                task_queue->HandleTask(10000);
+                task_queue->onPopFromGlobal();
+                task_queue->onStart();
+                task_queue->handleTask(10000);
 
-                if (task_queue->IsRemoved())
+                if (task_queue->removed())
                     continue;
 
-                task_queue->OnStop();
+                task_queue->onStop();
 
-                if (task_queue->IsEmpty()) {
-                    std::unique_lock lock(empty_mtx_);
-                    empty_set_.emplace(task_queue);
+                if (task_queue->empty()) {
+                    std::unique_lock lock(emptyMutex_);
+                    emptySet_.emplace(task_queue);
                     continue;
                 }
 
                 queue_.pushBack(task_queue);
-                task_queue->OnPushToGlobal();
+                task_queue->onPushToGlobal();
             }
         });
     }
@@ -65,65 +65,65 @@ void UGlobalQueue::Init() {
     spdlog::info("Global Queue Work With {} Thread(s).", num);
 }
 
-std::shared_ptr<UTaskQueue> UGlobalQueue::RegisterReactor(IReactor *reactor) {
+std::shared_ptr<UTaskQueue> UGlobalQueue::registerReactor(IReactor *reactor) {
     if (reactor == nullptr)
         return nullptr;
 
-    if (const auto res = FindByReactor(reactor); res != nullptr)
+    if (const auto res = findByReactor(reactor); res != nullptr)
         return res;
 
     auto queue = std::make_shared<UTaskQueue>(this, reactor);
-    reactor->SetTaskQueue(queue);
+    reactor->setTaskQueue(queue);
 
-    std::scoped_lock lock(reactor_mtx_, empty_mtx_);
-    reactor_map_[reactor] = queue;
-    empty_set_.emplace(queue->weak_from_this());
+    std::scoped_lock lock(reactorMutex_, emptyMutex_);
+    reactorMap_[reactor] = queue;
+    emptySet_.emplace(queue->weak_from_this());
 
     return queue;
 }
 
-std::shared_ptr<UTaskQueue> UGlobalQueue::FindByReactor(const IReactor *reactor) const {
+std::shared_ptr<UTaskQueue> UGlobalQueue::findByReactor(const IReactor *reactor) const {
     if (reactor == nullptr)
         return nullptr;
 
-    std::shared_lock lock(reactor_mtx_);
-    if (const auto it = reactor_map_.find(const_cast<IReactor *>(reactor)); it != reactor_map_.end())
+    std::shared_lock lock(reactorMutex_);
+    if (const auto it = reactorMap_.find(const_cast<IReactor *>(reactor)); it != reactorMap_.end())
         return it->second.expired() ? nullptr : it->second.lock();
 
     return nullptr;
 }
 
-void UGlobalQueue::OnPushTask(const std::shared_ptr<UTaskQueue> &queue) {
+void UGlobalQueue::onPushTask(const std::shared_ptr<UTaskQueue> &queue) {
     if (queue == nullptr)
         return;
 
-    if (queue->IsEmpty())
+    if (queue->empty())
         return;
 
     {
-        std::shared_lock lock(empty_mtx_);
-        if (!empty_set_.contains(queue->weak_from_this()))
+        std::shared_lock lock(emptyMutex_);
+        if (!emptySet_.contains(queue->weak_from_this()))
             return;
     }
 
     {
-        std::unique_lock lock(empty_mtx_);
-        empty_set_.erase(queue->weak_from_this());
+        std::unique_lock lock(emptyMutex_);
+        emptySet_.erase(queue->weak_from_this());
     }
 
     queue_.pushBack(queue);
-    queue->OnPushToGlobal();
+    queue->onPushToGlobal();
 }
 
-void UGlobalQueue::RemoveReactor(const IReactor *reactor) {
-    const auto queue = FindByReactor(reactor);
+void UGlobalQueue::removeReactor(const IReactor *reactor) {
+    const auto queue = findByReactor(reactor);
     if (queue == nullptr)
         return;
 
-    queue->OnRemove();
+    queue->onRemove();
 
-    std::scoped_lock lock(reactor_mtx_, empty_mtx_);
+    std::scoped_lock lock(reactorMutex_, emptyMutex_);
 
-    reactor_map_.erase(const_cast<IReactor *>(reactor));
-    empty_set_.erase(queue->weak_from_this());
+    reactorMap_.erase(const_cast<IReactor *>(reactor));
+    emptySet_.erase(queue->weak_from_this());
 }

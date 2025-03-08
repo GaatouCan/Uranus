@@ -21,29 +21,29 @@ struct BASE_API FPlayerID {
     FPlayerID() = default;
 
     explicit FPlayerID(const int64_t pid) {
-        FromInt64(pid);
+        fromInt64(pid);
     }
 
-    [[nodiscard]] int32_t GetLocalID() const {
+    [[nodiscard]] int32_t getLocalID() const {
         return local;
     }
 
-    [[nodiscard]] int32_t GetCrossID() const {
+    [[nodiscard]] int32_t getCrossID() const {
         return cross;
     }
 
-    [[nodiscard]] int64_t ToInt64() const {
+    [[nodiscard]] int64_t toInt64() const {
         return cross * CROSS_SERVER_ID_OFFSET + local;
     }
 
-    FPlayerID &FromInt64(const int64_t id) {
+    FPlayerID &fromInt64(const int64_t id) {
         local = static_cast<int32_t>(id % CROSS_SERVER_ID_OFFSET);
         cross = static_cast<int32_t>(id / CROSS_SERVER_ID_OFFSET);
         return *this;
     }
 
     bool operator<(const FPlayerID &other) const {
-        return ToInt64() < other.ToInt64();
+        return toInt64() < other.toInt64();
     }
 
     bool operator==(const FPlayerID& other) const {
@@ -55,10 +55,10 @@ struct BASE_API FPlayerID {
     }
 
     bool operator()(const FPlayerID &lhs, const FPlayerID &rhs) const {
-        return lhs.ToInt64() < rhs.ToInt64();
+        return lhs.toInt64() < rhs.toInt64();
     }
 
-    [[nodiscard]] bool IsAvailable() const {
+    [[nodiscard]] bool available() const {
         return local >= PLAYER_LOCAL_ID_BEGIN && local <= PLAYER_LOCAL_ID_END && cross > 0;
     }
 };

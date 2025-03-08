@@ -13,10 +13,10 @@ class IBasePlayer;
 class BASE_API IBaseScene {
 
     class USceneManager* owner_;
-    const int32_t scene_id_;
+    const int32_t sceneID_;
 
-    std::map<int32_t, std::shared_ptr<IBasePlayer>> player_map_;
-    mutable std::shared_mutex mtx_;
+    std::map<int32_t, std::shared_ptr<IBasePlayer>> playerMap_;
+    mutable std::shared_mutex mutex_;
 
 public:
     IBaseScene() = delete;
@@ -24,22 +24,22 @@ public:
     IBaseScene(USceneManager *owner, int32_t id);
     virtual ~IBaseScene();
 
-    [[nodiscard]] int32_t GetSceneID() const;
-    [[nodiscard]] USceneManager* GetOwner() const;
-    [[nodiscard]] UGameWorld *GetWorld() const;
+    [[nodiscard]] int32_t getSceneID() const;
+    [[nodiscard]] USceneManager* getOwner() const;
+    [[nodiscard]] UGameWorld *getWorld() const;
 
-    void PlayerEnterScene(const std::shared_ptr<IBasePlayer> &player);
-    void PlayerLeaveScene(const std::shared_ptr<IBasePlayer> &player, bool bChange = false);
+    void playerEnterScene(const std::shared_ptr<IBasePlayer> &player);
+    void playerLeaveScene(const std::shared_ptr<IBasePlayer> &player, bool bChange = false);
 
-    std::shared_ptr<IBasePlayer> GetPlayer(int32_t pid) const;
+    std::shared_ptr<IBasePlayer> findPlayer(int32_t pid) const;
 
-    void RunInThread(const std::function<awaitable<void>()> &func) const;
-    void RunInThread(std::function<awaitable<void>()> &&func) const;
+    void runInThread(const std::function<awaitable<void>()> &func) const;
+    void runInThread(std::function<awaitable<void>()> &&func) const;
 
     template<typename Functor, typename... Args>
-    void PushTask(Functor &&func, Args &&... args)
+    void pushTask(Functor &&func, Args &&... args)
     {
-        this->RunInThread([func = std::forward<Functor>(func), ...args = std::forward<Args>(args)]() -> awaitable<void> {
+        runInThread([func = std::forward<Functor>(func), ...args = std::forward<Args>(args)]() -> awaitable<void> {
             try {
                 std::invoke(func, args...);
             } catch (std::exception &e) {
@@ -49,11 +49,11 @@ public:
         });
     }
 
-    std::set<std::shared_ptr<IBasePlayer>> GetPlayerInScene() const;
+    std::set<std::shared_ptr<IBasePlayer>> getPlayerInScene() const;
 
     // Default true
-    virtual bool CanDestroy() const;
+    virtual bool canDestroy() const;
 
 public:
-    ATimePoint destroy_time_point_;
+    ATimePoint destroyTimePoint_;
 };

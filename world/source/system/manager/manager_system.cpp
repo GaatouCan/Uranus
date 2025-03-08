@@ -20,7 +20,7 @@ UManagerSystem::~UManagerSystem() {
 
 void UManagerSystem::Init() {
     for (const auto mgr: manager_map_ | std::views::values) {
-        GetWorld()->GetGlobalQueue()->RegisterReactor(mgr);
+        GetWorld()->GetGlobalQueue()->registerReactor(mgr);
     }
 
     for (const auto mgr: manager_map_ | std::views::values) {

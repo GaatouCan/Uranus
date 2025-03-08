@@ -10,18 +10,18 @@ UMainScene::~UMainScene() {
     delete pool_;
 }
 
-void UMainScene::SetThreadID(const AThreadID tid) {
+void UMainScene::setThreadID(const AThreadID tid) {
     thread_ = tid;
 }
 
-AThreadID UMainScene::GetThreadID() const {
+AThreadID UMainScene::getThreadID() const {
     return thread_;
 }
 
-asio::io_context & UMainScene::GetIOContext() {
-    return ctx_;
+asio::io_context & UMainScene::getIOContext() {
+    return context_;
 }
 
-UPackagePool * UMainScene::GetPackagePool() const {
+UPackagePool * UMainScene::getPackagePool() const {
     return pool_;
 }

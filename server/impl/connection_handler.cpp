@@ -27,6 +27,6 @@ void ConnectionHandler::OnClosed() {
 }
 
 awaitable<void> ConnectionHandler::OnReadPackage(IPackage *pkg) {
-    spdlog::debug("{} - Receive Package[{}] From {}.", __FUNCTION__, ProtoTypeToString(static_cast<protocol::ProtoType>(pkg->GetPackageID())), conn_.lock()->RemoteAddress().to_string());
+    spdlog::debug("{} - Receive Package[{}] From {}.", __FUNCTION__, ProtoTypeToString(static_cast<protocol::ProtoType>(pkg->getPackageID())), conn_.lock()->RemoteAddress().to_string());
     co_return;
 }

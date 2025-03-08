@@ -40,8 +40,8 @@ void ComponentModule::Serialize() {
         val->Serialize(ser);
     }
 
-    if (const auto sys = GetOwner()->GetWorld()->GetSystem<UDatabaseSystem>(); sys != nullptr) {
-        sys->PushTransaction([ser, pid = owner_->GetFullID()](mysqlx::Schema &schema) {
+    if (const auto sys = GetOwner()->getWorld()->GetSystem<UDatabaseSystem>(); sys != nullptr) {
+        sys->PushTransaction([ser, pid = owner_->getFullID()](mysqlx::Schema &schema) {
             ser->Serialize(schema);
             spdlog::info("ComponentModule::Serialize() - Player[{}] Stored.", pid);
             return true;
@@ -52,7 +52,7 @@ void ComponentModule::Serialize() {
 awaitable<void> ComponentModule::Deserialize() {
     try {
         AQueryArray query;
-        std::string expr = fmt::format("pid = {}", GetOwner()->GetFullID());
+        std::string expr = fmt::format("pid = {}", GetOwner()->getFullID());
 
         for (const auto &val : component_map_ | std::views::values) {
             for (const auto &table : val->GetTableList()) {
@@ -60,7 +60,7 @@ awaitable<void> ComponentModule::Deserialize() {
             }
         }
 
-        if (const auto sys = GetOwner()->GetWorld()->GetSystem<UDatabaseSystem>(); sys != nullptr) {
+        if (const auto sys = GetOwner()->getWorld()->GetSystem<UDatabaseSystem>(); sys != nullptr) {
             if (const auto res = co_await sys->AsyncSelect(query, asio::use_awaitable); res != nullptr) {
                 UDeserializer der(res);
                 for (const auto &val : component_map_ | std::views::values) {
@@ -69,7 +69,7 @@ awaitable<void> ComponentModule::Deserialize() {
             }
         }
     } catch (const std::exception &e) {
-        spdlog::error("{} - pid[{}] {}", __FUNCTION__, GetOwner()->GetFullID(), e.what());
+        spdlog::error("{} - pid[{}] {}", __FUNCTION__, GetOwner()->getFullID(), e.what());
     }
 }
 
@@ -78,7 +78,7 @@ void ComponentModule::OnLogin() {
         val->OnLogin();
     }
 
-    spdlog::info("{} - Player[{}] Loaded.", __FUNCTION__, GetOwner()->GetFullID());
+    spdlog::info("{} - Player[{}] Loaded.", __FUNCTION__, GetOwner()->getFullID());
 }
 
 void ComponentModule::OnLogout() {
@@ -89,7 +89,7 @@ void ComponentModule::OnLogout() {
 
 FPlayerID ComponentModule::GetPlayerID() const {
     if (owner_)
-        return owner_->GetPlayerID();
+        return owner_->getPlayerID();
     return {};
 }
 

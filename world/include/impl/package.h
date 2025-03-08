@@ -47,32 +47,32 @@ public:
     FPackage(uint32_t id, std::string_view str);
     FPackage(uint32_t id, const std::stringstream &ss);
 
-    void Reset() override;
+    void reset() override;
 
-    void Invalid() override;
-    [[nodiscard]] bool IsAvailable() const override;
+    void invalid() override;
+    [[nodiscard]] bool available() const override;
 
-    FPackage &SetPackageID(uint32_t id);
-    [[nodiscard]] uint32_t GetPackageID() const override;
+    FPackage &setPackageID(uint32_t id);
+    [[nodiscard]] uint32_t getPackageID() const override;
 
-    void CopyFrom(IPackage *other) override;
+    void copyFrom(IPackage *other) override;
 
-    FPackage &SetData(std::string_view str);
-    FPackage &SetData(const std::stringstream &ss);
+    FPackage &setData(std::string_view str);
+    FPackage &setData(const std::stringstream &ss);
 
-    FPackage &SetMagic(uint32_t magic);
-    [[nodiscard]] uint32_t GetMagic() const;
+    FPackage &setMagic(uint32_t magic);
+    [[nodiscard]] uint32_t getMagic() const;
 
-    FPackage &SetVersion(uint32_t version);
-    [[nodiscard]] uint32_t GetVersion() const;
+    FPackage &setVersion(uint32_t version);
+    [[nodiscard]] uint32_t getVersion() const;
 
-    FPackage &SetMethod(ECodecMethod method);
-    [[nodiscard]] ECodecMethod GetMethod() const;
+    FPackage &setMethod(ECodecMethod method);
+    [[nodiscard]] ECodecMethod getMethod() const;
 
-    [[nodiscard]] size_t GetDataLength() const;
+    [[nodiscard]] size_t getDataLength() const;
 
-    [[nodiscard]] std::string ToString() const;
-    [[nodiscard]] const FByteArray &GetByteArray() const;
+    [[nodiscard]] std::string toString() const;
+    [[nodiscard]] const FByteArray &getByteArray() const;
 
     static void SetPackageMagic(uint32_t magic);
     static void SetPackageVersion(uint32_t version);
@@ -90,5 +90,5 @@ public:
     static std::string kPackageMethod;
 
 private:
-    [[nodiscard]] FByteArray &RawByteArray();
+    [[nodiscard]] FByteArray &rawByteArray();
 };

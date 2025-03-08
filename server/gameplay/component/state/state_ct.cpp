@@ -21,7 +21,7 @@ StateCT::~StateCT() {
 
 void StateCT::OnLogin() {
     if (state_.pid == 0)
-        state_.pid = GetOwner()->GetFullID();
+        state_.pid = GetOwner()->getFullID();
 }
 
 int32_t StateCT::GetLevel() const {

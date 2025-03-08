@@ -35,15 +35,15 @@ awaitable<LoginInfo> LoginHandler::ParseLoginInfo(IPackage *pkg) {
     try {
         const auto tmp = dynamic_cast<FPackage *>(pkg);
 
-        if (pkg->GetPackageID() != static_cast<uint32_t>(protocol::ProtoType::ClientLoginRequest))
+        if (pkg->getPackageID() != static_cast<uint32_t>(protocol::ProtoType::ClientLoginRequest))
             co_return LoginInfo{};
 
         Login::ClientLoginRequest request;
-        request.ParseFromString(tmp->ToString());
+        request.ParseFromString(tmp->toString());
 
         LoginInfo info;
 
-        info.pid.FromInt64(request.player_id());
+        info.pid.fromInt64(request.player_id());
         info.token = request.token();
 
         co_return info;

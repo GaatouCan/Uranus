@@ -59,12 +59,12 @@ void UConnection::Disconnect() {
     // 服务器关闭时数据包池不一定还在
     while (!output_.empty() && GetPackagePool()) {
         if (auto res = output_.popFront(); res.has_value())
-            GetPackagePool()->Recycle(res.value());
+            GetPackagePool()->recycle(res.value());
     }
 }
 
 int32_t UConnection::GetSceneID() const {
-    return scene_->GetSceneID();
+    return scene_->getSceneID();
 }
 
 UConnection &UConnection::SetContext(const std::any &ctx) {
@@ -95,11 +95,11 @@ void UConnection::SetReadTimeout(const uint32_t sec) {
 }
 
 AThreadID UConnection::GetThreadID() const {
-    return scene_->GetThreadID();
+    return scene_->getThreadID();
 }
 
 UPackagePool *UConnection::GetPackagePool() const {
-    return scene_->GetPackagePool();
+    return scene_->getPackagePool();
 }
 
 UMainScene *UConnection::GetMainScene() const {
@@ -107,7 +107,7 @@ UMainScene *UConnection::GetMainScene() const {
 }
 
 UGameWorld *UConnection::GetWorld() const {
-    return scene_->GetWorld();
+    return scene_->getWorld();
 }
 
 bool UConnection::IsSameThread() const {
@@ -115,7 +115,7 @@ bool UConnection::IsSameThread() const {
 }
 
 IPackage *UConnection::BuildPackage() const {
-    return GetPackagePool()->Acquire();
+    return GetPackagePool()->acquire();
 }
 
 void UConnection::Send(IPackage *pkg) {
@@ -171,16 +171,16 @@ awaitable<void> UConnection::WritePackage() {
                 continue;
 
             const auto pkg = res.value();
-            co_await codec_->Encode(pkg);
+            co_await codec_->encode(pkg);
 
-            if (pkg->IsAvailable()) {
+            if (pkg->available()) {
                 if (handler_ != nullptr)
                     co_await handler_->OnWritePackage(pkg);
 
-                GetPackagePool()->Recycle(pkg);
+                GetPackagePool()->recycle(pkg);
             } else {
                 spdlog::warn("{} - Write Failed - key[{}]", __FUNCTION__, key_.empty() ? "null" : key_);
-                GetPackagePool()->Recycle(pkg);
+                GetPackagePool()->recycle(pkg);
                 Disconnect();
             }
         }
@@ -201,9 +201,9 @@ awaitable<void> UConnection::ReadPackage() {
         while (socket_.is_open()) {
             const auto pkg = BuildPackage();
 
-            co_await codec_->Decode(pkg);
+            co_await codec_->decode(pkg);
 
-            if (pkg->IsAvailable()) {
+            if (pkg->available()) {
                 deadline_ = NowTimePoint() + kExpireTime;
 
                 if (handler_ != nullptr)
@@ -218,7 +218,7 @@ awaitable<void> UConnection::ReadPackage() {
                 Disconnect();
             }
 
-            GetPackagePool()->Recycle(pkg);
+            GetPackagePool()->recycle(pkg);
         }
     } catch (std::exception &e) {
         spdlog::error("{} - {} - key[{}]", __FUNCTION__, e.what(), key_.empty() ? "null" : key_);

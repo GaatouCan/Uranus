@@ -18,37 +18,37 @@ public:
 
     virtual ~IPackageCodec() = default;
 
-    virtual awaitable<void> Encode(IPackage *pkg) = 0;
-    virtual awaitable<void> Decode(IPackage *pkg) = 0;
+    virtual awaitable<void> encode(IPackage *pkg) = 0;
+    virtual awaitable<void> decode(IPackage *pkg) = 0;
 };
 
 
-template<PACKAGE_TYPE T>
+template<CPackageType T>
 class BASE_API TPackageCodec : public IPackageCodec {
 public:
     explicit TPackageCodec(const std::weak_ptr<UConnection> &conn) : IPackageCodec(conn) {}
     ~TPackageCodec() override = default;
 
-    awaitable<void> Encode(IPackage *pkg) override {
+    awaitable<void> encode(IPackage *pkg) override {
         try {
-            co_await this->EncodeT(dynamic_cast<T *>(pkg));
+            co_await encodeT(dynamic_cast<T *>(pkg));
         } catch (std::bad_cast &e) {
-            pkg->Invalid();
+            pkg->invalid();
             spdlog::error("{} - {}", __FUNCTION__, e.what());
         }
     }
-    awaitable<void> Decode(IPackage *pkg) override {
+    awaitable<void> decode(IPackage *pkg) override {
         try {
-            co_await this->DecodeT(dynamic_cast<T *>(pkg));
+            co_await decodeT(dynamic_cast<T *>(pkg));
         } catch (std::bad_cast &e) {
-            pkg->Invalid();
+            pkg->invalid();
             spdlog::error("{} - {}", __FUNCTION__, e.what());
         } catch (std::system_error &e) {
-            pkg->Invalid();
+            pkg->invalid();
             spdlog::warn("{} - {}", __FUNCTION__, e.what());
         }
     }
 
-    virtual awaitable<void> EncodeT(T *pkg) = 0;
-    virtual awaitable<void> DecodeT(T *pkg) = 0;
+    virtual awaitable<void> encodeT(T *pkg) = 0;
+    virtual awaitable<void> decodeT(T *pkg) = 0;
 };

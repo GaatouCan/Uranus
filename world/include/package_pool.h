@@ -27,19 +27,19 @@ class UPackagePool final {
 public:
     DISABLE_COPY_MOVE(UPackagePool)
 
-    [[nodiscard]] size_t Capacity() const;
+    [[nodiscard]] size_t capacity() const;
 
     /**
      * 从池里获取一个数据包
      * @return 数据包基类指针
      */
-    IPackage *Acquire();
+    IPackage *acquire();
 
     /**
      * 回收数据包
      * @param pkg 被回收数据包指针
      */
-    void Recycle(IPackage *pkg);
+    void recycle(IPackage *pkg);
 
     /**
      * 加载全局配置 定义扩容和收缩临界点和比例
@@ -64,16 +64,15 @@ public:
     static bool HasAssignedBuilder();
 
 private:
-    void Expanse();
-    void Collect();
+    void expanse();
+    void collect();
 
 private:
     std::queue<IPackage *> queue_;
-    std::set<IPackage *> pkg_set_;
-    std::atomic<ATimePoint> collect_time_;
+    std::set<IPackage *> packageSet_;
+    std::atomic<ATimePoint> collectTime_;
 
-    // std::mutex mMutex;
-    mutable std::shared_mutex mtx_;
+    mutable std::shared_mutex mutex_;
 
     // 扩容和收缩临界点和比例
     // 每个线程下的数据包池行为目前设计为一致

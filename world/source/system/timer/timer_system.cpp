@@ -46,12 +46,12 @@ std::optional<FUniqueID> UTimerSystem::EmplaceTimer(URepeatedTimer *timer) {
     if (timer == nullptr)
         return std::nullopt;
 
-    FUniqueID timerID = FUniqueID::RandomGenerate();
+    FUniqueID timerID = FUniqueID::randomGenerate();
 
     {
         std::shared_lock lock(mtx_);
         while (timer_map_.contains(timerID)) {
-            timerID = FUniqueID::RandomGenerate();
+            timerID = FUniqueID::randomGenerate();
         }
     }
 
