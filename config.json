@@ -9,7 +9,7 @@
             "appearance",
             "chat"
         ],
-        "include_dir": "protocol_route.h"
+        "include_dir": "proto_route.h"
     },
     "sql": {
         "sql": "struct/sql",
