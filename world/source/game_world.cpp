@@ -267,8 +267,8 @@ bool UGameWorld::LoadServerDLL(const std::string &path) {
         return false;
     }
 
-    const auto creator = reinterpret_cast<ServerCreator>(dlsym(module_, "CreateServer"));
-    const auto destroyer = reinterpret_cast<ServerDestroyer>(dlsym(module_, "DestroyServer"));
+    const auto creator = reinterpret_cast<AServerCreator>(dlsym(module_, "CreateServer"));
+    const auto destroyer = reinterpret_cast<AServerDestroyer>(dlsym(module_, "DestroyServer"));
 
     if (creator == nullptr || destroyer == nullptr) {
         spdlog::error("Failed to load DLL function: {}", path);

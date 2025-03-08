@@ -33,7 +33,7 @@ concept DB_TABLE_TYPE = std::derived_from<T, IDBTable>;
 #define DB_CAST_FROM_BLOB(field, value) \
 { \
 const auto bytes = (value).getRawBytes(); \
-field = ByteArray(std::vector(bytes.begin(), bytes.end())); \
+field = FByteArray(std::vector(bytes.begin(), bytes.end())); \
 }
 
 #define DB_CAST_TO_BLOB(field) \
