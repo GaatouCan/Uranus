@@ -5,10 +5,10 @@
 
 class IPlayerComponent {
 
-    class ComponentModule *module_;
+    class UComponentModule *module_;
 
 public:
-    explicit IPlayerComponent(ComponentModule *module);
+    explicit IPlayerComponent(UComponentModule *module);
     virtual ~IPlayerComponent();
 
     IPlayerComponent() = delete;
@@ -20,7 +20,7 @@ public:
         return {};
     }
 
-    [[nodiscard]] ComponentModule *getModule() const;
+    [[nodiscard]] UComponentModule *getModule() const;
     [[nodiscard]] class UPlayer *getOwner() const;
     [[nodiscard]] class UGameWorld *getWorld() const;
 
@@ -28,7 +28,7 @@ public:
     virtual void onLogout();
     virtual void onDayChange(bool is_login);
 
-    virtual void syncCache(struct CacheNode *node);
+    virtual void syncCache(struct FCacheNode *node);
 
     void send(IPackage *pkg) const;
 

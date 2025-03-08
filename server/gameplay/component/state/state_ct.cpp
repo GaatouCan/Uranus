@@ -11,35 +11,35 @@
 #include <system/database/serializer.h>
 #include <system/database/deserializer.h>
 
-StateCT::StateCT(ComponentModule *module)
+UStateCT::UStateCT(UComponentModule *module)
     : IPlayerComponent(module) {
 
 }
 
-StateCT::~StateCT() {
+UStateCT::~UStateCT() {
 }
 
-void StateCT::onLogin() {
+void UStateCT::onLogin() {
     if (state_.pid == 0)
         state_.pid = getOwner()->getFullID();
 }
 
-int32_t StateCT::GetLevel() const {
+int32_t UStateCT::getLevel() const {
     return state_.level;
 }
 
-int64_t StateCT::GetExp() const {
+int64_t UStateCT::getExp() const {
     return state_.experience;
 }
 
-void StateCT::syncCache(CacheNode* node) {
+void UStateCT::syncCache(FCacheNode* node) {
     node->level = state_.level;
 }
 
-void StateCT::serialize(const std::shared_ptr<USerializer> &s) {
+void UStateCT::serialize(const std::shared_ptr<USerializer> &s) {
     WRITE_TABLE(s, State, state_)
 }
 
-void StateCT::deserialize(UDeserializer &ds) {
+void UStateCT::deserialize(UDeserializer &ds) {
     READ_TABLE(&ds, State, state_)
 }

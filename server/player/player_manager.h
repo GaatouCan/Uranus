@@ -12,19 +12,19 @@
 class UPlayer;
 class UConnection;
 
-class PlayerManager final : public IBaseManager {
+class UPlayerManager final : public IBaseManager {
 
-    std::unordered_map<int32_t, std::shared_ptr<UPlayer>> player_map_;
-    mutable std::shared_mutex player_mtx_;
+    std::unordered_map<int32_t, std::shared_ptr<UPlayer>> playerMap_;
+    mutable std::shared_mutex playerMutex_;
 
-    std::unordered_map<int32_t, CacheNode> cache_map_;
-    mutable std::shared_mutex cache_mtx_;
+    std::unordered_map<int32_t, FCacheNode> cacheMap_;
+    mutable std::shared_mutex cacheMutex_;
 
-    ATimePoint last_update_time_;
+    ATimePoint lastUpdateTime_;
 
 public:
-    explicit PlayerManager(UManagerSystem *owner);
-    ~PlayerManager() override;
+    explicit UPlayerManager(UManagerSystem *owner);
+    ~UPlayerManager() override;
 
     void init() override;
 
@@ -32,23 +32,23 @@ public:
 
     void onDayChange() override;
 
-    awaitable<std::shared_ptr<UPlayer>> OnPlayerLogin(const std::shared_ptr<UConnection> &conn, const FPlayerID &id);
+    awaitable<std::shared_ptr<UPlayer>> onPlayerLogin(const std::shared_ptr<UConnection> &conn, const FPlayerID &id);
 
-    void OnPlayerLogout(FPlayerID pid);
+    void onPlayerLogout(FPlayerID pid);
 
-    std::shared_ptr<UPlayer> FindPlayer(int32_t pid);
-    std::shared_ptr<UPlayer> RemovePlayer(int32_t pid);
+    std::shared_ptr<UPlayer> findPlayer(int32_t pid);
+    std::shared_ptr<UPlayer> removePlayer(int32_t pid);
 
-    void SendToList(const std::set<FPlayerID>& players, int32_t id, std::string_view data);
+    void sendToList(const std::set<FPlayerID>& players, int32_t id, std::string_view data);
 
-    void SyncCache(const std::shared_ptr<UPlayer> &plr);
-    void SyncCache(int32_t pid);
-    void SyncCache(const CacheNode &node);
+    void syncCache(const std::shared_ptr<UPlayer> &plr);
+    void syncCache(int32_t pid);
+    void syncCache(const FCacheNode &node);
 
-    awaitable<std::optional<CacheNode>> FindCacheNode(const FPlayerID &pid);
+    awaitable<std::optional<FCacheNode>> findCacheNode(const FPlayerID &pid);
 
     void onTick(ATimePoint now, ADuration interval) override;
 };
 
 #define SEND_TO_PLAYER_SET(mgr, set, proto, data) \
-    (mgr)->SendToList((set), static_cast<int32_t>(protocol::EProtoType::proto), (data).SerializeAsString());
+    (mgr)->sendToList((set), static_cast<int32_t>(protocol::EProtoType::proto), (data).SerializeAsString());

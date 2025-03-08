@@ -105,7 +105,7 @@ void UPlayer::send(const uint32_t id, const std::stringstream &ss) const {
     sendPackage(pkg);
 }
 
-void UPlayer::syncCache(CacheNode *node) {
+void UPlayer::syncCache(FCacheNode *node) {
     node->pid = getFullID();
     node->lastLoginTime = utils::ToUnixTime(loginTime_);
     if (logoutTime_.time_since_epoch().count() > 0) {

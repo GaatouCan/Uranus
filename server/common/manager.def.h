@@ -9,6 +9,6 @@ inline void RegisterManager(UManagerSystem *sys) {
     if (sys == nullptr)
         return;
 
-    REGISTER_MANAGER(PlayerManager)
+    REGISTER_MANAGER(UPlayerManager)
     // sys->CreateManager<UChatManager>();
 }

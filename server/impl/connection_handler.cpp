@@ -21,8 +21,8 @@ void UConnectionHandler::onClosed() {
 
     const auto pid = std::any_cast<FPlayerID>(conn_.lock()->getContext());
 
-    if (const auto mgr = GET_MANAGER(PlayerManager); mgr != nullptr) {
-        mgr->OnPlayerLogout(pid);
+    if (const auto mgr = GET_MANAGER(UPlayerManager); mgr != nullptr) {
+        mgr->onPlayerLogout(pid);
     }
 }
 

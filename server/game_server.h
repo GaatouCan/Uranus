@@ -4,10 +4,10 @@
 #include "server_logic.h"
 
 
-class SERVER_API GameServer final : public IServerLogic {
+class SERVER_API UGameServer final : public IServerLogic {
 public:
-    explicit GameServer(UGameWorld *world);
-    ~GameServer() override;
+    explicit UGameServer(UGameWorld *world);
+    ~UGameServer() override;
 
     void initGameWorld() override;
 

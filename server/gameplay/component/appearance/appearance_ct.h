@@ -12,11 +12,11 @@
 class AppearanceCT final : public IPlayerComponent {
 
     orm::DBTable_Appearance appear_;
-    std::unordered_map<int32_t, orm::DBTable_Avatar> avatar_map_;
-    std::unordered_map<int32_t, orm::DBTable_AvatarFrame> avatar_frame_map_;
+    std::unordered_map<int32_t, orm::DBTable_Avatar> avatarMap_;
+    std::unordered_map<int32_t, orm::DBTable_AvatarFrame> avatarFrameMap_;
 
 public:
-    explicit AppearanceCT(ComponentModule *module);
+    explicit AppearanceCT(UComponentModule *module);
     ~AppearanceCT() override;
 
     [[nodiscard]] constexpr std::vector<std::string> getTableList() const  override {
@@ -28,18 +28,18 @@ public:
 
     void onLogin() override;
 
-    void SendInfo() const;
+    void sendInfo() const;
 
-    void ActiveAvatar(int index, bool bAutoUse = false);
-    void UseAvatar(int index);
+    void activeAvatar(int index, bool bAutoUse = false);
+    void useAvatar(int index);
 
-    void ActiveAvatarFrame(int index, bool bAutoUse = false);
-    void UseAvatarFrame(int index);
+    void activeAvatarFrame(int index, bool bAutoUse = false);
+    void useAvatarFrame(int index);
 
-    void syncCache(struct CacheNode* node) override;
+    void syncCache(FCacheNode* node) override;
 
 private:
-    void CheckAvatar(int index);
-    void CheckAvatarFrame(int index);
+    void checkAvatar(int index);
+    void checkAvatarFrame(int index);
 };
 

@@ -20,7 +20,7 @@
 #include <appearance.pb.h>
 
 
-AppearanceCT::AppearanceCT(ComponentModule *module)
+AppearanceCT::AppearanceCT(UComponentModule *module)
     : IPlayerComponent(module) {
 
 }
@@ -30,14 +30,14 @@ AppearanceCT::~AppearanceCT() {
 
 void AppearanceCT::serialize(const std::shared_ptr<USerializer> &s) {
     WRITE_TABLE(s, Appearance, appear_)
-    WRITE_TABLE_MAP(s, Avatar, avatar_map_)
-    WRITE_TABLE_MAP(s, AvatarFrame, avatar_frame_map_)
+    WRITE_TABLE_MAP(s, Avatar, avatarMap_)
+    WRITE_TABLE_MAP(s, AvatarFrame, avatarFrameMap_)
 }
 
 void AppearanceCT::deserialize(UDeserializer &ds) {
     READ_TABLE(&ds, Appearance, appear_)
-    READ_TABLE_MAP(&ds, Avatar, avatar_map_)
-    READ_TABLE_MAP(&ds, AvatarFrame, avatar_frame_map_)
+    READ_TABLE_MAP(&ds, Avatar, avatarMap_)
+    READ_TABLE_MAP(&ds, AvatarFrame, avatarFrameMap_)
 }
 
 void AppearanceCT::onLogin() {
@@ -45,20 +45,20 @@ void AppearanceCT::onLogin() {
         appear_.pid = getOwner()->getFullID();
 }
 
-void AppearanceCT::SendInfo() const {
+void AppearanceCT::sendInfo() const {
     Appearance::AppearanceResponse res;
 
     res.set_current_avatar(appear_.avatar);
     res.set_current_avatar_frame(appear_.avatar_frame);
 
-    for (const auto &val: avatar_map_ | std::views::values) {
+    for (const auto &val: avatarMap_ | std::views::values) {
         const auto avatar = res.add_avatar();
         avatar->set_index(val.index);
         avatar->set_bactivated(val.activated);
         avatar->set_expired(val.expired_time);
     }
 
-    for (const auto &val: avatar_frame_map_ | std::views::values) {
+    for (const auto &val: avatarFrameMap_ | std::views::values) {
         const auto avatar_frame = res.add_avatar_frame();
         avatar_frame->set_index(val.index);
         avatar_frame->set_bactivated(val.activated);
@@ -68,11 +68,11 @@ void AppearanceCT::SendInfo() const {
     SEND_PACKAGE(this, AppearanceResponse, res);
 }
 
-void AppearanceCT::ActiveAvatar(const int index, const bool bAutoUse) {
-    CheckAvatar(index);
+void AppearanceCT::activeAvatar(const int index, const bool bAutoUse) {
+    checkAvatar(index);
 
-    auto iter = avatar_map_.find(index);
-    if (iter != avatar_map_.end() && iter->second.activated)
+    auto iter = avatarMap_.find(index);
+    if (iter != avatarMap_.end() && iter->second.activated)
         return;
 
     const auto cfg_op = getWorld()->getConfigManager()->find("appearance.avatar", index);
@@ -87,8 +87,8 @@ void AppearanceCT::ActiveAvatar(const int index, const bool bAutoUse) {
     avatar.activated = true;
     avatar.expired_time = utils::UnixTime() + 1000000;
 
-    avatar_map_[index] = avatar;
-    iter = avatar_map_.find(index);
+    avatarMap_[index] = avatar;
+    iter = avatarMap_.find(index);
 
     if (bAutoUse) {
         // iter->second.in_used = true;
@@ -96,21 +96,21 @@ void AppearanceCT::ActiveAvatar(const int index, const bool bAutoUse) {
     }
 }
 
-void AppearanceCT::UseAvatar(const int index) {
-    CheckAvatar(index);
+void AppearanceCT::useAvatar(const int index) {
+    checkAvatar(index);
 
-    const auto iter = avatar_map_.find(index);
-    if (iter == avatar_map_.end() || !iter->second.activated)
+    const auto iter = avatarMap_.find(index);
+    if (iter == avatarMap_.end() || !iter->second.activated)
         return;
 
     appear_.avatar = index;
 }
 
-void AppearanceCT::ActiveAvatarFrame(const int index, bool bAutoUse) {
-    CheckAvatarFrame(index);
+void AppearanceCT::activeAvatarFrame(const int index, bool bAutoUse) {
+    checkAvatarFrame(index);
 
-    auto iter = avatar_frame_map_.find(index);
-    if (iter != avatar_frame_map_.end() && iter->second.activated)
+    auto iter = avatarFrameMap_.find(index);
+    if (iter != avatarFrameMap_.end() && iter->second.activated)
         return;
 
     const auto cfg_op = getWorld()->getConfigManager()->find("appearance.avatar", index);
@@ -125,8 +125,8 @@ void AppearanceCT::ActiveAvatarFrame(const int index, bool bAutoUse) {
     frame.activated = true;
     frame.expired_time = utils::UnixTime() + 1000000;
 
-    avatar_frame_map_[index] = frame;
-    iter = avatar_frame_map_.find(index);
+    avatarFrameMap_[index] = frame;
+    iter = avatarFrameMap_.find(index);
 
     if (bAutoUse) {
         // iter->second.in_used = true;
@@ -134,24 +134,24 @@ void AppearanceCT::ActiveAvatarFrame(const int index, bool bAutoUse) {
     }
 }
 
-void AppearanceCT::UseAvatarFrame(const int index) {
-    CheckAvatarFrame(index);
+void AppearanceCT::useAvatarFrame(const int index) {
+    checkAvatarFrame(index);
 
-    const auto iter = avatar_frame_map_.find(index);
-    if (iter == avatar_frame_map_.end() || !iter->second.activated)
+    const auto iter = avatarFrameMap_.find(index);
+    if (iter == avatarFrameMap_.end() || !iter->second.activated)
         return;
 
     appear_.avatar_frame = index;
 }
 
-void AppearanceCT::syncCache(CacheNode* node) {
+void AppearanceCT::syncCache(FCacheNode* node) {
     node->avatar = appear_.avatar;
     node->avatarFrame = appear_.avatar_frame;
 }
 
-void AppearanceCT::CheckAvatar(const int index) {
-    const auto iter = avatar_map_.find(index);
-    if (iter == avatar_map_.end())
+void AppearanceCT::checkAvatar(const int index) {
+    const auto iter = avatarMap_.find(index);
+    if (iter == avatarMap_.end())
         return;
 
     const auto elem = &iter->second;
@@ -165,9 +165,9 @@ void AppearanceCT::CheckAvatar(const int index) {
         elem->activated = false;
 }
 
-void AppearanceCT::CheckAvatarFrame(const int index) {
-    const auto iter = avatar_frame_map_.find(index);
-    if (iter == avatar_frame_map_.end())
+void AppearanceCT::checkAvatarFrame(const int index) {
+    const auto iter = avatarFrameMap_.find(index);
+    if (iter == avatarFrameMap_.end())
         return;
 
     const auto elem = &iter->second;
@@ -194,27 +194,27 @@ void protocol::AppearanceRequest(const std::shared_ptr<IBasePlayer> &plr, IPacka
 
     switch (request.operate_type()) {
         case Appearance::SEND_INFO: {
-            ct->SendInfo();
+            ct->sendInfo();
         }
         break;
         case Appearance::ACTIVE_AVATAR: {
-            ct->ActiveAvatar(request.index(), request.parameter() == 1);
-            ct->SendInfo();
+            ct->activeAvatar(request.index(), request.parameter() == 1);
+            ct->sendInfo();
         }
         break;
         case Appearance::USE_AVATAR: {
-            ct->UseAvatar(request.index());
-            ct->SendInfo();
+            ct->useAvatar(request.index());
+            ct->sendInfo();
         }
         break;
         case Appearance::ACTIVE_AVATAR_FRAME: {
-            ct->ActiveAvatarFrame(request.index(), request.parameter() == 1);
-            ct->SendInfo();
+            ct->activeAvatarFrame(request.index(), request.parameter() == 1);
+            ct->sendInfo();
         }
         break;
         case Appearance::USE_AVATAR_FRAME: {
-            ct->UseAvatarFrame(request.index());
-            ct->SendInfo();
+            ct->useAvatarFrame(request.index());
+            ct->sendInfo();
         }
         break;
         default:

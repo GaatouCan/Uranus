@@ -8,13 +8,13 @@
 #include "state.orm.h"
 
 
-class StateCT final : public IPlayerComponent {
+class UStateCT final : public IPlayerComponent {
 
     orm::DBTable_State state_;
 
 public:
-    explicit StateCT(ComponentModule *module);
-    ~StateCT() override;
+    explicit UStateCT(UComponentModule *module);
+    ~UStateCT() override;
 
     [[nodiscard]] constexpr std::vector<std::string> getTableList() const override {
         return {"state"};
@@ -25,8 +25,8 @@ public:
 
     void onLogin() override;
 
-    [[nodiscard]] int32_t GetLevel() const;
-    [[nodiscard]] int64_t GetExp() const;
+    [[nodiscard]] int32_t getLevel() const;
+    [[nodiscard]] int64_t getExp() const;
 
-    void syncCache(CacheNode* node) override;
+    void syncCache(FCacheNode* node) override;
 };

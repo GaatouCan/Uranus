@@ -3,14 +3,14 @@
 #include "player.h"
 
 
-IPlayerComponent::IPlayerComponent(ComponentModule *module)
+IPlayerComponent::IPlayerComponent(UComponentModule *module)
     : module_(module) {
 }
 
 IPlayerComponent::~IPlayerComponent() {
 }
 
-ComponentModule * IPlayerComponent::getModule() const {
+UComponentModule * IPlayerComponent::getModule() const {
     return module_;
 }
 
@@ -31,7 +31,7 @@ void IPlayerComponent::onLogout() {
 void IPlayerComponent::onDayChange(bool is_login) {
 }
 
-void IPlayerComponent::syncCache(CacheNode *node) {
+void IPlayerComponent::syncCache(FCacheNode *node) {
 }
 
 void IPlayerComponent::send(IPackage *pkg) const {

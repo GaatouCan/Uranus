@@ -16,14 +16,14 @@
 #include "common/manager.def.h"
 
 
-GameServer::GameServer(UGameWorld *world)
+UGameServer::UGameServer(UGameWorld *world)
     : IServerLogic(world) {
 }
 
-GameServer::~GameServer() {
+UGameServer::~UGameServer() {
 }
 
-void GameServer::initGameWorld() {
+void UGameServer::initGameWorld() {
 #ifdef WIN32
     getWorld()->getConfigManager()->setYamlPath("../../config");
 #else
@@ -42,14 +42,14 @@ void GameServer::initGameWorld() {
         RegisterManager(sys);
 }
 
-void GameServer::setConnectionHandler(const std::shared_ptr<UConnection> &conn) {
+void UGameServer::setConnectionHandler(const std::shared_ptr<UConnection> &conn) {
     if (conn != nullptr)
         conn->setHandler<UConnectionHandler>();
 }
 
 
 extern "C" SERVER_API IServerLogic *CreateServer(UGameWorld *world) {
-    return new GameServer(world);
+    return new UGameServer(world);
 }
 
 extern "C" SERVER_API void DestroyServer(IServerLogic *server) {

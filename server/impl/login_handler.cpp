@@ -16,14 +16,14 @@ ULoginHandler::ULoginHandler(ULoginAuthenticator *owner)
 }
 
 awaitable<std::shared_ptr<IBasePlayer>> ULoginHandler::onPlayerLogin(const std::shared_ptr<UConnection> &conn, const FLoginInfo &info) {
-    const auto mgr = GET_MANAGER(PlayerManager);
+    const auto mgr = GET_MANAGER(UPlayerManager);
     if (mgr == nullptr) {
         spdlog::critical("{} - Player Manager is null", __FUNCTION__);
         co_return nullptr;
     }
 
     try {
-        auto plr = co_await mgr->OnPlayerLogin(conn, info.pid);
+        auto plr = co_await mgr->onPlayerLogin(conn, info.pid);
         co_return plr;
     } catch (std::exception &e) {
         spdlog::error("{} - {}", __FUNCTION__, e.what());

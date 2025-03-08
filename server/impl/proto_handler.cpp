@@ -15,14 +15,14 @@ UProtoHandler::UProtoHandler(UProtoRoute *route)
 }
 
 void UProtoHandler::invoke(const AProtoFunctor &func, const std::shared_ptr<UConnection> &conn, IPackage *pkg) {
-    const auto mgr = GET_MANAGER(PlayerManager);
+    const auto mgr = GET_MANAGER(UPlayerManager);
     if (mgr == nullptr) {
         spdlog::critical("{} - PlayerManager not found", __FUNCTION__);
         return;
     }
 
     const auto pid = std::any_cast<FPlayerID>(conn->getContext());
-    if (const auto plr = mgr->FindPlayer(pid.local); plr != nullptr) {
+    if (const auto plr = mgr->findPlayer(pid.local); plr != nullptr) {
         try {
             assert(plr->getConnection() == conn);
             std::invoke(func, plr, pkg);

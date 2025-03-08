@@ -10,30 +10,30 @@
 #include "../gameplay/component/state/state_ct.h"
 
 
-ComponentModule::ComponentModule(UPlayer *plr)
+UComponentModule::UComponentModule(UPlayer *plr)
     : owner_(plr){
 
-    createComponent<StateCT>();
+    createComponent<UStateCT>();
     createComponent<AppearanceCT>();
 }
 
-ComponentModule::~ComponentModule() {
+UComponentModule::~UComponentModule() {
     for (const auto &val : std::views::values(componentMap_)) {
         delete val;
     }
 }
 
-UPlayer * ComponentModule::getOwner() const {
+UPlayer * UComponentModule::getOwner() const {
     return owner_;
 }
 
-void ComponentModule::onDayChange() {
+void UComponentModule::onDayChange() {
     for (const auto &val : componentMap_ | std::views::values) {
         val->onDayChange(false);
     }
 }
 
-void ComponentModule::serialize() {
+void UComponentModule::serialize() {
     auto ser = std::make_shared<USerializer>();
 
     for (const auto &val: std::views::values(componentMap_)) {
@@ -49,7 +49,7 @@ void ComponentModule::serialize() {
     }
 }
 
-awaitable<void> ComponentModule::deserialize() {
+awaitable<void> UComponentModule::deserialize() {
     try {
         AQueryArray query;
         std::string expr = fmt::format("pid = {}", getOwner()->getFullID());
@@ -73,7 +73,7 @@ awaitable<void> ComponentModule::deserialize() {
     }
 }
 
-void ComponentModule::onLogin() {
+void UComponentModule::onLogin() {
     for (const auto &val: std::views::values(componentMap_)) {
         val->onLogin();
     }
@@ -81,19 +81,19 @@ void ComponentModule::onLogin() {
     spdlog::info("{} - Player[{}] Loaded.", __FUNCTION__, getOwner()->getFullID());
 }
 
-void ComponentModule::onLogout() {
+void UComponentModule::onLogout() {
     for (const auto &val: std::views::values(componentMap_)) {
         val->onLogout();
     }
 }
 
-FPlayerID ComponentModule::getPlayerID() const {
+FPlayerID UComponentModule::getPlayerID() const {
     if (owner_)
         return owner_->getPlayerID();
     return {};
 }
 
-void ComponentModule::syncCache(CacheNode *node) {
+void UComponentModule::syncCache(FCacheNode *node) {
     for (const auto &val: std::views::values(componentMap_)) {
         val->syncCache(node);
     }

@@ -19,7 +19,7 @@ class UPlayer final : public IBasePlayer {
     ATimePoint loginTime_;
     ATimePoint logoutTime_;
 
-    ComponentModule componentModule_;
+    UComponentModule componentModule_;
     UEventModule eventModule_;
 
 public:
@@ -28,7 +28,7 @@ public:
     explicit UPlayer(const AConnectionPointer &conn);
     ~UPlayer() override;
 
-    ComponentModule &getComponentModule() noexcept { return componentModule_; }
+    UComponentModule &getComponentModule() noexcept { return componentModule_; }
     UEventModule &getEventModule() noexcept { return eventModule_; }
 
     void onDayChange();
@@ -41,7 +41,7 @@ public:
     void send(uint32_t id, std::string_view data) const;
     void send(uint32_t id, const std::stringstream &ss) const;
 
-    void syncCache(CacheNode *node);
+    void syncCache(FCacheNode *node);
 
     void dispatchEvent(EEvent event, IEventParam *param, EDispatchType type = EDispatchType::PUSH_QUEUE);
 

@@ -4,7 +4,7 @@
 
 #pragma pack(push, 8)
 
-struct CacheNode {
+struct FCacheNode {
     int64_t pid;
     int64_t lastLoginTime;
     int64_t lastLogoutTime;

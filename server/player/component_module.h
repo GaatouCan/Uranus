@@ -12,16 +12,16 @@
 #include <asio/awaitable.hpp>
 
 
-class ComponentModule final {
+class UComponentModule final {
 
     UPlayer *owner_;
     std::unordered_map<std::type_index, IPlayerComponent *> componentMap_;
 
 public:
-    ComponentModule() = delete;
+    UComponentModule() = delete;
 
-    explicit ComponentModule(UPlayer *plr);
-    ~ComponentModule();
+    explicit UComponentModule(UPlayer *plr);
+    ~UComponentModule();
 
     [[nodiscard]] UPlayer *getOwner() const;
 
@@ -53,7 +53,7 @@ public:
 
     [[nodiscard]] FPlayerID getPlayerID() const;
 
-    void syncCache(CacheNode *node);
+    void syncCache(FCacheNode *node);
 };
 
 
