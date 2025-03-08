@@ -6,7 +6,7 @@ UTableResult::UTableResult(mysqlx::RowResult &&res)
       total_(result_.count()) {
 }
 
-size_t UTableResult::TotalRowsCount() const {
+size_t UTableResult::totalRowsCount() const {
     return total_;
 }
 

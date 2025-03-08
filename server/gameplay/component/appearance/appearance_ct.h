@@ -19,14 +19,14 @@ public:
     explicit AppearanceCT(ComponentModule *module);
     ~AppearanceCT() override;
 
-    [[nodiscard]] constexpr std::vector<std::string> GetTableList() const  override {
+    [[nodiscard]] constexpr std::vector<std::string> getTableList() const  override {
         return {"appearance", "avatar", "avatar_frame"};
     }
 
-    void Serialize(const std::shared_ptr<USerializer> &s) override;
-    void Deserialize(UDeserializer &ds) override;
+    void serialize(const std::shared_ptr<USerializer> &s) override;
+    void deserialize(UDeserializer &ds) override;
 
-    void OnLogin() override;
+    void onLogin() override;
 
     void SendInfo() const;
 
@@ -36,7 +36,7 @@ public:
     void ActiveAvatarFrame(int index, bool bAutoUse = false);
     void UseAvatarFrame(int index);
 
-    void SyncCache(struct CacheNode* node) override;
+    void syncCache(struct CacheNode* node) override;
 
 private:
     void CheckAvatar(int index);

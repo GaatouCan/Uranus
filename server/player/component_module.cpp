@@ -10,37 +10,37 @@
 #include "../gameplay/component/state/state_ct.h"
 
 
-ComponentModule::ComponentModule(Player *plr)
+ComponentModule::ComponentModule(UPlayer *plr)
     : owner_(plr){
 
-    CreateComponent<StateCT>();
-    CreateComponent<AppearanceCT>();
+    createComponent<StateCT>();
+    createComponent<AppearanceCT>();
 }
 
 ComponentModule::~ComponentModule() {
-    for (const auto &val : std::views::values(component_map_)) {
+    for (const auto &val : std::views::values(componentMap_)) {
         delete val;
     }
 }
 
-Player * ComponentModule::GetOwner() const {
+UPlayer * ComponentModule::getOwner() const {
     return owner_;
 }
 
-void ComponentModule::OnDayChange() {
-    for (const auto &val : component_map_ | std::views::values) {
-        val->OnDayChange(false);
+void ComponentModule::onDayChange() {
+    for (const auto &val : componentMap_ | std::views::values) {
+        val->onDayChange(false);
     }
 }
 
-void ComponentModule::Serialize() {
+void ComponentModule::serialize() {
     auto ser = std::make_shared<USerializer>();
 
-    for (const auto &val: std::views::values(component_map_)) {
-        val->Serialize(ser);
+    for (const auto &val: std::views::values(componentMap_)) {
+        val->serialize(ser);
     }
 
-    if (const auto sys = GetOwner()->getWorld()->getSystem<UDatabaseSystem>(); sys != nullptr) {
+    if (const auto sys = getOwner()->getWorld()->getSystem<UDatabaseSystem>(); sys != nullptr) {
         sys->pushTransaction([ser, pid = owner_->getFullID()](mysqlx::Schema &schema) {
             ser->serialize(schema);
             spdlog::info("ComponentModule::Serialize() - Player[{}] Stored.", pid);
@@ -49,52 +49,52 @@ void ComponentModule::Serialize() {
     }
 }
 
-awaitable<void> ComponentModule::Deserialize() {
+awaitable<void> ComponentModule::deserialize() {
     try {
         AQueryArray query;
-        std::string expr = fmt::format("pid = {}", GetOwner()->getFullID());
+        std::string expr = fmt::format("pid = {}", getOwner()->getFullID());
 
-        for (const auto &val : component_map_ | std::views::values) {
-            for (const auto &table : val->GetTableList()) {
+        for (const auto &val : componentMap_ | std::views::values) {
+            for (const auto &table : val->getTableList()) {
                 query.emplace_back(table, expr);
             }
         }
 
-        if (const auto sys = GetOwner()->getWorld()->getSystem<UDatabaseSystem>(); sys != nullptr) {
+        if (const auto sys = getOwner()->getWorld()->getSystem<UDatabaseSystem>(); sys != nullptr) {
             if (const auto res = co_await sys->asyncSelect(query, asio::use_awaitable); res != nullptr) {
                 UDeserializer der(res);
-                for (const auto &val : component_map_ | std::views::values) {
-                    val->Deserialize(der);
+                for (const auto &val : componentMap_ | std::views::values) {
+                    val->deserialize(der);
                 }
             }
         }
     } catch (const std::exception &e) {
-        spdlog::error("{} - pid[{}] {}", __FUNCTION__, GetOwner()->getFullID(), e.what());
+        spdlog::error("{} - pid[{}] {}", __FUNCTION__, getOwner()->getFullID(), e.what());
     }
 }
 
-void ComponentModule::OnLogin() {
-    for (const auto &val: std::views::values(component_map_)) {
-        val->OnLogin();
+void ComponentModule::onLogin() {
+    for (const auto &val: std::views::values(componentMap_)) {
+        val->onLogin();
     }
 
-    spdlog::info("{} - Player[{}] Loaded.", __FUNCTION__, GetOwner()->getFullID());
+    spdlog::info("{} - Player[{}] Loaded.", __FUNCTION__, getOwner()->getFullID());
 }
 
-void ComponentModule::OnLogout() {
-    for (const auto &val: std::views::values(component_map_)) {
-        val->OnLogout();
+void ComponentModule::onLogout() {
+    for (const auto &val: std::views::values(componentMap_)) {
+        val->onLogout();
     }
 }
 
-FPlayerID ComponentModule::GetPlayerID() const {
+FPlayerID ComponentModule::getPlayerID() const {
     if (owner_)
         return owner_->getPlayerID();
     return {};
 }
 
-void ComponentModule::SyncCache(CacheNode *node) {
-    for (const auto &val: std::views::values(component_map_)) {
-        val->SyncCache(node);
+void ComponentModule::syncCache(CacheNode *node) {
+    for (const auto &val: std::views::values(componentMap_)) {
+        val->syncCache(node);
     }
 }

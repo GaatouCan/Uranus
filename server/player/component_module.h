@@ -14,46 +14,46 @@
 
 class ComponentModule final {
 
-    Player *owner_;
-    std::unordered_map<std::type_index, IPlayerComponent *> component_map_;
+    UPlayer *owner_;
+    std::unordered_map<std::type_index, IPlayerComponent *> componentMap_;
 
 public:
     ComponentModule() = delete;
 
-    explicit ComponentModule(Player *plr);
+    explicit ComponentModule(UPlayer *plr);
     ~ComponentModule();
 
-    [[nodiscard]] Player *GetOwner() const;
+    [[nodiscard]] UPlayer *getOwner() const;
 
-    void OnDayChange();
+    void onDayChange();
 
     template<typename T>
     requires std::derived_from<T, IPlayerComponent>
-    T *CreateComponent() {
+    T *createComponent() {
         const auto res = new T(this);
-        component_map_[typeid(T)] = res;
+        componentMap_[typeid(T)] = res;
 
         return res;
     }
 
     template<typename T>
     requires std::derived_from<T, IPlayerComponent>
-    T *GetComponent() {
-        if (const auto it = component_map_.find(typeid(T)); it != component_map_.end()) {
+    T *getComponent() {
+        if (const auto it = componentMap_.find(typeid(T)); it != componentMap_.end()) {
             return dynamic_cast<T *>(it->second);
         }
         return nullptr;
     }
 
-    void Serialize();
-    asio::awaitable<void> Deserialize();
+    void serialize();
+    asio::awaitable<void> deserialize();
 
-    void OnLogin();
-    void OnLogout();
+    void onLogin();
+    void onLogout();
 
-    [[nodiscard]] FPlayerID GetPlayerID() const;
+    [[nodiscard]] FPlayerID getPlayerID() const;
 
-    void SyncCache(CacheNode *node);
+    void syncCache(CacheNode *node);
 };
 
 
@@ -64,8 +64,8 @@ public:
  */
 #define WRITE_TABLE(ser, tb, pa) \
 { \
-    auto *array = (ser)->CreateTableVector<orm::DBTable_##tb>(utils::PascalToUnderline(#tb)); \
-    array->PushBack(pa); \
+    auto *array = (ser)->createTableVector<orm::DBTable_##tb>(utils::PascalToUnderline(#tb)); \
+    array->pushBack(pa); \
 }
 
 /**
@@ -75,9 +75,9 @@ public:
  */
 #define WRITE_TABLE_MAP(ser, tb, pa) \
 { \
-    auto *array = (ser)->CreateTableVector<orm::DBTable_##tb>(utils::PascalToUnderline(#tb)); \
+    auto *array = (ser)->createTableVector<orm::DBTable_##tb>(utils::PascalToUnderline(#tb)); \
     for (const auto &val : (pa) | std::views::values) { \
-        array->PushBack(val); \
+        array->pushBack(val); \
     } \
 }
 
@@ -88,9 +88,9 @@ public:
  */
 #define WRITE_TABLE_VECTOR(ser, tb, pa) \
 { \
-    auto *array = (ser)->CreateTableVector<orm::DBTable_##tb>(utils::PascalToUnderline(#tb)); \
+    auto *array = (ser)->createTableVector<orm::DBTable_##tb>(utils::PascalToUnderline(#tb)); \
     for (const auto &val : (pa)) { \
-        array->PushBack(val); \
+        array->pushBack(val); \
     } \
 }
 
@@ -100,9 +100,9 @@ public:
  * @param pa 数据块
  */
 #define READ_TABLE(ds, tb, pa) \
-if (auto *res = (ds)->FetchResult(utils::PascalToUnderline(#tb)); res != nullptr) { \
-    if (res->HasMore()) { \
-        res->Deserialize(&pa); \
+if (auto *res = (ds)->fetchResult(utils::PascalToUnderline(#tb)); res != nullptr) { \
+    if (res->hasMore()) { \
+        res->deserialize(&pa); \
     } \
 }
 
@@ -112,10 +112,10 @@ if (auto *res = (ds)->FetchResult(utils::PascalToUnderline(#tb)); res != nullptr
  * @param pa 包含数据块的map
  */
 #define READ_TABLE_MAP(ds, tb, pa) \
-if (auto *res = (ds)->FetchResult(utils::PascalToUnderline(#tb)); res != nullptr) { \
-    while (res->HasMore()) { \
+if (auto *res = (ds)->fetchResult(utils::PascalToUnderline(#tb)); res != nullptr) { \
+    while (res->hasMore()) { \
         decltype(pa)::mapped_type val; \
-        res->Deserialize(&val); \
+        res->deserialize(&val); \
         (pa)[val.index] = std::move(val); \
     } \
 }
@@ -126,11 +126,11 @@ if (auto *res = (ds)->FetchResult(utils::PascalToUnderline(#tb)); res != nullptr
  * @param pa 包含数据块的vector
  */
 #define READ_TABLE_VECTOR(ds, tb, pa) \
-if (auto *res = (ds)->FetchResult(utils::PascalToUnderline(#tb)); res != nullptr) { \
-    (pa).resize((ds).TotalRowsCount());\
-    while (res->HasMore()) { \
+if (auto *res = (ds)->fetchResult(utils::PascalToUnderline(#tb)); res != nullptr) { \
+    (pa).resize((ds).totalRowsCount());\
+    while (res->hasMore()) { \
         decltype(pa)::value_type val; \
-        res->Deserialize(&val); \
+        res->deserialize(&val); \
         (pa)[val.index] = std::move(val); \
     } \
 }

@@ -13,7 +13,7 @@ struct CacheNode {
     int32_t avatar;
     int32_t avatarFrame;
 
-    [[nodiscard]] bool IsOnline() const {
+    [[nodiscard]] bool isOnline() const {
         const auto now = utils::UnixTime();
 
         return lastLoginTime > 0 && lastLoginTime <= now

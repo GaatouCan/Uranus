@@ -44,13 +44,13 @@ void PlayerManager::init() {
 
 void PlayerManager::onDayChange() {
     for (const auto &plr: player_map_ | std::views::values) {
-        if (plr != nullptr && plr->IsOnline()) {
-            plr->OnDayChange();
+        if (plr != nullptr && plr->isOnline()) {
+            plr->onDayChange();
         }
     }
 }
 
-awaitable<std::shared_ptr<Player>> PlayerManager::OnPlayerLogin(const std::shared_ptr<UConnection> &conn, const FPlayerID &id) {
+awaitable<std::shared_ptr<UPlayer>> PlayerManager::OnPlayerLogin(const std::shared_ptr<UConnection> &conn, const FPlayerID &id) {
     if (conn == nullptr || std::any_cast<FPlayerID>(conn->getContext()) != id) {
         spdlog::error("{} - Null Connection Pointer Or Player ID Not Equal.", __FUNCTION__);
         co_return nullptr;
@@ -69,12 +69,12 @@ awaitable<std::shared_ptr<Player>> PlayerManager::OnPlayerLogin(const std::share
 
         plr->tryLeaveScene();
 
-        if (plr->IsOnline()) {
-            plr->OnLogout(true, conn->remoteAddress().to_string());
+        if (plr->isOnline()) {
+            plr->onLogout(true, conn->remoteAddress().to_string());
         }
     }
 
-    const auto plr = std::make_shared<Player>(conn);
+    const auto plr = std::make_shared<UPlayer>(conn);
 
     {
         std::unique_lock lock(player_mtx_);
@@ -82,7 +82,7 @@ awaitable<std::shared_ptr<Player>> PlayerManager::OnPlayerLogin(const std::share
     }
 
     spdlog::info("{} - New Player[{}] Login", __FUNCTION__, plr->getFullID());
-    co_await plr->OnLogin();
+    co_await plr->onLogin();
 
     // 同步玩家缓存数据
     SyncCache(plr);
@@ -93,13 +93,13 @@ void PlayerManager::OnPlayerLogout(const FPlayerID pid) {
     spdlog::info("{} - Player[{}] Logout", __FUNCTION__, pid.toInt64());
     if (const auto plr = RemovePlayer(pid.local); plr != nullptr) {
         plr->tryLeaveScene();
-        plr->OnLogout();
+        plr->onLogout();
 
         SyncCache(plr);
     }
 }
 
-std::shared_ptr<Player> PlayerManager::FindPlayer(const int32_t pid) {
+std::shared_ptr<UPlayer> PlayerManager::FindPlayer(const int32_t pid) {
     std::shared_lock lock(player_mtx_);
     if (const auto it = player_map_.find(pid); it != player_map_.end()) {
         return it->second;
@@ -107,7 +107,7 @@ std::shared_ptr<Player> PlayerManager::FindPlayer(const int32_t pid) {
     return nullptr;
 }
 
-std::shared_ptr<Player> PlayerManager::RemovePlayer(const int32_t pid) {
+std::shared_ptr<UPlayer> PlayerManager::RemovePlayer(const int32_t pid) {
     std::unique_lock lock(player_mtx_);
     if (const auto it = player_map_.find(pid); it != player_map_.end()) {
         auto res = it->second;
@@ -122,7 +122,7 @@ void PlayerManager::SendToList(const std::set<FPlayerID> &players, const int32_t
         return;
 
     for (const auto [localID, crossID]: players) {
-        if (const auto plr = FindPlayer(localID); plr != nullptr && plr->IsOnline()) {
+        if (const auto plr = FindPlayer(localID); plr != nullptr && plr->isOnline()) {
             const auto pkg = dynamic_cast<FPackage *>(plr->getConnection()->buildPackage());
             pkg->setPackageID(id).setData(data);
             plr->sendPackage(pkg);
@@ -130,7 +130,7 @@ void PlayerManager::SendToList(const std::set<FPlayerID> &players, const int32_t
     }
 }
 
-void PlayerManager::SyncCache(const std::shared_ptr<Player> &plr) {
+void PlayerManager::SyncCache(const std::shared_ptr<UPlayer> &plr) {
     if (plr == nullptr)
         return;
 
@@ -142,7 +142,7 @@ void PlayerManager::SyncCache(const std::shared_ptr<Player> &plr) {
         }
     }
 
-    plr->SyncCache(&cache);
+    plr->syncCache(&cache);
     SyncCache(cache);
 }
 

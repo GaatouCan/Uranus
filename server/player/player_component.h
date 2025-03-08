@@ -13,25 +13,25 @@ public:
 
     IPlayerComponent() = delete;
 
-    virtual void Serialize(const std::shared_ptr<class USerializer> &s) {}
-    virtual void Deserialize(class UDeserializer &ds) {}
+    virtual void serialize(const std::shared_ptr<class USerializer> &s) {}
+    virtual void deserialize(class UDeserializer &ds) {}
 
-    [[nodiscard]] virtual constexpr std::vector<std::string> GetTableList() const {
+    [[nodiscard]] virtual constexpr std::vector<std::string> getTableList() const {
         return {};
     }
 
-    [[nodiscard]] ComponentModule *GetModule() const;
-    [[nodiscard]] class Player *GetOwner() const;
-    [[nodiscard]] class UGameWorld *GetWorld() const;
+    [[nodiscard]] ComponentModule *getModule() const;
+    [[nodiscard]] class UPlayer *getOwner() const;
+    [[nodiscard]] class UGameWorld *getWorld() const;
 
-    virtual void OnLogin();
-    virtual void OnLogout();
-    virtual void OnDayChange(bool is_login);
+    virtual void onLogin();
+    virtual void onLogout();
+    virtual void onDayChange(bool is_login);
 
-    virtual void SyncCache(struct CacheNode *node);
+    virtual void syncCache(struct CacheNode *node);
 
-    void Send(IPackage *pkg) const;
+    void send(IPackage *pkg) const;
 
-    void Send(int32_t id, std::string_view data) const;
-    void Send(int32_t id, const std::stringstream &ss) const;
+    void send(int32_t id, std::string_view data) const;
+    void send(int32_t id, const std::stringstream &ss) const;
 };

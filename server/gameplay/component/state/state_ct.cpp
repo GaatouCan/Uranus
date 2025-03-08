@@ -19,9 +19,9 @@ StateCT::StateCT(ComponentModule *module)
 StateCT::~StateCT() {
 }
 
-void StateCT::OnLogin() {
+void StateCT::onLogin() {
     if (state_.pid == 0)
-        state_.pid = GetOwner()->getFullID();
+        state_.pid = getOwner()->getFullID();
 }
 
 int32_t StateCT::GetLevel() const {
@@ -32,14 +32,14 @@ int64_t StateCT::GetExp() const {
     return state_.experience;
 }
 
-void StateCT::SyncCache(CacheNode* node) {
+void StateCT::syncCache(CacheNode* node) {
     node->level = state_.level;
 }
 
-void StateCT::Serialize(const std::shared_ptr<USerializer> &s) {
+void StateCT::serialize(const std::shared_ptr<USerializer> &s) {
     WRITE_TABLE(s, State, state_)
 }
 
-void StateCT::Deserialize(UDeserializer &ds) {
+void StateCT::deserialize(UDeserializer &ds) {
     READ_TABLE(&ds, State, state_)
 }

@@ -28,21 +28,21 @@ AppearanceCT::AppearanceCT(ComponentModule *module)
 AppearanceCT::~AppearanceCT() {
 }
 
-void AppearanceCT::Serialize(const std::shared_ptr<USerializer> &s) {
+void AppearanceCT::serialize(const std::shared_ptr<USerializer> &s) {
     WRITE_TABLE(s, Appearance, appear_)
     WRITE_TABLE_MAP(s, Avatar, avatar_map_)
     WRITE_TABLE_MAP(s, AvatarFrame, avatar_frame_map_)
 }
 
-void AppearanceCT::Deserialize(UDeserializer &ds) {
+void AppearanceCT::deserialize(UDeserializer &ds) {
     READ_TABLE(&ds, Appearance, appear_)
     READ_TABLE_MAP(&ds, Avatar, avatar_map_)
     READ_TABLE_MAP(&ds, AvatarFrame, avatar_frame_map_)
 }
 
-void AppearanceCT::OnLogin() {
+void AppearanceCT::onLogin() {
     if (appear_.pid == 0)
-        appear_.pid = GetOwner()->getFullID();
+        appear_.pid = getOwner()->getFullID();
 }
 
 void AppearanceCT::SendInfo() const {
@@ -75,14 +75,14 @@ void AppearanceCT::ActiveAvatar(const int index, const bool bAutoUse) {
     if (iter != avatar_map_.end() && iter->second.activated)
         return;
 
-    const auto cfg_op = GetWorld()->getConfigManager()->find("appearance.avatar", index);
+    const auto cfg_op = getWorld()->getConfigManager()->find("appearance.avatar", index);
     if (!cfg_op.has_value())
         return;
 
     // const auto cfg = cfg_op.value();
     orm::DBTable_Avatar avatar;
 
-    avatar.pid = GetOwner()->getFullID();
+    avatar.pid = getOwner()->getFullID();
     avatar.index = index;
     avatar.activated = true;
     avatar.expired_time = utils::UnixTime() + 1000000;
@@ -113,14 +113,14 @@ void AppearanceCT::ActiveAvatarFrame(const int index, bool bAutoUse) {
     if (iter != avatar_frame_map_.end() && iter->second.activated)
         return;
 
-    const auto cfg_op = GetWorld()->getConfigManager()->find("appearance.avatar", index);
+    const auto cfg_op = getWorld()->getConfigManager()->find("appearance.avatar", index);
     if (!cfg_op.has_value())
         return;
 
     // const auto cfg = cfg_op.value();
     orm::DBTable_AvatarFrame frame;
 
-    frame.pid = GetOwner()->getFullID();
+    frame.pid = getOwner()->getFullID();
     frame.index = index;
     frame.activated = true;
     frame.expired_time = utils::UnixTime() + 1000000;
@@ -144,7 +144,7 @@ void AppearanceCT::UseAvatarFrame(const int index) {
     appear_.avatar_frame = index;
 }
 
-void AppearanceCT::SyncCache(CacheNode* node) {
+void AppearanceCT::syncCache(CacheNode* node) {
     node->avatar = appear_.avatar;
     node->avatarFrame = appear_.avatar_frame;
 }
@@ -185,7 +185,7 @@ void protocol::AppearanceRequest(const std::shared_ptr<IBasePlayer> &plr, IPacka
     if (plr == nullptr)
         return;
 
-    const auto ct = std::dynamic_pointer_cast<Player>(plr)->GetComponent<AppearanceCT>();
+    const auto ct = std::dynamic_pointer_cast<UPlayer>(plr)->getComponent<AppearanceCT>();
     if (ct == nullptr)
         return;
 

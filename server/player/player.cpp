@@ -11,27 +11,27 @@
 #include <login.pb.h>
 
 
-Player::Player(const AConnectionPointer &conn)
+UPlayer::UPlayer(const AConnectionPointer &conn)
     : IBasePlayer(conn),
-      component_module_(this),
-      event_module_(this) {
+      componentModule_(this),
+      eventModule_(this) {
 }
 
-Player::~Player() {
+UPlayer::~UPlayer() {
     spdlog::trace("{} - {}", __FUNCTION__, getFullID());
 }
 
 
-void Player::OnDayChange() {
+void UPlayer::onDayChange() {
     if (!isSameThread()) {
-        runInThread(&Player::OnDayChange, this);
+        runInThread(&UPlayer::onDayChange, this);
         return;
     }
-    component_module_.OnDayChange();
+    componentModule_.onDayChange();
 }
 
-awaitable<void> Player::OnLogin() {
-    login_time_ = NowTimePoint();
+awaitable<void> UPlayer::onLogin() {
+    loginTime_ = NowTimePoint();
     spdlog::info("{} - Player[{}] Login Successfully.", __FUNCTION__, getFullID());
 
     Login::LoginResponse response;
@@ -41,8 +41,8 @@ awaitable<void> Player::OnLogin() {
 
     SEND_PACKAGE(this, LoginResponse, response)
 
-    co_await component_module_.Deserialize();
-    component_module_.OnLogin();
+    co_await componentModule_.deserialize();
+    componentModule_.onLogin();
 
     const auto param = new EP_PlayerLogin;
     param->pid = getFullID();
@@ -52,18 +52,18 @@ awaitable<void> Player::OnLogin() {
     co_return;
 }
 
-void Player::OnLogout(const bool is_force, const std::string &other_address) {
+void UPlayer::onLogout(const bool is_force, const std::string &other_address) {
     if (!isSameThread()) {
-        runInThread(&Player::OnLogout, this, is_force, other_address);
+        runInThread(&UPlayer::onLogout, this, is_force, other_address);
         return;
     }
-    logout_time_ = NowTimePoint();
+    logoutTime_ = NowTimePoint();
     cleanAllTimer();
 
-    component_module_.OnLogout();
+    componentModule_.onLogout();
     spdlog::info("{} - Player[{}] Logout.", __FUNCTION__, getFullID());
 
-    component_module_.Serialize();
+    componentModule_.serialize();
 
     if (is_force) {
         Login::ForceLogoutResponse res;
@@ -79,17 +79,17 @@ void Player::OnLogout(const bool is_force, const std::string &other_address) {
     DISPATCH_EVENT(PLAYER_LOGOUT, param);
 }
 
-bool Player::IsOnline() const {
+bool UPlayer::isOnline() const {
     constexpr ATimePoint zero_time_point{};
     const auto now = NowTimePoint();
 
-    return login_time_ > zero_time_point && login_time_ < now
-           && (logout_time_ > zero_time_point && login_time_ < now)
-           && logout_time_ <= login_time_;
+    return loginTime_ > zero_time_point && loginTime_ < now
+           && (logoutTime_ > zero_time_point && loginTime_ < now)
+           && logoutTime_ <= loginTime_;
 }
 
 
-void Player::Send(const uint32_t id, const std::string_view data) const {
+void UPlayer::send(const uint32_t id, const std::string_view data) const {
     const auto pkg = dynamic_cast<FPackage *>(buildPackage());
     pkg->setPackageID(id).setData(data);
 
@@ -97,7 +97,7 @@ void Player::Send(const uint32_t id, const std::string_view data) const {
     sendPackage(pkg);
 }
 
-void Player::Send(const uint32_t id, const std::stringstream &ss) const {
+void UPlayer::send(const uint32_t id, const std::stringstream &ss) const {
     const auto pkg = dynamic_cast<FPackage *>(buildPackage());
     pkg->setPackageID(id).setData(ss.str());
 
@@ -105,15 +105,15 @@ void Player::Send(const uint32_t id, const std::stringstream &ss) const {
     sendPackage(pkg);
 }
 
-void Player::SyncCache(CacheNode *node) {
+void UPlayer::syncCache(CacheNode *node) {
     node->pid = getFullID();
-    node->lastLoginTime = utils::ToUnixTime(login_time_);
-    if (logout_time_.time_since_epoch().count() > 0) {
-        node->lastLogoutTime = utils::ToUnixTime(logout_time_);
+    node->lastLoginTime = utils::ToUnixTime(loginTime_);
+    if (logoutTime_.time_since_epoch().count() > 0) {
+        node->lastLogoutTime = utils::ToUnixTime(logoutTime_);
     }
-    component_module_.SyncCache(node);
+    componentModule_.syncCache(node);
 }
 
-void Player::DispatchEvent(const EEvent event, IEventParam *param, const EDispatchType type) {
-    event_module_.Dispatch(event, param, type);
+void UPlayer::dispatchEvent(const EEvent event, IEventParam *param, const EDispatchType type) {
+    eventModule_.dispatch(event, param, type);
 }

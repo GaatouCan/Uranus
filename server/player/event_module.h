@@ -12,38 +12,38 @@
 #include <asio.hpp>
 
 
-class EventModule final {
+class UEventModule final {
 
-    class Player *owner_;
+    class UPlayer *owner_;
 
-    struct EventNode {
+    struct FEventNode {
         EEvent event = EEvent::UNAVAILABLE;
         IEventParam *param = nullptr;
     };
 
-    std::queue<EventNode> queue_;
-    mutable std::shared_mutex event_mtx_;
+    std::queue<FEventNode> queue_;
+    mutable std::shared_mutex eventMutex_;
 
-    std::map<EEvent, std::map<void *, AEventListener>> listener_map_;
-    std::map<void *, AEventListener> cur_listener_;
-    std::mutex listener_mtx_;
+    std::map<EEvent, std::map<void *, AEventListener>> listenerMap_;
+    std::map<void *, AEventListener> curListener_;
+    std::mutex listenerMutex_;
 
 public:
-    EventModule() = delete;
+    UEventModule() = delete;
 
-    explicit EventModule(Player *plr);
-    ~EventModule();
+    explicit UEventModule(UPlayer *plr);
+    ~UEventModule();
 
-    [[nodiscard]] Player *GetOwner() const;
+    [[nodiscard]] UPlayer *getOwner() const;
 
-    [[nodiscard]] bool IsQueueEmpty() const;
+    [[nodiscard]] bool queueEmpty() const;
 
     template<typename Target, typename Callable>
-    void RegisterListenerT(const EEvent event, void *ptr, void *target, Callable && func) {
+    void registerListenerT(const EEvent event, void *ptr, void *target, Callable && func) {
         if (event == EEvent::UNAVAILABLE || ptr == nullptr || target == nullptr)
             return;
 
-        this->RegisterListener(event, ptr, [target, func = std::forward<Callable>(func)](IEventParam *param) {
+        registerListener(event, ptr, [target, func = std::forward<Callable>(func)](IEventParam *param) {
             try {
                 if (target != nullptr) {
                     std::invoke(func, static_cast<Target *>(target), param);
@@ -54,11 +54,11 @@ public:
         });
     }
 
-    void RegisterListener(EEvent event, void *ptr, const AEventListener &listener);
-    void RemoveListener(EEvent event, void *ptr);
+    void registerListener(EEvent event, void *ptr, const AEventListener &listener);
+    void removeListener(EEvent event, void *ptr);
 
-    void Dispatch(EEvent event, IEventParam *param, EDispatchType type = EDispatchType::PUSH_QUEUE);
+    void dispatch(EEvent event, IEventParam *param, EDispatchType type = EDispatchType::PUSH_QUEUE);
 
 private:
-    asio::awaitable<void> HandleEvent();
+    asio::awaitable<void> handleEvent();
 };

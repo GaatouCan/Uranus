@@ -10,44 +10,44 @@ IPlayerComponent::IPlayerComponent(ComponentModule *module)
 IPlayerComponent::~IPlayerComponent() {
 }
 
-ComponentModule * IPlayerComponent::GetModule() const {
+ComponentModule * IPlayerComponent::getModule() const {
     return module_;
 }
 
-Player * IPlayerComponent::GetOwner() const {
-    return module_->GetOwner();
+UPlayer * IPlayerComponent::getOwner() const {
+    return module_->getOwner();
 }
 
-UGameWorld * IPlayerComponent::GetWorld() const {
-    return GetOwner()->getWorld();
+UGameWorld * IPlayerComponent::getWorld() const {
+    return getOwner()->getWorld();
 }
 
-void IPlayerComponent::OnLogin() {
+void IPlayerComponent::onLogin() {
 }
 
-void IPlayerComponent::OnLogout() {
+void IPlayerComponent::onLogout() {
 }
 
-void IPlayerComponent::OnDayChange(bool is_login) {
+void IPlayerComponent::onDayChange(bool is_login) {
 }
 
-void IPlayerComponent::SyncCache(CacheNode *node) {
+void IPlayerComponent::syncCache(CacheNode *node) {
 }
 
-void IPlayerComponent::Send(IPackage *pkg) const {
-    if (const auto plr = GetOwner(); plr != nullptr) {
+void IPlayerComponent::send(IPackage *pkg) const {
+    if (const auto plr = getOwner(); plr != nullptr) {
         plr->sendPackage(pkg);
     }
 }
 
-void IPlayerComponent::Send(const int32_t id, const std::string_view data) const {
-    if (const auto plr = GetOwner(); plr != nullptr) {
-        plr->Send(id, data);
+void IPlayerComponent::send(const int32_t id, const std::string_view data) const {
+    if (const auto plr = getOwner(); plr != nullptr) {
+        plr->send(id, data);
     }
 }
 
-void IPlayerComponent::Send(const int32_t id, const std::stringstream &ss) const {
-    if (const auto plr = GetOwner(); plr != nullptr) {
-        plr->Send(id, ss);
+void IPlayerComponent::send(const int32_t id, const std::stringstream &ss) const {
+    if (const auto plr = getOwner(); plr != nullptr) {
+        plr->send(id, ss);
     }
 }

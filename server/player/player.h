@@ -14,46 +14,46 @@ struct EP_PlayerLogout final : IEventParam {
     int64_t pid;
 };
 
-class Player final : public IBasePlayer {
+class UPlayer final : public IBasePlayer {
 
-    ATimePoint login_time_;
-    ATimePoint logout_time_;
+    ATimePoint loginTime_;
+    ATimePoint logoutTime_;
 
-    ComponentModule component_module_;
-    EventModule event_module_;
+    ComponentModule componentModule_;
+    UEventModule eventModule_;
 
 public:
-    Player() = delete;
+    UPlayer() = delete;
 
-    explicit Player(const AConnectionPointer &conn);
-    ~Player() override;
+    explicit UPlayer(const AConnectionPointer &conn);
+    ~UPlayer() override;
 
-    ComponentModule &GetComponentModule() noexcept { return component_module_; }
-    EventModule &GetEventModule() noexcept { return event_module_; }
+    ComponentModule &getComponentModule() noexcept { return componentModule_; }
+    UEventModule &getEventModule() noexcept { return eventModule_; }
 
-    void OnDayChange();
+    void onDayChange();
 
-    awaitable<void> OnLogin();
-    void OnLogout(bool is_force = false, const std::string &other_address = "");
+    awaitable<void> onLogin();
+    void onLogout(bool is_force = false, const std::string &other_address = "");
 
-    bool IsOnline() const;
+    bool isOnline() const;
 
-    void Send(uint32_t id, std::string_view data) const;
-    void Send(uint32_t id, const std::stringstream &ss) const;
+    void send(uint32_t id, std::string_view data) const;
+    void send(uint32_t id, const std::stringstream &ss) const;
 
-    void SyncCache(CacheNode *node);
+    void syncCache(CacheNode *node);
 
-    void DispatchEvent(EEvent event, IEventParam *param, EDispatchType type = EDispatchType::PUSH_QUEUE);
+    void dispatchEvent(EEvent event, IEventParam *param, EDispatchType type = EDispatchType::PUSH_QUEUE);
 
     template<typename T>
     requires std::derived_from<T, IPlayerComponent>
-    T *GetComponent() {
-        return component_module_.GetComponent<T>();
+    T *getComponent() {
+        return componentModule_.getComponent<T>();
     }
 };
 
 #define SEND_PACKAGE(sender, proto, data) \
-    (sender)->Send(static_cast<uint32_t>(protocol::ProtoType::proto), (data).SerializeAsString());
+    (sender)->send(static_cast<uint32_t>(protocol::EProtoType::proto), (data).SerializeAsString());
 
 #define BUILD_PACKAGE(pkg, proto, data) \
-    (pkg)->SetPackageID(static_cast<uint32_t>(protocol::ProtoType::proto)).SetData((data).SerializeAsString());
+    (pkg)->setPackageID(static_cast<uint32_t>(protocol::EProtoType::proto)).setData((data).SerializeAsString());

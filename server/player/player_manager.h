@@ -9,12 +9,12 @@
 #include <set>
 
 
-class Player;
+class UPlayer;
 class UConnection;
 
 class PlayerManager final : public IBaseManager {
 
-    std::unordered_map<int32_t, std::shared_ptr<Player>> player_map_;
+    std::unordered_map<int32_t, std::shared_ptr<UPlayer>> player_map_;
     mutable std::shared_mutex player_mtx_;
 
     std::unordered_map<int32_t, CacheNode> cache_map_;
@@ -32,16 +32,16 @@ public:
 
     void onDayChange() override;
 
-    awaitable<std::shared_ptr<Player>> OnPlayerLogin(const std::shared_ptr<UConnection> &conn, const FPlayerID &id);
+    awaitable<std::shared_ptr<UPlayer>> OnPlayerLogin(const std::shared_ptr<UConnection> &conn, const FPlayerID &id);
 
     void OnPlayerLogout(FPlayerID pid);
 
-    std::shared_ptr<Player> FindPlayer(int32_t pid);
-    std::shared_ptr<Player> RemovePlayer(int32_t pid);
+    std::shared_ptr<UPlayer> FindPlayer(int32_t pid);
+    std::shared_ptr<UPlayer> RemovePlayer(int32_t pid);
 
     void SendToList(const std::set<FPlayerID>& players, int32_t id, std::string_view data);
 
-    void SyncCache(const std::shared_ptr<Player> &plr);
+    void SyncCache(const std::shared_ptr<UPlayer> &plr);
     void SyncCache(int32_t pid);
     void SyncCache(const CacheNode &node);
 

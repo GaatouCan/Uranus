@@ -14,7 +14,7 @@ public:
 
     DISABLE_COPY_MOVE(UTableResult)
 
-    [[nodiscard]] size_t TotalRowsCount() const;
+    [[nodiscard]] size_t totalRowsCount() const;
 
     size_t count();
 
