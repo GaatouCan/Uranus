@@ -47,4 +47,4 @@ field = FByteArray(std::vector(bytes.begin(), bytes.end())); \
 }
 
 #define DB_CAST_TO_BLOB(field) \
-mysqlx::bytes((field).Data(), (field).Size())
+mysqlx::bytes((field).data(), (field).size())
