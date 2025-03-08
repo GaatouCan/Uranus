@@ -23,14 +23,14 @@ public:
     void init() override;
 
     template<CManagerType T>
-    T* CreateManager() {
+    T* createManager() {
         auto mgr = new T(this);
         manager_map_[typeid(T)] = mgr;
         return mgr;
     }
 
     template<CManagerType T>
-    T *GetManager() {
+    T *getManager() {
         if (const auto it = manager_map_.find(typeid(T)); it != manager_map_.end()) {
             return dynamic_cast<T *>(it->second);
         }
@@ -38,7 +38,7 @@ public:
     }
 
 private:
-    void OnTick(ATimePoint now);
+    void onTick(ATimePoint now);
 };
 
-#define REGISTER_MANAGER(mgr) sys->CreateManager<mgr>();
+#define REGISTER_MANAGER(mgr) sys->createManager<mgr>();

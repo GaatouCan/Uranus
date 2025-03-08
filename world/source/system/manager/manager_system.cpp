@@ -40,7 +40,7 @@ void UManagerSystem::init() {
                 co_await tick_timer_.async_wait();
 
                 if (running_)
-                    OnTick(point);
+                    onTick(point);
 
                 tick_point_ = point;
                 point += std::chrono::seconds(1);
@@ -52,7 +52,7 @@ void UManagerSystem::init() {
 }
 
 
-void UManagerSystem::OnTick(const ATimePoint now) {
+void UManagerSystem::onTick(const ATimePoint now) {
     for (const auto mgr: manager_map_ | std::views::values) {
         if (!mgr->tickPerSecond_)
             continue;

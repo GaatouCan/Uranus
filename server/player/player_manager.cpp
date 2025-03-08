@@ -118,7 +118,7 @@ std::shared_ptr<Player> PlayerManager::RemovePlayer(const int32_t pid) {
 }
 
 void PlayerManager::SendToList(const std::set<FPlayerID> &players, const int32_t id, const std::string_view data) {
-    if (id <= MINIMUM_PACKAGE_ID || id >= static_cast<int32_t>(protocol::ProtoType::PROTO_TYPE_MAX))
+    if (id <= MINIMUM_PACKAGE_ID || id >= static_cast<int32_t>(protocol::EProtoType::PROTO_TYPE_MAX))
         return;
 
     for (const auto [localID, crossID]: players) {

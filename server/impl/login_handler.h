@@ -3,9 +3,9 @@
 #include <login_handler.h>
 
 
-class LoginHandler final : public ILoginHandler {
+class ULoginHandler final : public ILoginHandler {
 public:
-    explicit LoginHandler(ULoginAuthenticator *owner);
+    explicit ULoginHandler(ULoginAuthenticator *owner);
     awaitable<std::shared_ptr<IBasePlayer>> onPlayerLogin(const std::shared_ptr<UConnection> &conn, const FLoginInfo &info) override;
     awaitable<FLoginInfo> parseLoginInfo(IPackage *) override;
 };

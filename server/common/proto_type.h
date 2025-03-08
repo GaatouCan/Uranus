@@ -10,7 +10,7 @@
 #include <cstdint>
 
 namespace protocol {
-	enum class ProtoType : uint32_t {
+	enum class EProtoType : uint32_t {
 		// Login
 		ClientLoginRequest = 1001,
 		LoginResponse = 1002,
@@ -32,25 +32,25 @@ namespace protocol {
 		PROTO_TYPE_MAX,
 	}; // ProtoType
 
-	constexpr const char* ProtoTypeToString(const ProtoType value) {
+	constexpr const char* ProtoTypeToString(const EProtoType value) {
 		switch (value) {
 			// Login
-			case ProtoType::ClientLoginRequest: return "ClientLoginRequest";
-			case ProtoType::LoginResponse: return "LoginResponse";
-			case ProtoType::ForceLogoutResponse: return "ForceLogoutResponse";
+			case EProtoType::ClientLoginRequest: return "ClientLoginRequest";
+			case EProtoType::LoginResponse: return "LoginResponse";
+			case EProtoType::ForceLogoutResponse: return "ForceLogoutResponse";
 
 			// Appearance
-			case ProtoType::AppearanceRequest: return "AppearanceRequest";
-			case ProtoType::AppearanceResponse: return "AppearanceResponse";
+			case EProtoType::AppearanceRequest: return "AppearanceRequest";
+			case EProtoType::AppearanceResponse: return "AppearanceResponse";
 
 			// Chat
-			case ProtoType::C2W_ChatRoomRequest: return "C2W_ChatRoomRequest";
-			case ProtoType::W2C_ChatRoomResponse: return "W2C_ChatRoomResponse";
-			case ProtoType::C2W_ChatToRoomRequest: return "C2W_ChatToRoomRequest";
-			case ProtoType::W2C_ChatToRoomResponse: return "W2C_ChatToRoomResponse";
-			case ProtoType::W2C_OnChatRoomResponse: return "W2C_OnChatRoomResponse";
-			case ProtoType::W2Q_ChatBroadCast: return "W2Q_ChatBroadCast";
-			case ProtoType::Q2W_ChatResponse: return "Q2W_ChatResponse";
+			case EProtoType::C2W_ChatRoomRequest: return "C2W_ChatRoomRequest";
+			case EProtoType::W2C_ChatRoomResponse: return "W2C_ChatRoomResponse";
+			case EProtoType::C2W_ChatToRoomRequest: return "C2W_ChatToRoomRequest";
+			case EProtoType::W2C_ChatToRoomResponse: return "W2C_ChatToRoomResponse";
+			case EProtoType::W2C_OnChatRoomResponse: return "W2C_OnChatRoomResponse";
+			case EProtoType::W2Q_ChatBroadCast: return "W2Q_ChatBroadCast";
+			case EProtoType::Q2W_ChatResponse: return "Q2W_ChatResponse";
 
 			default: return "UNDEFINED";
 		} // switch

@@ -11,11 +11,11 @@
 #include <spdlog/spdlog.h>
 
 
-LoginHandler::LoginHandler(ULoginAuthenticator *owner)
+ULoginHandler::ULoginHandler(ULoginAuthenticator *owner)
     : ILoginHandler(owner) {
 }
 
-awaitable<std::shared_ptr<IBasePlayer>> LoginHandler::onPlayerLogin(const std::shared_ptr<UConnection> &conn, const FLoginInfo &info) {
+awaitable<std::shared_ptr<IBasePlayer>> ULoginHandler::onPlayerLogin(const std::shared_ptr<UConnection> &conn, const FLoginInfo &info) {
     const auto mgr = GET_MANAGER(PlayerManager);
     if (mgr == nullptr) {
         spdlog::critical("{} - Player Manager is null", __FUNCTION__);
@@ -31,11 +31,11 @@ awaitable<std::shared_ptr<IBasePlayer>> LoginHandler::onPlayerLogin(const std::s
     }
 }
 
-awaitable<FLoginInfo> LoginHandler::parseLoginInfo(IPackage *pkg) {
+awaitable<FLoginInfo> ULoginHandler::parseLoginInfo(IPackage *pkg) {
     try {
         const auto tmp = dynamic_cast<FPackage *>(pkg);
 
-        if (pkg->getPackageID() != static_cast<uint32_t>(protocol::ProtoType::ClientLoginRequest))
+        if (pkg->getPackageID() != static_cast<uint32_t>(protocol::EProtoType::ClientLoginRequest))
             co_return FLoginInfo{};
 
         Login::ClientLoginRequest request;

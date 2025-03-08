@@ -93,7 +93,7 @@ void Player::Send(const uint32_t id, const std::string_view data) const {
     const auto pkg = dynamic_cast<FPackage *>(buildPackage());
     pkg->setPackageID(id).setData(data);
 
-    spdlog::trace("{} - [{}]", __FUNCTION__, ProtoTypeToString(static_cast<protocol::ProtoType>(id)));
+    spdlog::trace("{} - [{}]", __FUNCTION__, ProtoTypeToString(static_cast<protocol::EProtoType>(id)));
     sendPackage(pkg);
 }
 
@@ -101,7 +101,7 @@ void Player::Send(const uint32_t id, const std::stringstream &ss) const {
     const auto pkg = dynamic_cast<FPackage *>(buildPackage());
     pkg->setPackageID(id).setData(ss.str());
 
-    spdlog::trace("{} - [{}]", __FUNCTION__, ProtoTypeToString(static_cast<protocol::ProtoType>(id)));
+    spdlog::trace("{} - [{}]", __FUNCTION__, ProtoTypeToString(static_cast<protocol::EProtoType>(id)));
     sendPackage(pkg);
 }
 
@@ -114,6 +114,6 @@ void Player::SyncCache(CacheNode *node) {
     component_module_.SyncCache(node);
 }
 
-void Player::DispatchEvent(const Event event, IEventParam *param, const EDispatchType type) {
+void Player::DispatchEvent(const EEvent event, IEventParam *param, const EDispatchType type) {
     event_module_.Dispatch(event, param, type);
 }

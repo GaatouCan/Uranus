@@ -8,7 +8,7 @@
 
 #include "impl/connection_handler.h"
 #include "impl/login_handler.h"
-#include "impl/protocol_handler.h"
+#include "impl/proto_handler.h"
 
 #include "common/proto.def.h"
 #include "common/config.def.h"
@@ -34,9 +34,9 @@ void GameServer::initGameWorld() {
     getWorld()->getConfigManager()->setLoggerLoader(&InitLogger);
 
     LoadProtocol(getWorld()->getProtoRoute());
-    getWorld()->getProtoRoute()->setHandler<ProtocolHandler>();
+    getWorld()->getProtoRoute()->setHandler<UProtoHandler>();
 
-    getWorld()->getLoginAuthenticator()->setHandler<LoginHandler>();
+    getWorld()->getLoginAuthenticator()->setHandler<ULoginHandler>();
 
     if (const auto sys = getWorld()->getSystem<UManagerSystem>(); sys != nullptr)
         RegisterManager(sys);
@@ -44,7 +44,7 @@ void GameServer::initGameWorld() {
 
 void GameServer::setConnectionHandler(const std::shared_ptr<UConnection> &conn) {
     if (conn != nullptr)
-        conn->setHandler<ConnectionHandler>();
+        conn->setHandler<UConnectionHandler>();
 }
 
 

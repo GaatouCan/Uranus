@@ -43,7 +43,7 @@ public:
 
     void SyncCache(CacheNode *node);
 
-    void DispatchEvent(Event event, IEventParam *param, EDispatchType type = EDispatchType::PUSH_QUEUE);
+    void DispatchEvent(EEvent event, IEventParam *param, EDispatchType type = EDispatchType::PUSH_QUEUE);
 
     template<typename T>
     requires std::derived_from<T, IPlayerComponent>

@@ -11,6 +11,6 @@ public:
 
     void initGameWorld() override;
 
-    void setConnectionHandler(const std::shared_ptr<class UConnection> &conn) override;
+    void setConnectionHandler(const std::shared_ptr<UConnection> &conn) override;
 };
 

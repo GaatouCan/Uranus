@@ -7,15 +7,15 @@
 #include "../common/proto_type.h"
 #include "../player/player_manager.h"
 
-ConnectionHandler::ConnectionHandler(const std::weak_ptr<UConnection> &conn)
+UConnectionHandler::UConnectionHandler(const std::weak_ptr<UConnection> &conn)
     : IConnectionHandler(conn){
 
 }
 
-void ConnectionHandler::onConnected() {
+void UConnectionHandler::onConnected() {
 }
 
-void ConnectionHandler::onClosed() {
+void UConnectionHandler::onClosed() {
     if (!conn_.lock()->getContext().has_value())
         return;
 
@@ -26,7 +26,7 @@ void ConnectionHandler::onClosed() {
     }
 }
 
-awaitable<void> ConnectionHandler::onReadPackage(IPackage *pkg) {
-    spdlog::debug("{} - Receive Package[{}] From {}.", __FUNCTION__, ProtoTypeToString(static_cast<protocol::ProtoType>(pkg->getPackageID())), conn_.lock()->remoteAddress().to_string());
+awaitable<void> UConnectionHandler::onReadPackage(IPackage *pkg) {
+    spdlog::debug("{} - Receive Package[{}] From {}.", __FUNCTION__, ProtoTypeToString(static_cast<protocol::EProtoType>(pkg->getPackageID())), conn_.lock()->remoteAddress().to_string());
     co_return;
 }

@@ -3,9 +3,9 @@
 #include <connection_handler.h>
 
 
-class ConnectionHandler final : public IConnectionHandler {
+class UConnectionHandler final : public IConnectionHandler {
 public:
-    explicit ConnectionHandler(const std::weak_ptr<UConnection> &conn);
+    explicit UConnectionHandler(const std::weak_ptr<UConnection> &conn);
 
     void onConnected() override;
     void onClosed() override;

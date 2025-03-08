@@ -3,9 +3,9 @@
 #include <proto_handler.h>
 
 
-class ProtocolHandler final : public IProtoHandler {
+class UProtoHandler final : public IProtoHandler {
 public:
-    explicit ProtocolHandler(UProtoRoute *route);
+    explicit UProtoHandler(UProtoRoute *route);
     void invoke(const AProtoFunctor &, const std::shared_ptr<UConnection> &, IPackage *) override;
 
     // awaitable<void> InvokeCross(const ACrossFunctor &, IPackage *) override;
