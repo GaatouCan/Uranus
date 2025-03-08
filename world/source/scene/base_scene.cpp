@@ -82,12 +82,12 @@ std::shared_ptr<IBasePlayer> IBaseScene::findPlayer(const int32_t pid) const {
 }
 
 void IBaseScene::runInThread(const std::function<awaitable<void>()> &func) const {
-    auto &ctx = owner_->getWorld()->GetIOContext();
+    auto &ctx = owner_->getWorld()->getIOContext();
     co_spawn(ctx, func, detached);
 }
 
 void IBaseScene::runInThread(std::function<awaitable<void>()> &&func) const {
-    auto &ctx = owner_->getWorld()->GetIOContext();
+    auto &ctx = owner_->getWorld()->getIOContext();
     co_spawn(ctx, std::move(func), detached);
 }
 

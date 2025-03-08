@@ -25,11 +25,11 @@ PlayerManager::~PlayerManager() {
     player_map_.clear();
 }
 
-void PlayerManager::Init() {
-    if (const auto sys = GetWorld()->GetSystem<UDatabaseSystem>(); sys != nullptr) {
-        sys->SyncSelect("player_cache", "", [&](mysqlx::Row row) {
+void PlayerManager::init() {
+    if (const auto sys = getWorld()->getSystem<UDatabaseSystem>(); sys != nullptr) {
+        sys->syncSelect("player_cache", "", [&](mysqlx::Row row) {
             orm::DBTable_PlayerCache table;
-            table.Read(row);
+            table.read(row);
 
             const FPlayerID pid(table.pid);
             if (!pid.available())
@@ -39,10 +39,10 @@ void PlayerManager::Init() {
                 table.cache >> node;
         });
     }
-    tick_per_sec_ = true;
+    tickPerSecond_ = true;
 }
 
-void PlayerManager::OnDayChange() {
+void PlayerManager::onDayChange() {
     for (const auto &plr: player_map_ | std::views::values) {
         if (plr != nullptr && plr->IsOnline()) {
             plr->OnDayChange();
@@ -51,7 +51,7 @@ void PlayerManager::OnDayChange() {
 }
 
 awaitable<std::shared_ptr<Player>> PlayerManager::OnPlayerLogin(const std::shared_ptr<UConnection> &conn, const FPlayerID &id) {
-    if (conn == nullptr || std::any_cast<FPlayerID>(conn->GetContext()) != id) {
+    if (conn == nullptr || std::any_cast<FPlayerID>(conn->getContext()) != id) {
         spdlog::error("{} - Null Connection Pointer Or Player ID Not Equal.", __FUNCTION__);
         co_return nullptr;
     }
@@ -64,13 +64,13 @@ awaitable<std::shared_ptr<Player>> PlayerManager::OnPlayerLogin(const std::share
 
         spdlog::info("{} - Player[{}] Over Login", __FUNCTION__, plr->getFullID());
 
-        plr->getConnection()->ResetContext();
-        plr->getConnection()->Disconnect();
+        plr->getConnection()->resetContext();
+        plr->getConnection()->disconnect();
 
         plr->tryLeaveScene();
 
         if (plr->IsOnline()) {
-            plr->OnLogout(true, conn->RemoteAddress().to_string());
+            plr->OnLogout(true, conn->remoteAddress().to_string());
         }
     }
 
@@ -123,7 +123,7 @@ void PlayerManager::SendToList(const std::set<FPlayerID> &players, const int32_t
 
     for (const auto [localID, crossID]: players) {
         if (const auto plr = FindPlayer(localID); plr != nullptr && plr->IsOnline()) {
-            const auto pkg = dynamic_cast<FPackage *>(plr->getConnection()->BuildPackage());
+            const auto pkg = dynamic_cast<FPackage *>(plr->getConnection()->buildPackage());
             pkg->setPackageID(id).setData(data);
             plr->sendPackage(pkg);
         }
@@ -170,7 +170,7 @@ awaitable<std::optional<CacheNode>> PlayerManager::FindCacheNode(const FPlayerID
     if (!pid.available())
         co_return std::nullopt;
 
-    if (pid.cross != GetWorld()->GetServerID()) {
+    if (pid.cross != getWorld()->getServerID()) {
         // TODO
         co_return std::nullopt;
     }
@@ -187,14 +187,14 @@ awaitable<std::optional<CacheNode>> PlayerManager::FindCacheNode(const FPlayerID
     co_return std::nullopt;
 }
 
-void PlayerManager::OnTick(const ATimePoint now, const ADuration interval) {
+void PlayerManager::onTick(const ATimePoint now, const ADuration interval) {
     if (now - last_update_time_ < std::chrono::seconds(10))
         return;
 
     const auto ser = std::make_shared<USerializer>();
 
     {
-        auto *array = ser->CreateTableVector<orm::DBTable_PlayerCache>("player_cache");
+        auto *array = ser->createTableVector<orm::DBTable_PlayerCache>("player_cache");
 
         std::shared_lock lock(cache_mtx_);
         for (const auto &val : cache_map_ | std::views::values) {
@@ -202,13 +202,13 @@ void PlayerManager::OnTick(const ATimePoint now, const ADuration interval) {
             table.pid = val.pid;
             table.cache << val;
 
-            array->PushBack(table);
+            array->pushBack(table);
         }
     }
 
-    if (const auto sys = GetWorld()->GetSystem<UDatabaseSystem>(); sys != nullptr) {
-        sys->PushTransaction([ser](mysqlx::Schema &schema) {
-            ser->Serialize(schema);
+    if (const auto sys = getWorld()->getSystem<UDatabaseSystem>(); sys != nullptr) {
+        sys->pushTransaction([ser](mysqlx::Schema &schema) {
+            ser->serialize(schema);
         });
     }
 

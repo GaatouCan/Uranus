@@ -3,22 +3,22 @@
 
 
 IBaseManager::IBaseManager(UManagerSystem *owner)
-    : owner_(owner), tick_per_sec_(false) {
+    : owner_(owner), tickPerSecond_(false) {
 }
 
 IBaseManager::~IBaseManager() {
 }
 
-UManagerSystem * IBaseManager::GetOwner() const {
+UManagerSystem * IBaseManager::getOwner() const {
     return owner_;
 }
 
-UGameWorld * IBaseManager::GetWorld() const {
-    return owner_->GetWorld();
+UGameWorld * IBaseManager::getWorld() const {
+    return owner_->getWorld();
 }
 
-void IBaseManager::OnTick(ATimePoint now, ADuration interval) {
+void IBaseManager::onTick(ATimePoint now, ADuration interval) {
 }
 
-void IBaseManager::OnDayChange() {
+void IBaseManager::onDayChange() {
 }

@@ -21,25 +21,25 @@ public:
 
     DISABLE_COPY_MOVE(ULoginAuthenticator)
 
-    void Init();
-    [[nodiscard]] UGameWorld *GetWorld() const;
+    void init();
+    [[nodiscard]] UGameWorld *getWorld() const;
 
-    bool VerifyAddress(const asio::ip::address &addr);
+    bool verifyAddress(const asio::ip::address &addr);
 
-    FPlayerID VerifyToken(FPlayerID pid, const std::string &token);
+    FPlayerID verifyToken(FPlayerID pid, const std::string &token);
 
-    awaitable<void> OnLogin(const AConnectionPointer &conn, class IPackage *pkg);
+    awaitable<void> onLogin(const AConnectionPointer &conn, class IPackage *pkg);
 
     template<typename T, typename... Args>
     requires std::derived_from<T, ILoginHandler>
-    void SetHandler(Args &&... args) {
+    void setHandler(Args &&... args) {
         if (handler_ != nullptr) {
             handler_.reset();
         }
         handler_ = std::make_unique<T>(this, std::forward<Args>(args)...);
     }
 
-    void AbortHandler() const;
+    void abort() const;
 
 private:
     UGameWorld* world_;

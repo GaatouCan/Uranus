@@ -75,7 +75,7 @@ void AppearanceCT::ActiveAvatar(const int index, const bool bAutoUse) {
     if (iter != avatar_map_.end() && iter->second.activated)
         return;
 
-    const auto cfg_op = GetWorld()->GetConfigManager()->FindConfig("appearance.avatar", index);
+    const auto cfg_op = GetWorld()->getConfigManager()->find("appearance.avatar", index);
     if (!cfg_op.has_value())
         return;
 
@@ -113,7 +113,7 @@ void AppearanceCT::ActiveAvatarFrame(const int index, bool bAutoUse) {
     if (iter != avatar_frame_map_.end() && iter->second.activated)
         return;
 
-    const auto cfg_op = GetWorld()->GetConfigManager()->FindConfig("appearance.avatar", index);
+    const auto cfg_op = GetWorld()->getConfigManager()->find("appearance.avatar", index);
     if (!cfg_op.has_value())
         return;
 

@@ -34,22 +34,22 @@ struct FStringViewEqual {
 
 class BASE_API UGameWorld final {
 
-    asio::io_context ctx_;
+    asio::io_context context_;
     ATcpAcceptor acceptor_;
 
-    AModuleHandle        module_;
-    IServerLogic *      server_;
-    AServerDestroyer     destroyer_;
+    AModuleHandle module_;
+    IServerLogic *server_;
+    AServerDestroyer destroyer_;
 
-    class UConfigManager *       cfg_mgr_;
-    class ULoginAuthenticator *  login_authenticator_;
-    class USceneManager *        scene_mgr_;
-    class UGlobalQueue *         global_queue_;
-    class UProtocolRoute *       proto_route_;
+    class UConfigManager *configManager_;
+    class ULoginAuthenticator *loginAuthenticator_;
+    class USceneManager *sceneManager_;
+    class UGlobalQueue *globalQueue_;
+    class UProtoRoute *protoRoute_;
 
-    std::unordered_map<std::string, AConnectionPointer, FStringViewHash, FStringViewEqual> conn_map_;
+    std::unordered_map<std::string, AConnectionPointer, FStringViewHash, FStringViewEqual> connectionMap_;
 
-    ASystemTimer full_timer_;
+    ASystemTimer fullTimer_;
 
     struct SystemPriority {
         int priority;
@@ -64,16 +64,16 @@ class BASE_API UGameWorld final {
         }
     };
 
-    std::priority_queue<SystemPriority, std::vector<SystemPriority>, std::greater<>>    init_priority_;
-    std::priority_queue<SystemPriority, std::vector<SystemPriority>, std::less<>>       dest_priority_;
+    std::priority_queue<SystemPriority, std::vector<SystemPriority>, std::greater<>> initPriority_;
+    std::priority_queue<SystemPriority, std::vector<SystemPriority>, std::less<>> destroyPriority_;
 
-    std::unordered_map<std::type_index, ISubSystem *>                               sys_map_;
-    std::unordered_map<std::string, ISubSystem *, FStringViewHash, FStringViewEqual>  name_to_sys_;
+    std::unordered_map<std::type_index, ISubSystem *> systemMap_;
+    std::unordered_map<std::string, ISubSystem *, FStringViewHash, FStringViewEqual> nameToSystem_;
 
     AThreadID tid_;
 
-    bool                inited_;
-    std::atomic_bool    running_;
+    bool inited_;
+    std::atomic_bool running_;
 
 public:
     UGameWorld();
@@ -81,54 +81,54 @@ public:
 
     DISABLE_COPY_MOVE(UGameWorld)
 
-    UGameWorld &Init(const std::string &path);
-    UGameWorld &Run();
-    UGameWorld &Shutdown();
+    UGameWorld &init(const std::string &path);
+    UGameWorld &run();
+    UGameWorld &shutdown();
 
-    void ForceDisconnectAll();
+    void forceDisconnectAll();
 
-    void RemoveConnection(const std::string &key);
-    void RemoveConnection(std::string_view key);
+    void removeConnection(const std::string &key);
+    void removeConnection(std::string_view key);
 
-    asio::io_context &GetIOContext();
+    asio::io_context &getIOContext();
 
-    AThreadID GetThreadID() const;
-    [[nodiscard]] bool IsMainThread() const;
+    AThreadID getThreadID() const;
+    [[nodiscard]] bool isMainThread() const;
 
-    template<SYSTEM_TYPE T>
-    T *GetSystem() const noexcept {
-        if (const auto iter = sys_map_.find(typeid(T)); iter != sys_map_.end())
+    template<CSystemType T>
+    T *getSystem() const noexcept {
+        if (const auto iter = systemMap_.find(typeid(T)); iter != systemMap_.end())
             return dynamic_cast<T *>(iter->second);
         return nullptr;
     }
 
-    [[nodiscard]] UConfigManager *       GetConfigManager() const;
-    [[nodiscard]] USceneManager *        GetSceneManager() const;
-    [[nodiscard]] ULoginAuthenticator *  GetLoginAuthenticator() const;
-    [[nodiscard]] UProtocolRoute *       GetProtocolRoute() const;
-    [[nodiscard]] UGlobalQueue *         GetGlobalQueue() const;
+    [[nodiscard]] UConfigManager *getConfigManager() const;
+    [[nodiscard]] USceneManager *getSceneManager() const;
+    [[nodiscard]] ULoginAuthenticator *getLoginAuthenticator() const;
+    [[nodiscard]] UProtoRoute *getProtoRoute() const;
+    [[nodiscard]] UGlobalQueue *getGlobalQueue() const;
 
-    ISubSystem *GetSystemByName(std::string_view sys) const;
+    ISubSystem *getSystemByName(std::string_view sys) const;
 
-    const YAML::Node &GetServerConfig();
-    int32_t GetServerID();
+    const YAML::Node &getServerConfig();
+    int32_t getServerID();
 
 private:
-    bool LoadServerDLL(const std::string &path);
-    awaitable<void> WaitForConnect();
+    bool loadServerDLL(const std::string &path);
+    awaitable<void> waitForConnect();
 
-    template<SYSTEM_TYPE T>
-    T *CreateSystem(const int priority = 0) {
+    template<CSystemType T>
+    T *createSystem(const int priority = 0) {
         if (inited_)
             return nullptr;
 
         const auto res = new T(this);
 
-        sys_map_.insert_or_assign(typeid(T), res);
-        name_to_sys_.insert_or_assign(res->GetSystemName(), res);
+        systemMap_.insert_or_assign(typeid(T), res);
+        nameToSystem_.insert_or_assign(res->getSystemName(), res);
 
-        init_priority_.push({ priority, typeid(T) });
-        dest_priority_.push({ priority, typeid(T) });
+        initPriority_.push({ priority, typeid(T) });
+        destroyPriority_.push({ priority, typeid(T) });
 
         return res;
     }

@@ -9,7 +9,7 @@ class BASE_API USerializer final {
         std::string expired_expr; // 清理过期数据的where语句
     };
 
-    std::vector<FTableNode> table_vec_;
+    std::vector<FTableNode> tables_;
 
 public:
     USerializer();
@@ -17,12 +17,12 @@ public:
 
     DISABLE_COPY_MOVE(USerializer)
 
-    template<DB_TABLE_TYPE T>
-    TTableArray<T> *CreateTableVector(const std::string &name, const std::string &expired = {}) {
+    template<CTableType T>
+    TTableArray<T> *createTableVector(const std::string &name, const std::string &expired = {}) {
         auto res = new TTableArray<T>(name);
-        table_vec_.emplace_back(res, expired);
+        tables_.emplace_back(res, expired);
         return res;
     }
 
-    void Serialize(mysqlx::Schema &schema);
+    void serialize(mysqlx::Schema &schema);
 };

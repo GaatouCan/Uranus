@@ -5,6 +5,6 @@ IConnectionHandler::IConnectionHandler(const std::weak_ptr<UConnection> &conn)
     : conn_(conn) {
 }
 
-UGameWorld * IConnectionHandler::GetWorld() const {
-    return conn_.lock()->GetWorld();
+UGameWorld * IConnectionHandler::getWorld() const {
+    return conn_.lock()->getWorld();
 }

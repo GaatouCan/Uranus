@@ -24,8 +24,8 @@ class EventModule final {
     std::queue<EventNode> queue_;
     mutable std::shared_mutex event_mtx_;
 
-    std::map<Event, std::map<void *, EventListener>> listener_map_;
-    std::map<void *, EventListener> cur_listener_;
+    std::map<Event, std::map<void *, AEventListener>> listener_map_;
+    std::map<void *, AEventListener> cur_listener_;
     std::mutex listener_mtx_;
 
 public:
@@ -54,7 +54,7 @@ public:
         });
     }
 
-    void RegisterListener(Event event, void *ptr, const EventListener &listener);
+    void RegisterListener(Event event, void *ptr, const AEventListener &listener);
     void RemoveListener(Event event, void *ptr);
 
     void Dispatch(Event event, IEventParam *param, EDispatchType type = EDispatchType::PUSH_QUEUE);

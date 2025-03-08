@@ -12,7 +12,7 @@ UPluginSystem::UPluginSystem(UGameWorld *world)
 }
 
 UPluginSystem::~UPluginSystem() {
-    for (const auto &[module, destroyer, plugin] : plugin_map_ | std::views::values) {
+    for (const auto &[module, destroyer, plugin] : pluginMap_ | std::views::values) {
         if (destroyer) {
             destroyer(plugin);
 #if defined(_WIN32) || defined(_WIN64)
@@ -24,7 +24,7 @@ UPluginSystem::~UPluginSystem() {
     }
 }
 
-void UPluginSystem::Init() {
+void UPluginSystem::init() {
     if (!std::filesystem::exists(PLUGIN_DIRECTORY)) {
         try {
             std::filesystem::create_directory(PLUGIN_DIRECTORY);
@@ -38,20 +38,20 @@ void UPluginSystem::Init() {
     {
         if (entry.is_regular_file() && entry.path().extension() == ".dll")
         {
-            LoadPlugin(entry.path().string() + entry.path().filename().string());
+            loadPlugin(entry.path().string() + entry.path().filename().string());
         }
     }
 }
 
-UPluginSystem::PluginNode UPluginSystem::FindPlugin(const std::string &name) {
-    std::shared_lock lock(mtx_);
-    if (const auto it = plugin_map_.find(name); it != plugin_map_.end()) {
+UPluginSystem::FPluginNode UPluginSystem::findPlugin(const std::string &name) {
+    std::shared_lock lock(mutex_);
+    if (const auto it = pluginMap_.find(name); it != pluginMap_.end()) {
         return it->second;
     }
     return {nullptr, nullptr, nullptr};
 }
 
-bool UPluginSystem::LoadPlugin(const std::string_view path) {
+bool UPluginSystem::loadPlugin(const std::string_view path) {
 #if defined(_WIN32) || defined(_WIN64)
     const AModuleHandle hModule = LoadLibrary(path.data());
 
@@ -60,8 +60,8 @@ bool UPluginSystem::LoadPlugin(const std::string_view path) {
         return false;
     }
 
-    const auto creator = reinterpret_cast<PluginCreator>(GetProcAddress(hModule, "CreatePlugin"));
-    const auto destroyer = reinterpret_cast<PluginDestroyer>(GetProcAddress(hModule, "DestroyPlugin"));
+    const auto creator = reinterpret_cast<APluginCreator>(GetProcAddress(hModule, "CreatePlugin"));
+    const auto destroyer = reinterpret_cast<APluginDestroyer>(GetProcAddress(hModule, "DestroyPlugin"));
 
     if (creator == nullptr || destroyer == nullptr) {
         spdlog::error("{} - Failed to find function {}", __FUNCTION__, path.data());
@@ -77,9 +77,9 @@ bool UPluginSystem::LoadPlugin(const std::string_view path) {
     }
 
     {
-        std::shared_lock lock(mtx_);
-        if (plugin_map_.contains(plugin->GetPluginName())) {
-            spdlog::warn("{} - Plugin {} already exists", __FUNCTION__, plugin->GetPluginName());
+        std::shared_lock lock(mutex_);
+        if (pluginMap_.contains(plugin->getPluginName())) {
+            spdlog::warn("{} - Plugin {} already exists", __FUNCTION__, plugin->getPluginName());
             destroyer(plugin);
             FreeLibrary(hModule);
             return false;
@@ -122,25 +122,25 @@ bool UPluginSystem::LoadPlugin(const std::string_view path) {
 
 #endif
 
-    PluginNode node{ hModule, destroyer, plugin };
+    FPluginNode node{ hModule, destroyer, plugin };
 
-    std::unique_lock lock(mtx_);
-    plugin_map_.insert_or_assign(plugin->GetPluginName(), node);
-    spdlog::info("{} - Load {} Success.", __FUNCTION__, plugin->GetPluginName());
+    std::unique_lock lock(mutex_);
+    pluginMap_.insert_or_assign(plugin->getPluginName(), node);
+    spdlog::info("{} - Load {} Success.", __FUNCTION__, plugin->getPluginName());
 
     return true;
 }
 
-bool UPluginSystem::UnloadPlugin(const std::string &name) {
-    const auto [module, destroyer, plugin] = FindPlugin(name);
+bool UPluginSystem::unloadPlugin(const std::string &name) {
+    const auto [module, destroyer, plugin] = findPlugin(name);
     if (plugin == nullptr || destroyer == nullptr || module == nullptr) {
         spdlog::error("{} - Failed to find plugin {}", __FUNCTION__, name.data());
         return false;
     }
 
     {
-        std::unique_lock lock(mtx_);
-        plugin_map_.erase(name);
+        std::unique_lock lock(mutex_);
+        pluginMap_.erase(name);
     }
 
     destroyer(plugin);

@@ -15,19 +15,19 @@ UCommandObject::UCommandObject(const std::string &type, const std::string &param
     param_ = utils::SplitString(input_, '|');
 }
 
-std::string UCommandObject::GetType() const {
+std::string UCommandObject::getType() const {
     return type_;
 }
 
-std::string UCommandObject::GetInputString() const {
+std::string UCommandObject::getInputString() const {
     return input_;
 }
 
-void UCommandObject::Reset() {
+void UCommandObject::reset() {
     idx_ = 0;
 }
 
-int UCommandObject::ReadInt() {
+int UCommandObject::readInt() {
     if (idx_ >= param_.size()) {
         spdlog::error("{} - index out of range", __FUNCTION__);
         return -1;
@@ -35,7 +35,7 @@ int UCommandObject::ReadInt() {
     return std::stoi(param_[idx_++]);
 }
 
-unsigned int UCommandObject::ReadUInt() {
+unsigned int UCommandObject::readUInt() {
     if (idx_ >= param_.size()) {
         spdlog::error("{} - index out of range", __FUNCTION__);
         return -1;
@@ -43,7 +43,7 @@ unsigned int UCommandObject::ReadUInt() {
     return std::stoul(param_[idx_++]);
 }
 
-std::string UCommandObject::ReadString() {
+std::string UCommandObject::readString() {
     if (idx_ >= param_.size()) {
         spdlog::error("{} - index out of range", __FUNCTION__);
         return {};

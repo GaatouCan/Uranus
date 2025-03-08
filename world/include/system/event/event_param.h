@@ -9,4 +9,4 @@ struct BASE_API IEventParam {
 };
 
 
-using EventListener = std::function<void(IEventParam *)>;
+using AEventListener = std::function<void(IEventParam *)>;

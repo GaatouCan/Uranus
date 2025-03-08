@@ -20,19 +20,19 @@ enum class EDispatchType {
 
 class BASE_API UEventSystem final : public ISubSystem {
 
-    struct EventNode {
+    struct FEventNode {
         uint32_t event = 0;
         IEventParam *param = nullptr;
     };
 
-    std::queue<EventNode> event_queue_;
-    mutable std::shared_mutex event_mtx_;
+    std::queue<FEventNode> eventQueue_;
+    mutable std::shared_mutex eventMutex_;
 
-    using ListenerMap = std::map<void *, EventListener>;
+    using AListenerMap = std::map<void *, AEventListener>;
 
-    std::map<uint32_t, ListenerMap> listener_map_;
-    ListenerMap cur_listener_;
-    std::mutex listener_mtx_;
+    std::map<uint32_t, AListenerMap> listenerMap_;
+    AListenerMap curListener_;
+    std::mutex listenerMutex_;
 
 public:
     explicit UEventSystem(UGameWorld *world);
@@ -40,16 +40,16 @@ public:
 
     GET_SYSTEM_NAME(EventSystem)
 
-    void Init() override;
+    void init() override;
 
-    void Dispatch(uint32_t event, IEventParam *param, EDispatchType type = EDispatchType::PUSH_QUEUE);
+    void dispatch(uint32_t event, IEventParam *param, EDispatchType type = EDispatchType::PUSH_QUEUE);
 
     template<typename TargetType, typename Callable>
-    void RegisterListenerT(const uint32_t event, void *ptr, void *target, Callable &&func) {
+    void registerListenerT(const uint32_t event, void *ptr, void *target, Callable &&func) {
         if (ptr == nullptr || target == nullptr)
             return;
 
-        this->RegisterListener(event, ptr, [target, func = std::forward<Callable>(func)](IEventParam *param) {
+        registerListener(event, ptr, [target, func = std::forward<Callable>(func)](IEventParam *param) {
             try {
                 if (target != nullptr) {
                     std::invoke(func, static_cast<TargetType *>(target), param);
@@ -60,12 +60,12 @@ public:
         });
     }
 
-    void RegisterListener(uint32_t event, void *ptr, const EventListener &listener);
+    void registerListener(uint32_t event, void *ptr, const AEventListener &listener);
 
-    void RemoveListener(uint32_t event, void *ptr);
+    void removeListener(uint32_t event, void *ptr);
 
 private:
-    awaitable<void> HandleEvent();
+    awaitable<void> handleEvent();
 
-    [[nodiscard]] bool IsQueueEmpty() const;
+    [[nodiscard]] bool queueEmpty() const;
 };

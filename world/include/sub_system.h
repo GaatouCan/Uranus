@@ -18,18 +18,18 @@ public:
 
     DISABLE_COPY_MOVE(ISubSystem)
 
-    virtual void Init() = 0;
+    virtual void init() = 0;
 
-    [[nodiscard]] virtual const char *GetSystemName() const = 0;
+    [[nodiscard]] virtual const char *getSystemName() const = 0;
 
-    [[nodiscard]] UGameWorld *GetWorld() const;
-    [[nodiscard]] asio::io_context &GetIOContext() const;
+    [[nodiscard]] UGameWorld *getWorld() const;
+    [[nodiscard]] asio::io_context &getIOContext() const;
 };
 
 template<class T>
-concept SYSTEM_TYPE = std::derived_from<T, ISubSystem>;
+concept CSystemType = std::derived_from<T, ISubSystem>;
 
 #define GET_SYSTEM_NAME(sys) \
-[[nodiscard]] constexpr const char *GetSystemName() const noexcept override { \
+[[nodiscard]] constexpr const char *getSystemName() const noexcept override { \
     return #sys; \
 }

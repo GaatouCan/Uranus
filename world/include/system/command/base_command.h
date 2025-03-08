@@ -18,8 +18,8 @@ public:
     IBaseCommand(UCommandSystem *owner, UCommandObject object);
     virtual ~IBaseCommand() = default;
 
-    virtual asio::awaitable<void> Execute() = 0;
+    virtual asio::awaitable<void> execute() = 0;
 
-    [[nodiscard]] UCommandSystem *GetOwner() const;
-    [[nodiscard]] class UGameWorld *GetWorld() const;
+    [[nodiscard]] UCommandSystem *getOwner() const;
+    [[nodiscard]] class UGameWorld *getWorld() const;
 };

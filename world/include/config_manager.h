@@ -18,17 +18,17 @@ constexpr auto SERVER_CONFIG_JSON = "/json";
 
 class BASE_API UConfigManager final {
 
-    std::string yaml_path_;
-    std::string json_path_;
+    std::string yamlPath_;
+    std::string jsonPath_;
 
-    YAML::Node cfg_;
-    std::unordered_map<std::string, nlohmann::json> json_map_;
+    YAML::Node config_;
+    std::unordered_map<std::string, nlohmann::json> jsonMap_;
 
-    std::unordered_map<std::type_index, std::vector<std::string>> logic_load_map_;
-    std::unordered_map<std::type_index, ILogicConfig *> logic_config_map_;
+    std::unordered_map<std::type_index, std::vector<std::string>> logicLoadMap_;
+    std::unordered_map<std::type_index, ILogicConfig *> logicConfigMap_;
 
-    ALogicConfigLoader logic_config_loader_;
-    ALoggerLoader logger_loader_;
+    ALogicConfigLoader logicConfigLoader_;
+    ALoggerLoader loggerLoader_;
 
     bool loaded_ = false;
 
@@ -36,43 +36,43 @@ public:
     UConfigManager();
     ~UConfigManager();
 
-    void Init();
+    void init();
 
-    void SetYAMLPath(const std::string &path);
-    void SetJSONPath(const std::string &path);
+    void setYamlPath(const std::string &path);
+    void setJsonPath(const std::string &path);
 
-    void SetLogicConfigLoader(ALogicConfigLoader loader);
-    void SetLoggerLoader(ALoggerLoader loader);
+    void setLogicConfigLoader(ALogicConfigLoader loader);
+    void setLoggerLoader(ALoggerLoader loader);
 
-    void Abort() const;
+    void abort() const;
 
-    template<LogicConfigType T>
-    void CreateLogicConfig(const std::vector<std::string> &path_list) {
-        logic_load_map_[typeid(T)] = path_list;
+    template<CLogicConfigType T>
+    void createLogicConfig(const std::vector<std::string> &path_list) {
+        logicLoadMap_[typeid(T)] = path_list;
         std::vector<nlohmann::json> configs;
         for (const auto &path : path_list) {
-            if (const auto iter = json_map_.find(path); iter != json_map_.end()) {
+            if (const auto iter = jsonMap_.find(path); iter != jsonMap_.end()) {
                 configs.push_back(iter->second);
             }
         }
-        logic_config_map_.insert_or_assign(typeid(T), new T(configs));
+        logicConfigMap_.insert_or_assign(typeid(T), new T(configs));
     }
 
-    template<LogicConfigType T>
-    T *FindLogicConfig() {
-        if (const auto iter = logic_config_map_.find(typeid(T)); iter != logic_config_map_.end()) {
+    template<CLogicConfigType T>
+    T *findLogicConfig() {
+        if (const auto iter = logicConfigMap_.find(typeid(T)); iter != logicConfigMap_.end()) {
             return dynamic_cast<T *>(iter->second);
         }
         return nullptr;
     }
 
-    [[nodiscard]] bool IsLoaded() const;
-    const YAML::Node &GetServerConfig() const;
+    [[nodiscard]] bool loaded() const;
+    const YAML::Node &getServerConfig() const;
 
-    std::optional<nlohmann::json> FindConfig(const std::string &path, uint64_t id) const;
+    std::optional<nlohmann::json> find(const std::string &path, uint64_t id) const;
 
-    void ReloadConfig();
+    void reloadConfig();
 };
 
 #define REGISTER_LOGIC_CONFIG(cfg, ...) \
-    mgr->CreateLogicConfig<cfg>({__VA_ARGS__});
+    mgr->createLogicConfig<cfg>({__VA_ARGS__});

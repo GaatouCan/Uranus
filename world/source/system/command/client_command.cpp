@@ -11,10 +11,10 @@ IClientCommand::IClientCommand(UCommandSystem *owner, UCommandObject object)
       sender_(-1) {
 }
 
-void IClientCommand::SetSender(const int32_t sender) {
+void IClientCommand::setSender(const int32_t sender) {
     sender_ = sender;
 }
 
-int32_t IClientCommand::GetSender() const {
+int32_t IClientCommand::setSender() const {
     return sender_;
 }

@@ -25,8 +25,8 @@ int main(const int argc, char *argv[]) {
 
     utils::SetGameWorld(world);
 
-    world->Init(server);
-    world->Run();
+    world->init(server);
+    world->run();
 
     delete world;
 

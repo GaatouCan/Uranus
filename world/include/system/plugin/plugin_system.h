@@ -10,17 +10,17 @@ class IBasePlugin;
 
 class BASE_API UPluginSystem final : public ISubSystem {
 
-    typedef IBasePlugin* (*PluginCreator)(UPluginSystem *);
-    typedef void (*PluginDestroyer)(IBasePlugin *);
+    typedef IBasePlugin* (*APluginCreator)(UPluginSystem *);
+    typedef void (*APluginDestroyer)(IBasePlugin *);
 
-    struct PluginNode {
-        AModuleHandle    module;
-        PluginDestroyer destroyer;
-        IBasePlugin *   plugin;
+    struct FPluginNode {
+        AModuleHandle module;
+        APluginDestroyer destroyer;
+        IBasePlugin *plugin;
     };
 
-    std::unordered_map<std::string, PluginNode> plugin_map_;
-    mutable std::shared_mutex mtx_;
+    std::unordered_map<std::string, FPluginNode> pluginMap_;
+    mutable std::shared_mutex mutex_;
 
 public:
     explicit UPluginSystem(UGameWorld *world);
@@ -28,10 +28,10 @@ public:
 
     GET_SYSTEM_NAME(PluginSystem)
 
-    void Init() override;
+    void init() override;
 
-    PluginNode FindPlugin(const std::string &name);
+    FPluginNode findPlugin(const std::string &name);
 
-    bool LoadPlugin(std::string_view path);
-    bool UnloadPlugin(const std::string &name);
+    bool loadPlugin(std::string_view path);
+    bool unloadPlugin(const std::string &name);
 };

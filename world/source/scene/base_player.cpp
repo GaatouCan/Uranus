@@ -9,7 +9,7 @@
 IBasePlayer::IBasePlayer(const AConnectionPointer &conn)
     : owner_(nullptr),
       conn_(conn),
-      pid_(std::any_cast<FPlayerID>(conn_->GetContext())) {
+      pid_(std::any_cast<FPlayerID>(conn_->getContext())) {
 
 }
 
@@ -20,7 +20,7 @@ IBasePlayer::~IBasePlayer() {
 }
 
 bool IBasePlayer::setConnection(const AConnectionPointer &conn) {
-    if (std::any_cast<FPlayerID>(conn_->GetContext()) != pid_) {
+    if (std::any_cast<FPlayerID>(conn_->getContext()) != pid_) {
         return false;
     }
     conn_ = conn;
@@ -32,7 +32,7 @@ AConnectionPointer IBasePlayer::getConnection() const {
 }
 
 ATcpSocket &IBasePlayer::getSocket() const {
-    return conn_->GetSocket();
+    return conn_->getSocket();
 }
 
 asio::io_context &IBasePlayer::getIOContext() const {
@@ -41,15 +41,15 @@ asio::io_context &IBasePlayer::getIOContext() const {
 }
 
 UGameWorld * IBasePlayer::getWorld() const {
-    return conn_->GetWorld();
+    return conn_->getWorld();
 }
 
 AThreadID IBasePlayer::getThreadID() const {
-    return conn_->GetThreadID();
+    return conn_->getThreadID();
 }
 
 bool IBasePlayer::isSameThread() const {
-    return conn_->IsSameThread();
+    return conn_->isSameThread();
 }
 
 int32_t IBasePlayer::getLocalID() const {
@@ -69,7 +69,7 @@ int64_t IBasePlayer::getFullID() const {
 }
 
 IPackage *IBasePlayer::buildPackage() const {
-    return conn_->BuildPackage();
+    return conn_->buildPackage();
 }
 
 void IBasePlayer::sendPackage(IPackage *pkg) const {
@@ -78,7 +78,7 @@ void IBasePlayer::sendPackage(IPackage *pkg) const {
     //     return;
     // }
 
-    conn_->Send(pkg);
+    conn_->send(pkg);
 }
 
 void IBasePlayer::onEnterScene(IBaseScene *scene) {
@@ -146,7 +146,7 @@ bool IBasePlayer::stopTimer(const FUniqueID &tid) {
     if (timer == nullptr)
         return false;
 
-    timer->Stop();
+    timer->stop();
     return true;
 }
 
@@ -183,7 +183,7 @@ std::optional<FUniqueID> IBasePlayer::addTimer(URepeatedTimer *timer) {
         timerMap_[timer_id] = timer;
     }
 
-    timer->SetTimerID(timer_id).SetCompleteCallback([weak = weak_from_this()](const FUniqueID &tid) mutable {
+    timer->setTimerID(timer_id).setCompleteCallback([weak = weak_from_this()](const FUniqueID &tid) mutable {
         if (const auto self = weak.lock()) {
             self->removeTimer(tid);
         }

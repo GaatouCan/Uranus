@@ -1,11 +1,11 @@
 #pragma once
 
-#include "db_table.h"
+#include "table.h"
 
 class BASE_API UTableResult final {
 
     mysqlx::RowResult result_;
-    mysqlx::Row cur_row_;
+    mysqlx::Row curRow_;
 
     const size_t total_;
 
@@ -16,16 +16,16 @@ public:
 
     [[nodiscard]] size_t TotalRowsCount() const;
 
-    size_t Count();
+    size_t count();
 
-    bool HasMore();
+    bool hasMore();
 
-    template<DB_TABLE_TYPE T>
-    T DeserializeT() {
+    template<CTableType T>
+    T deserializeT() {
         T res;
-        Deserialize(&res);
+        deserialize(&res);
         return res;
     }
 
-    void Deserialize(IDBTable *table);
+    void deserialize(ITable *table);
 };

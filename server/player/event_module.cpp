@@ -27,13 +27,13 @@ bool EventModule::IsQueueEmpty() const {
     return queue_.empty();
 }
 
-void EventModule::RegisterListener(const Event event, void *ptr, const EventListener &listener) {
+void EventModule::RegisterListener(const Event event, void *ptr, const AEventListener &listener) {
     if (event == Event::UNAVAILABLE || ptr == nullptr)
         return;
 
     std::scoped_lock lock(listener_mtx_);
     if (!listener_map_.contains(event))
-        listener_map_[event] = std::map<void *, EventListener>();
+        listener_map_[event] = std::map<void *, AEventListener>();
 
     listener_map_[event][ptr] = listener;
 }

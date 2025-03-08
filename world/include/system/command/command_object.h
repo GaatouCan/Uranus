@@ -20,12 +20,12 @@ public:
 
     explicit UCommandObject(const std::string &type, const std::string &param = "");
 
-    [[nodiscard]] std::string GetType() const;
-    [[nodiscard]] std::string GetInputString() const;
+    [[nodiscard]] std::string getType() const;
+    [[nodiscard]] std::string getInputString() const;
 
-    void Reset();
+    void reset();
 
-    int ReadInt();
-    unsigned int ReadUInt();
-    std::string ReadString();
+    int readInt();
+    unsigned int readUInt();
+    std::string readString();
 };

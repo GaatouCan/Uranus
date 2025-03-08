@@ -26,11 +26,11 @@ public:
     explicit PlayerManager(UManagerSystem *owner);
     ~PlayerManager() override;
 
-    void Init() override;
+    void init() override;
 
     GET_MANAGER_NAME(PlayerManager)
 
-    void OnDayChange() override;
+    void onDayChange() override;
 
     awaitable<std::shared_ptr<Player>> OnPlayerLogin(const std::shared_ptr<UConnection> &conn, const FPlayerID &id);
 
@@ -47,7 +47,7 @@ public:
 
     awaitable<std::optional<CacheNode>> FindCacheNode(const FPlayerID &pid);
 
-    void OnTick(ATimePoint now, ADuration interval) override;
+    void onTick(ATimePoint now, ADuration interval) override;
 };
 
 #define SEND_TO_PLAYER_SET(mgr, set, proto, data) \

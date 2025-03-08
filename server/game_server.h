@@ -9,8 +9,8 @@ public:
     explicit GameServer(UGameWorld *world);
     ~GameServer() override;
 
-    void InitGameWorld() override;
+    void initGameWorld() override;
 
-    void SetConnectionHandler(const std::shared_ptr<class UConnection> &conn) override;
+    void setConnectionHandler(const std::shared_ptr<class UConnection> &conn) override;
 };
 

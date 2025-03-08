@@ -4,22 +4,22 @@
 
 class BASE_API IOperateCommand : public IBaseCommand {
 
-    int64_t op_id_;
-    int64_t create_time_;
-    int64_t update_time_;
+    int64_t operateID_;
+    int64_t createTime_;
+    int64_t updateTime_;
 
     std::string creator_;
 
 public:
     IOperateCommand(UCommandSystem *owner, UCommandObject object);
 
-    void SetCommandID(int64_t id);
-    void SetCreateTime(int64_t time);
-    void SetUpdateTime(int64_t time);
-    void SetCreator(const std::string &creator);
+    void setCommandID(int64_t id);
+    void setCreateTime(int64_t time);
+    void setUpdateTime(int64_t time);
+    void setCreator(const std::string &creator);
 
-    [[nodiscard]] int64_t GetCommandID() const;
-    [[nodiscard]] int64_t GetCreateTime() const;
-    [[nodiscard]] int64_t GetUpdateTime() const;
-    [[nodiscard]] std::string GetCreator() const;
+    [[nodiscard]] int64_t getCommandID() const;
+    [[nodiscard]] int64_t getCreateTime() const;
+    [[nodiscard]] int64_t getUpdateTime() const;
+    [[nodiscard]] std::string getCreator() const;
 };

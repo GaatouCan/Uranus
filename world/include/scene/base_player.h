@@ -95,10 +95,10 @@ public:
     {
         const auto timer = new URepeatedTimer(getIOContext());
 
-        timer->SetDelay(delay)
-            .SetRepeatRate(rate)
-            .SetIfRepeat(repeat)
-            .SetFunctor(std::forward<Functor>(func), std::forward<Args>(args)...);
+        timer->setDelay(delay)
+            .setRepeatRate(rate)
+            .setIfRepeat(repeat)
+            .setFunctor(std::forward<Functor>(func), std::forward<Args>(args)...);
 
         const auto tid = addTimer(timer);
         if (!tid.has_value()) {
@@ -115,10 +115,10 @@ public:
         Functor &&func, Object *obj, Args &&... args)
     {
         const auto timer = new URepeatedTimer(getIOContext());
-        timer->SetDelay(delay)
-            .SetRepeatRate(rate)
-            .SetIfRepeat(repeat)
-            .SetMemberFunctor(std::forward<Functor>(func), obj, std::forward<Args>(args)...);
+        timer->setDelay(delay)
+            .setRepeatRate(rate)
+            .setIfRepeat(repeat)
+            .setMemberFunctor(std::forward<Functor>(func), obj, std::forward<Args>(args)...);
 
         const auto tid = addTimer(timer);
         if (!tid.has_value()) {

@@ -18,15 +18,15 @@ public:
 
     DISABLE_COPY_MOVE(ILogicConfig)
 
-    virtual void OnReload(std::vector<nlohmann::json> config_list) {
+    virtual void onReload(std::vector<nlohmann::json> config_list) {
         list_ = std::move(config_list);
     }
 
-    virtual void Init() {}
+    virtual void init() {}
 
 protected:
     std::vector<nlohmann::json> list_;
 };
 
 template<typename T>
-concept LogicConfigType = std::derived_from<T, ILogicConfig>;
+concept CLogicConfigType = std::derived_from<T, ILogicConfig>;

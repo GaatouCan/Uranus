@@ -9,22 +9,22 @@ UDatabaseSystem::UDatabaseSystem(UGameWorld *world)
 }
 
 UDatabaseSystem::~UDatabaseSystem() {
-    for (const auto &[th, sess, queue, tid] : sess_list_) {
+    for (const auto &[th, sess, queue, tid] : sessionList_) {
         if (queue)
             queue->quit();
     }
 
-    for (const auto &[th, sess, queue, tid] : sess_list_) {
+    for (const auto &[th, sess, queue, tid] : sessionList_) {
         if (th && th->joinable())
             th->join();
     }
 }
 
-void UDatabaseSystem::Init() {
-    const auto &cfg = GetWorld()->GetServerConfig();
+void UDatabaseSystem::init() {
+    const auto &cfg = getWorld()->getServerConfig();
 
     const auto schemaName = cfg["database"]["mysql"]["schema"].as<std::string>();
-    sess_list_ = std::vector<FSessionNode>(cfg["database"]["pool"].as<uint64_t>());
+    sessionList_ = std::vector<FSessionNode>(cfg["database"]["pool"].as<uint64_t>());
 
     auto host = cfg["database"]["mysql"]["host"].as<std::string>();
     auto port = cfg["database"]["mysql"]["port"].as<uint16_t>();
@@ -33,7 +33,7 @@ void UDatabaseSystem::Init() {
 
     spdlog::info("{} - Connect To Database (MySQL){}:{}", __FUNCTION__, host, port);
 
-    for (auto &node: sess_list_) {
+    for (auto &node: sessionList_) {
         node.session = std::make_unique<mysqlx::Session>(host, port, user, passwd);
         node.queue = std::make_unique<TDeque<IDatabaseTask *>>();
 
@@ -49,7 +49,7 @@ void UDatabaseSystem::Init() {
                     const auto task = op.value();
                     try {
                         auto schema = node.session->getSchema(schemaName, true);
-                        task->Execute(schema);
+                        task->execute(schema);
                     } catch (std::exception &e) {
                         spdlog::error("Database Error - {}", e.what());
                     }
@@ -63,14 +63,14 @@ void UDatabaseSystem::Init() {
     }
 }
 
-void UDatabaseSystem::SyncSelect(const std::string &tableName, const std::string &where, const std::function<void(mysqlx::Row)> &cb) const {
-    if (sess_list_.empty()) {
+void UDatabaseSystem::syncSelect(const std::string &tableName, const std::string &where, const std::function<void(mysqlx::Row)> &cb) const {
+    if (sessionList_.empty()) {
         spdlog::error("{} - No Database Session Available.", __FUNCTION__);
         return;
     }
 
-    const auto &[th, sess, queue, tid] = sess_list_.front();
-    const auto &cfg = GetWorld()->GetServerConfig();
+    const auto &[th, sess, queue, tid] = sessionList_.front();
+    const auto &cfg = getWorld()->getServerConfig();
 
     auto schema = sess->getSchema(cfg["database"]["mysql"]["schema"].as<std::string>());
     if (!schema.existsInDatabase()) {
@@ -95,8 +95,8 @@ void UDatabaseSystem::SyncSelect(const std::string &tableName, const std::string
     }
 }
 
-void UDatabaseSystem::PushTransaction(const ATransactionFunctor &func) {
-    const auto &[th, sess, queue, tid] = sess_list_[next_node_idx_++];
-    next_node_idx_ = next_node_idx_ % sess_list_.size();
+void UDatabaseSystem::pushTransaction(const ATransactionFunctor &func) {
+    const auto &[th, sess, queue, tid] = sessionList_[nextNodeIndex_++];
+    nextNodeIndex_ = nextNodeIndex_ % sessionList_.size();
     queue->pushBack(new UTransactionTask(func));
 }

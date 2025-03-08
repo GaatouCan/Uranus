@@ -27,9 +27,9 @@ namespace protocol {
 } // protocol
 
 #include "proto_type.h"
-#include "protocol_route.h"
+#include "proto_route.h"
 
-inline void LoadProtocol(UProtocolRoute *route) {
+inline void LoadProtocol(UProtoRoute *route) {
 
 	using namespace protocol;
 

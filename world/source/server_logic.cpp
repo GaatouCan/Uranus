@@ -9,10 +9,10 @@ IServerLogic::IServerLogic(UGameWorld *world)
 IServerLogic::~IServerLogic() {
 }
 
-UGameWorld *IServerLogic::GetWorld() const {
+UGameWorld *IServerLogic::getWorld() const {
     return world_;
 }
 
-void IServerLogic::SetConnectionCodec(const std::shared_ptr<class UConnection>& conn) {
-    conn->SetPackageCodec<UPackageCodec>();
+void IServerLogic::setConnectionCodec(const std::shared_ptr<class UConnection>& conn) {
+    conn->setPackageCodec<UPackageCodec>();
 }

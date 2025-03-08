@@ -5,21 +5,21 @@ USerializer::USerializer() {
 }
 
 USerializer::~USerializer() {
-    for (const auto& [val, expired] : table_vec_) {
+    for (const auto& [val, expired] : tables_) {
         delete val;
     }
 }
 
-void USerializer::Serialize(mysqlx::Schema &schema) {
-    for (const auto &[val, expired] : table_vec_) {
+void USerializer::serialize(mysqlx::Schema &schema) {
+    for (const auto &[val, expired] : tables_) {
         if (val == nullptr)
             continue;
 
-        if (auto table = schema.getTable(val->GetTableName()); table.existsInDatabase()) {
+        if (auto table = schema.getTable(val->getTableName()); table.existsInDatabase()) {
             if (!expired.empty()) {
-                val->RemoveExpiredRow(table, expired);
+                val->removeExpiredRow(table, expired);
             }
-            val->SerializeInternal(table);
+            val->serializeInternal(table);
         }
     }
 }

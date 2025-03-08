@@ -2,64 +2,64 @@
 
 #include <utility>
 
-#include "db_table.h"
+#include "table.h"
 
 class BASE_API ITableArray {
 
-    std::string table_name_;
+    std::string tableName_;
 
 public:
     explicit ITableArray(std::string name)
-        : table_name_(std::move(name)) {
+        : tableName_(std::move(name)) {
     }
 
     virtual ~ITableArray() = default;
 
     DISABLE_COPY_MOVE(ITableArray)
 
-    void SetTableName(const std::string &name) { table_name_ = name; }
-    [[nodiscard]] std::string GetTableName() const { return table_name_; }
+    void setTableName(const std::string &name) { tableName_ = name; }
+    [[nodiscard]] std::string getTableName() const { return tableName_; }
 
 protected:
     friend class USerializer;
 
-    virtual void SerializeInternal(mysqlx::Table &table) = 0;
-    virtual void RemoveExpiredRow(mysqlx::Table &table, const std::string &expr) = 0;
+    virtual void serializeInternal(mysqlx::Table &table) = 0;
+    virtual void removeExpiredRow(mysqlx::Table &table, const std::string &expr) = 0;
 };
 
-template<DB_TABLE_TYPE T>
+template<CTableType T>
 class BASE_API TTableArray final : public ITableArray {
 
-    std::vector<T> mData;
+    std::vector<T> data_;
 
 public:
     explicit TTableArray(std::string name)
         : ITableArray(std::move(name)) {
     }
 
-    void PushBack(const T &value) {
-        mData.push_back(value);
+    void pushBack(const T &value) {
+        data_.push_back(value);
     }
 
-    void PushBack(T &&value) {
-        mData.emplace_back(value);
+    void pushBack(T &&value) {
+        data_.emplace_back(value);
     }
 
     template<typename... Args>
-    void EmplaceBack(Args &&... args) {
-        mData.emplace_back(std::forward<Args>(args)...);
+    void emplaceBack(Args &&... args) {
+        data_.emplace_back(std::forward<Args>(args)...);
     }
 
 private:
     friend class USerializer;
 
-    void SerializeInternal(mysqlx::Table &table) override {
-        for (auto &value: mData) {
-            value.Write(table);
+    void serializeInternal(mysqlx::Table &table) override {
+        for (auto &value: data_) {
+            value.write(table);
         }
     }
 
-    void RemoveExpiredRow(mysqlx::Table &table, const std::string &expr) override {
+    void removeExpiredRow(mysqlx::Table &table, const std::string &expr) override {
         auto res = table.select().where(expr).execute();
 
         if (res.count() == 0)
@@ -70,8 +70,8 @@ private:
 
         for (auto row: res) {
             // 如果将被写入的数据里面包含 则跳过
-            for (auto &elem: mData) {
-                if (elem.ComparePrimaryKey(row)) {
+            for (auto &elem: data_) {
+                if (elem.comparePrimaryKey(row)) {
                     bInclude = true;
                     break;
                 }
@@ -84,12 +84,12 @@ private:
 
             // 添加到删除列表里
             T elem;
-            elem.Read(row);
+            elem.read(row);
             del.push_back(elem);
         }
 
         for (auto &row: del) {
-            row.Remove(table);
+            row.remove(table);
         }
     }
 };

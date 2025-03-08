@@ -10,7 +10,7 @@ USceneManager::USceneManager(UGameWorld *world)
     : world_(world),
       nextMainIndex_(0),
       nextSceneID_(NORMAL_SCENE_ID_BEGIN + 1),
-      tickTimer_(world_->GetIOContext()),
+      tickTimer_(world_->getIOContext()),
       running_(false) {
 }
 
@@ -70,7 +70,7 @@ void USceneManager::collectScene(const ATimePoint time) {
 }
 
 void USceneManager::init() {
-    const auto &cfg = world_->GetServerConfig();
+    const auto &cfg = world_->getServerConfig();
     const auto num = cfg["server"]["io_thread"].as<int32_t>();
 
     for (int32_t idx = 0; idx < num; ++idx)
@@ -95,7 +95,7 @@ void USceneManager::init() {
 
     spdlog::info("Started With {} Thread(s).", num);
 
-    co_spawn(getWorld()->GetIOContext(), [this]() mutable -> awaitable<void> {
+    co_spawn(getWorld()->getIOContext(), [this]() mutable -> awaitable<void> {
         try {
             auto point = NowTimePoint() + std::chrono::seconds(1);
             while (running_) {

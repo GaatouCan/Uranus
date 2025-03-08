@@ -6,11 +6,11 @@ ISubSystem::ISubSystem(UGameWorld *world)
 
 }
 
-UGameWorld *ISubSystem::GetWorld() const {
+UGameWorld *ISubSystem::getWorld() const {
     return world_;
 }
 
-asio::io_context & ISubSystem::GetIOContext() const {
-    return world_->GetIOContext();
+asio::io_context & ISubSystem::getIOContext() const {
+    return world_->getIOContext();
 }
 

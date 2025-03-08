@@ -20,7 +20,7 @@ UGlobalQueue::~UGlobalQueue() {
 }
 
 void UGlobalQueue::init() {
-    const auto &cfg = world_->GetServerConfig();
+    const auto &cfg = world_->getServerConfig();
     const int num = cfg["server"]["work_thread"].as<int>();
 
     for (int idx = 0; idx < num; idx++) {

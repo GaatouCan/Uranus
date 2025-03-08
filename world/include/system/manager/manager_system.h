@@ -20,16 +20,16 @@ public:
 
     GET_SYSTEM_NAME(ManagerSystem)
 
-    void Init() override;
+    void init() override;
 
-    template<ManagerType T>
+    template<CManagerType T>
     T* CreateManager() {
         auto mgr = new T(this);
         manager_map_[typeid(T)] = mgr;
         return mgr;
     }
 
-    template<ManagerType T>
+    template<CManagerType T>
     T *GetManager() {
         if (const auto it = manager_map_.find(typeid(T)); it != manager_map_.end()) {
             return dynamic_cast<T *>(it->second);

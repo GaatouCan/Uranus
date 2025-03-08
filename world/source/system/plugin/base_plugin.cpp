@@ -6,10 +6,10 @@ IBasePlugin::IBasePlugin(UPluginSystem *owner)
     : owner_(owner) {
 }
 
-UPluginSystem * IBasePlugin::GetOwner() const {
+UPluginSystem * IBasePlugin::getOwner() const {
     return owner_;
 }
 
-UGameWorld * IBasePlugin::GetWorld() const {
-    return owner_->GetWorld();
+UGameWorld * IBasePlugin::getWorld() const {
+    return owner_->getWorld();
 }

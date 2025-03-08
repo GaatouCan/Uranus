@@ -28,7 +28,7 @@ class BASE_API UConnection final : public std::enable_shared_from_this<UConnecti
     ATimePoint deadline_;
 
     std::any context_;
-    uint32_t context_null_count_ = 0;
+    uint32_t contextNullCount_ = 0;
 
     static std::chrono::duration<uint32_t> kExpireTime;
     static std::chrono::duration<uint32_t> kWriteTimeout;
@@ -44,30 +44,30 @@ public:
 
     DISABLE_COPY_MOVE(UConnection)
 
-    void ConnectToClient();
-    void Disconnect();
+    void connectToClient();
+    void disconnect();
 
-    [[nodiscard]] int32_t GetSceneID() const;
-    [[nodiscard]] AThreadID GetThreadID() const;
-    [[nodiscard]] class UPackagePool *GetPackagePool() const;
+    [[nodiscard]] int32_t getSceneID() const;
+    [[nodiscard]] AThreadID getThreadID() const;
+    [[nodiscard]] class UPackagePool *getPackagePool() const;
 
-    [[nodiscard]] UMainScene *GetMainScene() const;
-    [[nodiscard]] class UGameWorld *GetWorld() const;
+    [[nodiscard]] UMainScene *getMainScene() const;
+    [[nodiscard]] class UGameWorld *getWorld() const;
 
-    UConnection &SetContext(const std::any &ctx);
-    UConnection &ResetContext();
+    UConnection &setContext(const std::any &ctx);
+    UConnection &resetContext();
 
-    UConnection &SetKey(const std::string &key);
+    UConnection &setKey(const std::string &key);
 
-    static void SetWatchdogTimeout(uint32_t sec);
-    static void SetWriteTimeout(uint32_t sec);
-    static void SetReadTimeout(uint32_t sec);
+    static void setWatchdogTimeout(uint32_t sec);
+    static void setWriteTimeout(uint32_t sec);
+    static void setReadTimeout(uint32_t sec);
 
-    [[nodiscard]] bool IsSameThread() const;
+    [[nodiscard]] bool isSameThread() const;
 
     template<typename T, typename ... Args>
     requires std::derived_from<T, IPackageCodec>
-    UConnection &SetPackageCodec(Args &&... args) {
+    UConnection &setPackageCodec(Args &&... args) {
         if (codec_ != nullptr)
             codec_.reset();
 
@@ -77,7 +77,7 @@ public:
 
     template<typename T, typename ... Args>
     requires std::derived_from<T, IConnectionHandler>
-    UConnection &SetHandler(Args &&... args) {
+    UConnection &setHandler(Args &&... args) {
         if (handler_ != nullptr)
             handler_.reset();
 
@@ -85,25 +85,25 @@ public:
         return *this;
     }
 
-    IPackage *BuildPackage() const;
+    IPackage *buildPackage() const;
 
-    void Send(IPackage *pkg);
+    void send(IPackage *pkg);
 
-    [[nodiscard]] bool IsConnected() const { return socket_.is_open(); }
+    [[nodiscard]] bool connected() const { return socket_.is_open(); }
 
-    [[nodiscard]] std::string GetKey() const { return key_; }
-    [[nodiscard]] ATcpSocket &GetSocket() { return socket_; }
+    [[nodiscard]] std::string getKey() const { return key_; }
+    [[nodiscard]] ATcpSocket &getSocket() { return socket_; }
 
-    [[nodiscard]] const std::any &GetContext() const { return context_; }
-    [[nodiscard]] std::any GetMutableContext() const { return context_; }
+    [[nodiscard]] const std::any &getContext() const { return context_; }
+    [[nodiscard]] std::any getMutableContext() const { return context_; }
 
-    [[nodiscard]] asio::ip::address RemoteAddress() const;
+    [[nodiscard]] asio::ip::address remoteAddress() const;
 
 private:
-    awaitable<void> Watchdog();
+    awaitable<void> watchdog();
 
-    awaitable<void> WritePackage();
-    awaitable<void> ReadPackage();
+    awaitable<void> writePackage();
+    awaitable<void> readPackage();
 
     static awaitable<void> Timeout(std::chrono::duration<uint32_t> expire);
 };

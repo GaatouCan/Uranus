@@ -40,9 +40,9 @@ void ComponentModule::Serialize() {
         val->Serialize(ser);
     }
 
-    if (const auto sys = GetOwner()->getWorld()->GetSystem<UDatabaseSystem>(); sys != nullptr) {
-        sys->PushTransaction([ser, pid = owner_->getFullID()](mysqlx::Schema &schema) {
-            ser->Serialize(schema);
+    if (const auto sys = GetOwner()->getWorld()->getSystem<UDatabaseSystem>(); sys != nullptr) {
+        sys->pushTransaction([ser, pid = owner_->getFullID()](mysqlx::Schema &schema) {
+            ser->serialize(schema);
             spdlog::info("ComponentModule::Serialize() - Player[{}] Stored.", pid);
             return true;
         });
@@ -60,8 +60,8 @@ awaitable<void> ComponentModule::Deserialize() {
             }
         }
 
-        if (const auto sys = GetOwner()->getWorld()->GetSystem<UDatabaseSystem>(); sys != nullptr) {
-            if (const auto res = co_await sys->AsyncSelect(query, asio::use_awaitable); res != nullptr) {
+        if (const auto sys = GetOwner()->getWorld()->getSystem<UDatabaseSystem>(); sys != nullptr) {
+            if (const auto res = co_await sys->asyncSelect(query, asio::use_awaitable); res != nullptr) {
                 UDeserializer der(res);
                 for (const auto &val : component_map_ | std::views::values) {
                     val->Deserialize(der);

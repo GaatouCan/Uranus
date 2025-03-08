@@ -4,7 +4,7 @@
 #include "connection.h"
 #include "config_manager.h"
 #include "login_authenticator.h"
-#include "protocol_route.h"
+#include "proto_route.h"
 
 #include "impl/connection_handler.h"
 #include "impl/login_handler.h"
@@ -23,28 +23,28 @@ GameServer::GameServer(UGameWorld *world)
 GameServer::~GameServer() {
 }
 
-void GameServer::InitGameWorld() {
+void GameServer::initGameWorld() {
 #ifdef WIN32
-    GetWorld()->GetConfigManager()->SetYAMLPath("../../config");
+    getWorld()->getConfigManager()->setYamlPath("../../config");
 #else
     GetWorld()->GetConfigManager()->SetYAMLPath("../config");
 #endif
 
-    GetWorld()->GetConfigManager()->SetLogicConfigLoader(&LoadLogicConfig);
-    GetWorld()->GetConfigManager()->SetLoggerLoader(&InitLogger);
+    getWorld()->getConfigManager()->setLogicConfigLoader(&LoadLogicConfig);
+    getWorld()->getConfigManager()->setLoggerLoader(&InitLogger);
 
-    LoadProtocol(GetWorld()->GetProtocolRoute());
-    GetWorld()->GetProtocolRoute()->SetHandler<ProtocolHandler>();
+    LoadProtocol(getWorld()->getProtoRoute());
+    getWorld()->getProtoRoute()->setHandler<ProtocolHandler>();
 
-    GetWorld()->GetLoginAuthenticator()->SetHandler<LoginHandler>();
+    getWorld()->getLoginAuthenticator()->setHandler<LoginHandler>();
 
-    if (const auto sys = GetWorld()->GetSystem<UManagerSystem>(); sys != nullptr)
+    if (const auto sys = getWorld()->getSystem<UManagerSystem>(); sys != nullptr)
         RegisterManager(sys);
 }
 
-void GameServer::SetConnectionHandler(const std::shared_ptr<UConnection> &conn) {
+void GameServer::setConnectionHandler(const std::shared_ptr<UConnection> &conn) {
     if (conn != nullptr)
-        conn->SetHandler<ConnectionHandler>();
+        conn->setHandler<ConnectionHandler>();
 }
 
 

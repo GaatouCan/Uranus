@@ -15,7 +15,7 @@ LoginHandler::LoginHandler(ULoginAuthenticator *owner)
     : ILoginHandler(owner) {
 }
 
-awaitable<std::shared_ptr<IBasePlayer>> LoginHandler::OnPlayerLogin(const std::shared_ptr<UConnection> &conn, const LoginInfo &info) {
+awaitable<std::shared_ptr<IBasePlayer>> LoginHandler::onPlayerLogin(const std::shared_ptr<UConnection> &conn, const FLoginInfo &info) {
     const auto mgr = GET_MANAGER(PlayerManager);
     if (mgr == nullptr) {
         spdlog::critical("{} - Player Manager is null", __FUNCTION__);
@@ -31,17 +31,17 @@ awaitable<std::shared_ptr<IBasePlayer>> LoginHandler::OnPlayerLogin(const std::s
     }
 }
 
-awaitable<LoginInfo> LoginHandler::ParseLoginInfo(IPackage *pkg) {
+awaitable<FLoginInfo> LoginHandler::parseLoginInfo(IPackage *pkg) {
     try {
         const auto tmp = dynamic_cast<FPackage *>(pkg);
 
         if (pkg->getPackageID() != static_cast<uint32_t>(protocol::ProtoType::ClientLoginRequest))
-            co_return LoginInfo{};
+            co_return FLoginInfo{};
 
         Login::ClientLoginRequest request;
         request.ParseFromString(tmp->toString());
 
-        LoginInfo info;
+        FLoginInfo info;
 
         info.pid.fromInt64(request.player_id());
         info.token = request.token();
@@ -49,6 +49,6 @@ awaitable<LoginInfo> LoginHandler::ParseLoginInfo(IPackage *pkg) {
         co_return info;
     } catch (std::exception &e) {
         spdlog::warn("{} - {}", __FUNCTION__, e.what());
-        co_return LoginInfo{};
+        co_return FLoginInfo{};
     }
 }

@@ -9,6 +9,6 @@ class BASE_API IClientCommand : public IBaseCommand {
 public:
     IClientCommand(UCommandSystem *owner, UCommandObject object);
 
-    void SetSender(int32_t sender);
-    [[nodiscard]] int32_t GetSender() const;
+    void setSender(int32_t sender);
+    [[nodiscard]] int32_t setSender() const;
 };

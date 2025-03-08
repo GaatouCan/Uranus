@@ -2,7 +2,7 @@
 #include "../include/game_world.h"
 #include "../include/package_pool.h"
 #include "../include/login_authenticator.h"
-#include "../include/protocol_route.h"
+#include "../include/proto_route.h"
 #include "../include/scene/main_scene.h"
 
 #include <spdlog/spdlog.h>
@@ -21,118 +21,118 @@ UConnection::UConnection(ATcpSocket socket, UMainScene *scene)
 }
 
 UConnection::~UConnection() {
-    Disconnect();
+    disconnect();
     spdlog::trace("{} - key[{}]", __FUNCTION__, key_.empty() ? "null" : key_);
 }
 
-void UConnection::ConnectToClient() {
+void UConnection::connectToClient() {
     assert(codec_ != nullptr && handler_ != nullptr);
 
     deadline_ = NowTimePoint() + kExpireTime;
 
-    spdlog::debug("{} - Connection from {} run in thread: {}", __FUNCTION__, RemoteAddress().to_string(), utils::ThreadIdToInt(GetThreadID()));
+    spdlog::debug("{} - Connection from {} run in thread: {}", __FUNCTION__, remoteAddress().to_string(), utils::ThreadIdToInt(getThreadID()));
     if (handler_ != nullptr)
-        handler_->OnConnected();
+        handler_->onConnected();
 
     co_spawn(socket_.get_executor(), [self = shared_from_this()]() mutable -> awaitable<void> {
         try {
-            co_await (self->ReadPackage() || self->Watchdog());
+            co_await (self->readPackage() || self->watchdog());
         } catch (std::exception &e) {
             spdlog::warn("UConnection::ConnectToClient() - {}", e.what());
         }
     }, detached);
 }
 
-void UConnection::Disconnect() {
-    GetWorld()->RemoveConnection(key_);
+void UConnection::disconnect() {
+    getWorld()->removeConnection(key_);
 
     if (socket_.is_open()) {
         socket_.close();
 
         // 保证OnClosed()回调只执行一次
         if (handler_ != nullptr && context_.has_value())
-            handler_->OnClosed();
+            handler_->onClosed();
     }
 
     context_.reset();
 
     // 服务器关闭时数据包池不一定还在
-    while (!output_.empty() && GetPackagePool()) {
+    while (!output_.empty() && getPackagePool()) {
         if (auto res = output_.popFront(); res.has_value())
-            GetPackagePool()->recycle(res.value());
+            getPackagePool()->recycle(res.value());
     }
 }
 
-int32_t UConnection::GetSceneID() const {
+int32_t UConnection::getSceneID() const {
     return scene_->getSceneID();
 }
 
-UConnection &UConnection::SetContext(const std::any &ctx) {
+UConnection &UConnection::setContext(const std::any &ctx) {
     context_ = ctx;
     return *this;
 }
 
-UConnection &UConnection::ResetContext() {
+UConnection &UConnection::resetContext() {
     context_.reset();
     return *this;
 }
 
-UConnection &UConnection::SetKey(const std::string &key) {
+UConnection &UConnection::setKey(const std::string &key) {
     key_ = key;
     return *this;
 }
 
-void UConnection::SetWatchdogTimeout(const uint32_t sec) {
+void UConnection::setWatchdogTimeout(const uint32_t sec) {
     kExpireTime = std::chrono::seconds(sec);
 }
 
-void UConnection::SetWriteTimeout(const uint32_t sec) {
+void UConnection::setWriteTimeout(const uint32_t sec) {
     kWriteTimeout = std::chrono::seconds(sec);
 }
 
-void UConnection::SetReadTimeout(const uint32_t sec) {
+void UConnection::setReadTimeout(const uint32_t sec) {
     kReadTimeout = std::chrono::seconds(sec);
 }
 
-AThreadID UConnection::GetThreadID() const {
+AThreadID UConnection::getThreadID() const {
     return scene_->getThreadID();
 }
 
-UPackagePool *UConnection::GetPackagePool() const {
+UPackagePool *UConnection::getPackagePool() const {
     return scene_->getPackagePool();
 }
 
-UMainScene *UConnection::GetMainScene() const {
+UMainScene *UConnection::getMainScene() const {
     return scene_;
 }
 
-UGameWorld *UConnection::GetWorld() const {
+UGameWorld *UConnection::getWorld() const {
     return scene_->getWorld();
 }
 
-bool UConnection::IsSameThread() const {
-    return GetThreadID() == std::this_thread::get_id();
+bool UConnection::isSameThread() const {
+    return getThreadID() == std::this_thread::get_id();
 }
 
-IPackage *UConnection::BuildPackage() const {
-    return GetPackagePool()->acquire();
+IPackage *UConnection::buildPackage() const {
+    return getPackagePool()->acquire();
 }
 
-void UConnection::Send(IPackage *pkg) {
+void UConnection::send(IPackage *pkg) {
     const bool empty = output_.empty();
     output_.pushBack(pkg);
 
     if (empty)
-        co_spawn(socket_.get_executor(), WritePackage(), detached);
+        co_spawn(socket_.get_executor(), writePackage(), detached);
 }
 
-asio::ip::address UConnection::RemoteAddress() const {
-    if (IsConnected())
+asio::ip::address UConnection::remoteAddress() const {
+    if (connected())
         return socket_.remote_endpoint().address();
     return {};
 }
 
-awaitable<void> UConnection::Watchdog() {
+awaitable<void> UConnection::watchdog() {
     try {
         decltype(deadline_) now;
         do {
@@ -140,28 +140,28 @@ awaitable<void> UConnection::Watchdog() {
             co_await watchdog_.async_wait();
             now = NowTimePoint();
 
-            if (context_null_count_ != -1) {
+            if (contextNullCount_ != -1) {
                 if (!context_.has_value())
-                    context_null_count_++;
+                    contextNullCount_++;
                 else
-                    context_null_count_ = -1;
+                    contextNullCount_ = -1;
             }
-        } while (deadline_ > now && context_null_count_ < NULL_CONTEXT_MAX_COUNT);
+        } while (deadline_ > now && contextNullCount_ < NULL_CONTEXT_MAX_COUNT);
 
         if (socket_.is_open()) {
             spdlog::warn("{} - watchdog Timer timeout - key[{}]", __FUNCTION__, key_.empty() ? "null" : key_);
-            Disconnect();
+            disconnect();
         }
     } catch (std::exception &e) {
         spdlog::warn("{} - {} - key[{}]", __FUNCTION__, e.what(), key_.empty() ? "null" : key_);
     }
 }
 
-awaitable<void> UConnection::WritePackage() {
+awaitable<void> UConnection::writePackage() {
     try {
         if (codec_ == nullptr) {
             spdlog::critical("{} - codec undefined - key[{}]", __FUNCTION__, key_.empty() ? "null" : key_);
-            Disconnect();
+            disconnect();
             co_return;
         }
 
@@ -175,31 +175,31 @@ awaitable<void> UConnection::WritePackage() {
 
             if (pkg->available()) {
                 if (handler_ != nullptr)
-                    co_await handler_->OnWritePackage(pkg);
+                    co_await handler_->onWritePackage(pkg);
 
-                GetPackagePool()->recycle(pkg);
+                getPackagePool()->recycle(pkg);
             } else {
                 spdlog::warn("{} - Write Failed - key[{}]", __FUNCTION__, key_.empty() ? "null" : key_);
-                GetPackagePool()->recycle(pkg);
-                Disconnect();
+                getPackagePool()->recycle(pkg);
+                disconnect();
             }
         }
     } catch (std::exception &e) {
         spdlog::error("{} - {} - key[{}]", __FUNCTION__, e.what(), key_.empty() ? "null" : key_);
-        Disconnect();
+        disconnect();
     }
 }
 
-awaitable<void> UConnection::ReadPackage() {
+awaitable<void> UConnection::readPackage() {
     try {
         if (codec_ == nullptr) {
             spdlog::error("{} - PackageCodec Undefined - key[{}]", __FUNCTION__, key_.empty() ? "null" : key_);
-            Disconnect();
+            disconnect();
             co_return;
         }
 
         while (socket_.is_open()) {
-            const auto pkg = BuildPackage();
+            const auto pkg = buildPackage();
 
             co_await codec_->decode(pkg);
 
@@ -207,22 +207,22 @@ awaitable<void> UConnection::ReadPackage() {
                 deadline_ = NowTimePoint() + kExpireTime;
 
                 if (handler_ != nullptr)
-                    co_await handler_->OnReadPackage(pkg);
+                    co_await handler_->onReadPackage(pkg);
 
                 if (!context_.has_value())
-                    co_await GetWorld()->GetLoginAuthenticator()->OnLogin(shared_from_this(), pkg);
+                    co_await getWorld()->getLoginAuthenticator()->onLogin(shared_from_this(), pkg);
                 else
-                    GetWorld()->GetProtocolRoute()->OnReadPackage(shared_from_this(), pkg);
+                    getWorld()->getProtoRoute()->onReadPackage(shared_from_this(), pkg);
             } else {
                 spdlog::warn("{} - Read failed - key[{}]", __FUNCTION__, key_.empty() ? "null" : key_);
-                Disconnect();
+                disconnect();
             }
 
-            GetPackagePool()->recycle(pkg);
+            getPackagePool()->recycle(pkg);
         }
     } catch (std::exception &e) {
         spdlog::error("{} - {} - key[{}]", __FUNCTION__, e.what(), key_.empty() ? "null" : key_);
-        Disconnect();
+        disconnect();
     }
 }
 

@@ -7,11 +7,11 @@ ILoginHandler::ILoginHandler(ULoginAuthenticator *owner)
 
 }
 
-ULoginAuthenticator * ILoginHandler::GetOwner() const {
+ULoginAuthenticator * ILoginHandler::getOwner() const {
     return owner_;
 }
 
-UGameWorld *ILoginHandler::GetWorld() const {
-    return owner_->GetWorld();
+UGameWorld *ILoginHandler::getWorld() const {
+    return owner_->getWorld();
 }
 

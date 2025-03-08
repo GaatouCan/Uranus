@@ -16,24 +16,24 @@ public:
 
     DISABLE_COPY_MOVE(IBaseManager)
 
-    virtual void Init() = 0;
-    [[nodiscard]] virtual const char *GetManagerName() const = 0;
+    virtual void init() = 0;
+    [[nodiscard]] virtual const char *getManagerName() const = 0;
 
-    [[nodiscard]] UManagerSystem *GetOwner() const;
-    [[nodiscard]] class UGameWorld *GetWorld() const;
+    [[nodiscard]] UManagerSystem *getOwner() const;
+    [[nodiscard]] UGameWorld *getWorld() const;
 
-    virtual void OnTick(ATimePoint now, ADuration interval);
-    virtual void OnDayChange();
+    virtual void onTick(ATimePoint now, ADuration interval);
+    virtual void onDayChange();
 
 public:
-    bool tick_per_sec_;
+    bool tickPerSecond_;
 };
 
 template<typename T>
-concept ManagerType = std::derived_from<T, IBaseManager>;
+concept CManagerType = std::derived_from<T, IBaseManager>;
 
 #define GET_MANAGER_NAME(mgr) \
-[[nodiscard]] constexpr const char * GetManagerName() const override { \
+[[nodiscard]] constexpr const char * getManagerName() const override { \
     return #mgr; \
 } \
 
@@ -48,4 +48,4 @@ mgr *mgr::Instance() { \
     exit(-1); \
 }
 
-#define GET_MANAGER(mgr) GetWorld()->GetSystem<UManagerSystem>()->GetManager<mgr>()
+#define GET_MANAGER(mgr) getWorld()->getSystem<UManagerSystem>()->getManager<mgr>()

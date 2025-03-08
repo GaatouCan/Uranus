@@ -19,14 +19,14 @@ public:
     explicit IConnectionHandler(const std::weak_ptr<UConnection> &conn);
     virtual ~IConnectionHandler() = default;
 
-    virtual void OnConnected() {}
+    virtual void onConnected() {}
 
-    virtual awaitable<void> OnReadPackage(IPackage *) { co_return; }
-    virtual awaitable<void> OnWritePackage(IPackage *) { co_return; }
+    virtual awaitable<void> onReadPackage(IPackage *) { co_return; }
+    virtual awaitable<void> onWritePackage(IPackage *) { co_return; }
 
-    virtual void OnClosed() {}
+    virtual void onClosed() {}
 
-    [[nodiscard]] class UGameWorld *GetWorld() const;
+    [[nodiscard]] class UGameWorld *getWorld() const;
 
 protected:
     std::weak_ptr<UConnection> conn_;

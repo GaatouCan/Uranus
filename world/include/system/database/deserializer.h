@@ -14,7 +14,7 @@ public:
 
     explicit UDeserializer(const std::shared_ptr<std::unordered_map<std::string, mysqlx::RowResult>> &result);
 
-    void PushBack(const std::string& name, mysqlx::RowResult && res);
+    void pushBack(const std::string& name, mysqlx::RowResult && res);
 
-    [[nodiscard]] UTableResult* FetchResult(const std::string &name) const;
+    [[nodiscard]] UTableResult* fetchResult(const std::string &name) const;
 };

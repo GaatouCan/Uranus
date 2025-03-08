@@ -18,9 +18,9 @@ public:
     explicit IBasePlugin(UPluginSystem * owner);
     virtual ~IBasePlugin() = default;
 
-    [[nodiscard]] virtual EPluginType GetType() const = 0;
-    [[nodiscard]] virtual const char* GetPluginName() const = 0;
+    [[nodiscard]] virtual EPluginType getType() const = 0;
+    [[nodiscard]] virtual const char* getPluginName() const = 0;
 
-    [[nodiscard]] UPluginSystem * GetOwner() const;
-    [[nodiscard]] class  UGameWorld *GetWorld() const;
+    [[nodiscard]] UPluginSystem *getOwner() const;
+    [[nodiscard]] class  UGameWorld *getWorld() const;
 };

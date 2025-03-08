@@ -10,21 +10,21 @@ size_t UTableResult::TotalRowsCount() const {
     return total_;
 }
 
-size_t UTableResult::Count() {
+size_t UTableResult::count() {
     return result_.count();
 }
 
-bool UTableResult::HasMore() {
-    cur_row_ = result_.fetchOne();
-    return !cur_row_.isNull();
+bool UTableResult::hasMore() {
+    curRow_ = result_.fetchOne();
+    return !curRow_.isNull();
 }
 
-void UTableResult::Deserialize(IDBTable* table) {
-    if (cur_row_.isNull())
-        cur_row_ = result_.fetchOne();
+void UTableResult::deserialize(ITable* table) {
+    if (curRow_.isNull())
+        curRow_ = result_.fetchOne();
 
-    if (cur_row_.isNull())
+    if (curRow_.isNull())
         return;
 
-    table->Read(cur_row_);
+    table->read(curRow_);
 }

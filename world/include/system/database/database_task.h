@@ -15,7 +15,7 @@ using ATransactionFunctor = std::function<void(mysqlx::Schema &)>;
 class BASE_API IDatabaseTask {
 public:
     virtual ~IDatabaseTask() = default;
-    virtual void Execute(mysqlx::Schema &) = 0;
+    virtual void execute(mysqlx::Schema &) = 0;
 };
 
 class BASE_API UTransactionTask final : public IDatabaseTask {
@@ -29,7 +29,7 @@ public:
         : functor_(std::move(functor)) {
     }
 
-    void Execute(mysqlx::Schema &schema) override {
+    void execute(mysqlx::Schema &schema) override {
         schema.getSession().startTransaction();
         functor_(schema);
         schema.getSession().commit();
@@ -51,7 +51,7 @@ public:
           cb_(std::forward<Callable>(cb)) {
     }
 
-    void Execute(mysqlx::Schema &schema) override {
+    void execute(mysqlx::Schema &schema) override {
         auto ret = std::make_shared<AQueryResult>();
         for (const auto &[name, expr]: array_) {
             auto table = schema.getTable(name, true);

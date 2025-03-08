@@ -10,10 +10,10 @@ IBaseCommand::IBaseCommand(UCommandSystem *owner, UCommandObject object)
       object_(std::move(object)) {
 }
 
-UCommandSystem * IBaseCommand::GetOwner() const {
+UCommandSystem * IBaseCommand::getOwner() const {
     return owner_;
 }
 
-UGameWorld * IBaseCommand::GetWorld() const {
-    return owner_->GetWorld();
+UGameWorld * IBaseCommand::getWorld() const {
+    return owner_->getWorld();
 }

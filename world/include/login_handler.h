@@ -12,7 +12,7 @@ class IBasePlayer;
 
 using asio::awaitable;
 
-struct BASE_API LoginInfo {
+struct BASE_API FLoginInfo {
     FPlayerID pid;
     std::string token;
 };
@@ -27,9 +27,9 @@ public:
     explicit ILoginHandler(ULoginAuthenticator *owner);
     virtual ~ILoginHandler() = default;
 
-    [[nodiscard]] ULoginAuthenticator *GetOwner() const;
-    [[nodiscard]] class UGameWorld *GetWorld() const;
+    [[nodiscard]] ULoginAuthenticator *getOwner() const;
+    [[nodiscard]] class UGameWorld *getWorld() const;
 
-    virtual awaitable<LoginInfo> ParseLoginInfo(class IPackage *) = 0;
-    virtual awaitable<std::shared_ptr<IBasePlayer>> OnPlayerLogin(const std::shared_ptr<UConnection>&, const LoginInfo&) = 0;
+    virtual awaitable<FLoginInfo> parseLoginInfo(class IPackage *) = 0;
+    virtual awaitable<std::shared_ptr<IBasePlayer>> onPlayerLogin(const std::shared_ptr<UConnection>&, const FLoginInfo&) = 0;
 };

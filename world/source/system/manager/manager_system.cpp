@@ -7,7 +7,7 @@
 
 UManagerSystem::UManagerSystem(UGameWorld *world)
     : ISubSystem(world),
-      tick_timer_(GetWorld()->GetIOContext()),
+      tick_timer_(getWorld()->getIOContext()),
       running_(false) {
 }
 
@@ -18,19 +18,19 @@ UManagerSystem::~UManagerSystem() {
         delete mgr;
 }
 
-void UManagerSystem::Init() {
+void UManagerSystem::init() {
     for (const auto mgr: manager_map_ | std::views::values) {
-        GetWorld()->GetGlobalQueue()->registerReactor(mgr);
+        getWorld()->getGlobalQueue()->registerReactor(mgr);
     }
 
     for (const auto mgr: manager_map_ | std::views::values) {
-        mgr->Init();
-        spdlog::info("\t{} Initialized.", mgr->GetManagerName());
+        mgr->init();
+        spdlog::info("\t{} Initialized.", mgr->getManagerName());
     }
 
     running_ = true;
 
-    co_spawn(GetWorld()->GetIOContext(), [this]() mutable -> awaitable<void> {
+    co_spawn(getWorld()->getIOContext(), [this]() mutable -> awaitable<void> {
         try {
             tick_point_ = NowTimePoint();
             auto point = tick_point_ + std::chrono::seconds(1);
@@ -54,9 +54,9 @@ void UManagerSystem::Init() {
 
 void UManagerSystem::OnTick(const ATimePoint now) {
     for (const auto mgr: manager_map_ | std::views::values) {
-        if (!mgr->tick_per_sec_)
+        if (!mgr->tickPerSecond_)
             continue;
-        mgr->OnTick(now, now - tick_point_);
+        mgr->onTick(now, now - tick_point_);
     }
     tick_point_ = now;
 
@@ -66,7 +66,7 @@ void UManagerSystem::OnTick(const ATimePoint now) {
         today > day && day != 0) {
         day = today;
         for (const auto mgr: std::views::values(manager_map_)) {
-            mgr->OnDayChange();
+            mgr->onDayChange();
         }
     }
 }

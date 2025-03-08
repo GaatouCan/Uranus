@@ -9,8 +9,8 @@
 
 class BASE_API UTimerSystem final : public ISubSystem {
 
-    std::map<FUniqueID, URepeatedTimer *> timer_map_;
-    mutable std::shared_mutex mtx_;
+    std::map<FUniqueID, URepeatedTimer *> timerMap_;
+    mutable std::shared_mutex mutex_;
 
 public:
     explicit UTimerSystem(UGameWorld *world);
@@ -18,22 +18,22 @@ public:
 
     GET_SYSTEM_NAME(TimerSystem)
 
-    void Init() override;
+    void init() override;
 
     template<typename Functor, typename... Args>
-    std::optional<FUniqueID> SetTimer(
+    std::optional<FUniqueID> setTimer(
         const std::chrono::duration<uint32_t> delay,
         const std::chrono::duration<uint32_t> rate,
         const bool repeat,
         Functor &&func, Args &&... args)
     {
-        const auto timer = new URepeatedTimer(GetIOContext());
-        timer->SetDelay(delay)
-            .SetRepeatRate(rate)
-            .SetIfRepeat(repeat)
-            .SetFunctor(std::forward<Functor>(func), std::forward<Args>(args)...);
+        const auto timer = new URepeatedTimer(getIOContext());
+        timer->setDelay(delay)
+            .setRepeatRate(rate)
+            .setIfRepeat(repeat)
+            .setFunctor(std::forward<Functor>(func), std::forward<Args>(args)...);
 
-        const auto tid = EmplaceTimer(timer);
+        const auto tid = emplaceTimer(timer);
         if (!tid.has_value()) {
             delete timer;
         }
@@ -41,31 +41,31 @@ public:
     }
 
     template<typename Functor, typename Object, typename... Args>
-    std::optional<FUniqueID> SetTimerTo (
+    std::optional<FUniqueID> setTimerTo (
         const std::chrono::duration<uint32_t> delay,
         const std::chrono::duration<uint32_t> rate,
         const bool repeat,
         Functor &&func, Object *obj, Args &&... args)
     {
-        const auto timer = new URepeatedTimer(GetIOContext());
-        timer->SetDelay(delay)
-            .SetRepeatRate(rate)
-            .SetIfRepeat(repeat)
-            .SetMemberFunctor(std::forward<Functor>(func), obj, std::forward<Args>(args)...);
+        const auto timer = new URepeatedTimer(getIOContext());
+        timer->setDelay(delay)
+            .setRepeatRate(rate)
+            .setIfRepeat(repeat)
+            .setMemberFunctor(std::forward<Functor>(func), obj, std::forward<Args>(args)...);
 
-        const auto tid = EmplaceTimer(timer);
+        const auto tid = emplaceTimer(timer);
         if (!tid.has_value()) {
             delete timer;
         }
         return tid;
     }
 
-    URepeatedTimer *GetTimer(const FUniqueID &tid);
-    bool StopTimer(const FUniqueID &tid);
+    URepeatedTimer *getTimer(const FUniqueID &tid);
+    bool stopTimer(const FUniqueID &tid);
 
-    void CleanAllTimers();
+    void cleanAllTimers();
 private:
-    std::optional<FUniqueID> EmplaceTimer(URepeatedTimer *timer);
-    bool RemoveTimer(const FUniqueID &tid);
+    std::optional<FUniqueID> emplaceTimer(URepeatedTimer *timer);
+    bool removeTimer(const FUniqueID &tid);
 };
 

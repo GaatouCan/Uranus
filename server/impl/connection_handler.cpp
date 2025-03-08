@@ -12,21 +12,21 @@ ConnectionHandler::ConnectionHandler(const std::weak_ptr<UConnection> &conn)
 
 }
 
-void ConnectionHandler::OnConnected() {
+void ConnectionHandler::onConnected() {
 }
 
-void ConnectionHandler::OnClosed() {
-    if (!conn_.lock()->GetContext().has_value())
+void ConnectionHandler::onClosed() {
+    if (!conn_.lock()->getContext().has_value())
         return;
 
-    const auto pid = std::any_cast<FPlayerID>(conn_.lock()->GetContext());
+    const auto pid = std::any_cast<FPlayerID>(conn_.lock()->getContext());
 
     if (const auto mgr = GET_MANAGER(PlayerManager); mgr != nullptr) {
         mgr->OnPlayerLogout(pid);
     }
 }
 
-awaitable<void> ConnectionHandler::OnReadPackage(IPackage *pkg) {
-    spdlog::debug("{} - Receive Package[{}] From {}.", __FUNCTION__, ProtoTypeToString(static_cast<protocol::ProtoType>(pkg->getPackageID())), conn_.lock()->RemoteAddress().to_string());
+awaitable<void> ConnectionHandler::onReadPackage(IPackage *pkg) {
+    spdlog::debug("{} - Receive Package[{}] From {}.", __FUNCTION__, ProtoTypeToString(static_cast<protocol::ProtoType>(pkg->getPackageID())), conn_.lock()->remoteAddress().to_string());
     co_return;
 }

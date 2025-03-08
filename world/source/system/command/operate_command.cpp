@@ -8,39 +8,39 @@
 
 IOperateCommand::IOperateCommand(UCommandSystem *owner, UCommandObject object)
     : IBaseCommand(owner, std::move(object)),
-      op_id_(-1),
-      create_time_(0),
-      update_time_(0) {
+      operateID_(-1),
+      createTime_(0),
+      updateTime_(0) {
 }
 
-void IOperateCommand::SetCommandID(const int64_t id) {
-    op_id_ = id;
+void IOperateCommand::setCommandID(const int64_t id) {
+    operateID_ = id;
 }
 
-void IOperateCommand::SetCreateTime(const int64_t time) {
-    create_time_ = time;
+void IOperateCommand::setCreateTime(const int64_t time) {
+    createTime_ = time;
 }
 
-void IOperateCommand::SetUpdateTime(const int64_t time) {
-    update_time_ = time;
+void IOperateCommand::setUpdateTime(const int64_t time) {
+    updateTime_ = time;
 }
 
-void IOperateCommand::SetCreator(const std::string &creator) {
+void IOperateCommand::setCreator(const std::string &creator) {
     creator_ = creator;
 }
 
-int64_t IOperateCommand::GetCommandID() const {
-    return op_id_;
+int64_t IOperateCommand::getCommandID() const {
+    return operateID_;
 }
 
-int64_t IOperateCommand::GetCreateTime() const {
-    return create_time_;
+int64_t IOperateCommand::getCreateTime() const {
+    return createTime_;
 }
 
-int64_t IOperateCommand::GetUpdateTime() const {
-    return update_time_;
+int64_t IOperateCommand::getUpdateTime() const {
+    return updateTime_;
 }
 
-std::string IOperateCommand::GetCreator() const {
+std::string IOperateCommand::getCreator() const {
     return creator_;
 }
