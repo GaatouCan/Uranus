@@ -53,7 +53,7 @@ cpp_type_map = {
     "bool": "bool",
     "string": "std::string",
     "text": "std::string",
-    "blob": "ByteArray"
+    "blob": "FByteArray"
 }
 
 def to_upper_camel_case(x):
@@ -218,7 +218,7 @@ def generate_orm_clazz(src: str, dist: str, desc: str):
  */\n\n''')
 
             file.write('#pragma once\n\n')
-            file.write('#include "system/database/db_table.h"\n\n')
+            file.write('#include "system/database/table.h"\n\n')
 
             file.write('namespace orm {\n\n')
 
@@ -226,7 +226,7 @@ def generate_orm_clazz(src: str, dist: str, desc: str):
                 file.write(f'\t// table: {table['name']}\n\n')
 
                 # 类定义开始
-                file.write('\tclass DBTable_%s final : public IDBTable {\n' % to_upper_camel_case(table['name']))
+                file.write('\tclass UTable_%s final : public ITable {\n' % to_upper_camel_case(table['name']))
                 file.write('\tpublic:\n')
 
                 # 含参构造函数参数列表
@@ -331,34 +331,34 @@ def generate_orm_clazz(src: str, dist: str, desc: str):
 
                 where_expr = f".where(\"{where_str}\"){bind_expr}"
 
-                file.write(f"\n\t\tDBTable_{to_upper_camel_case(table['name'])}() = default;\n\n")
+                file.write(f"\n\t\tUTable_{to_upper_camel_case(table['name'])}() = default;\n\n")
 
                 # 含参构造函数
-                file.write('\t\tDBTable_%s(\n%s\n\t\t) : %s {}\n\n' % (to_upper_camel_case(table['name']), construct_str, init_str))
+                file.write('\t\tUTable_%s(\n%s\n\t\t) : %s {}\n\n' % (to_upper_camel_case(table['name']), construct_str, init_str))
 
                 # 纯虚函数重写
-                file.write('\t\t[[nodiscard]] constexpr const char* GetTableName() const override {\n')
+                file.write('\t\t[[nodiscard]] constexpr const char* getTableName() const override {\n')
                 file.write(f"\t\t\treturn \"{table['name']}\";\n")
                 file.write('\t\t}\n\n')
 
-                file.write('\t\t[[nodiscard]] bool ComparePrimaryKey(mysqlx::Row &row) const override {\n')
+                file.write('\t\t[[nodiscard]] bool comparePrimaryKey(mysqlx::Row &row) const override {\n')
                 file.write(f'\t\t\treturn {equal_str};\n')
                 file.write('\t\t}\n\n')
             
-                file.write('\t\tmysqlx::RowResult Query(mysqlx::Table &table) override {\n')
+                file.write('\t\tmysqlx::RowResult query(mysqlx::Table &table) override {\n')
                 file.write('\t\t\treturn table.select()\n')
                 file.write(f'\t\t\t\t{where_expr}\n')
                 file.write('\t\t\t\t.execute();\n')
                 file.write('\t\t}\n\n')
 
-                file.write('\t\tmysqlx::RowResult Query(mysqlx::Schema &schema) override {\n')
-                file.write('\t\t\tmysqlx::Table table = schema.getTable(GetTableName());\n')
-                file.write('\t\t\tif (!table.existsInDatabase())\n')
-                file.write('\t\t\t\treturn {};\n\n')
-                file.write('\t\t\treturn Query(table);\n')
-                file.write('\t\t}\n\n')
+                # file.write('\t\tmysqlx::RowResult query(mysqlx::Schema &schema) override {\n')
+                # file.write('\t\t\tmysqlx::Table table = schema.getTable(GetTableName());\n')
+                # file.write('\t\t\tif (!table.existsInDatabase())\n')
+                # file.write('\t\t\t\treturn {};\n\n')
+                # file.write('\t\t\treturn query(table);\n')
+                # file.write('\t\t}\n\n')
 
-                file.write('\t\tvoid Read(mysqlx::Row &row) override {\n')
+                file.write('\t\tvoid read(mysqlx::Row &row) override {\n')
                 file.write('\t\t\tif (row.isNull())\n \t\t\t\treturn;\n\n')
 
                 count = 0
@@ -376,7 +376,7 @@ def generate_orm_clazz(src: str, dist: str, desc: str):
                     elif type == "uint8_t":
                         type = "uint32_t"
                         file.write(f"\t\t\t{field['name']} = static_cast<uint8_t>(row[{count}].get<{type}>());\n")
-                    elif type == "ByteArray":
+                    elif type == "FByteArray":
                         file.write(f"\t\t\tDB_CAST_FROM_BLOB({field['name']}, row[{count}])\n")
                     else:
                         file.write(f"\t\t\t{field['name']} = row[{count}].get<{type}>();\n")
@@ -384,8 +384,8 @@ def generate_orm_clazz(src: str, dist: str, desc: str):
 
                 file.write('\t\t}\n\n')
 
-                file.write('\t\tvoid Write(mysqlx::Table &table) override {\n')
-                file.write('\t\t\tmysqlx::RowResult result = Query(table);\n\n')
+                file.write('\t\tvoid write(mysqlx::Table &table) override {\n')
+                file.write('\t\t\tmysqlx::RowResult result = query(table);\n\n')
 
                 # 如果已存在相同键 则调用update()
                 file.write("\t\t\tif (const mysqlx::Row row = result.fetchOne(); !row.isNull()) {\n")
@@ -410,28 +410,28 @@ def generate_orm_clazz(src: str, dist: str, desc: str):
                 file.write("\t\t\t}\n")
                 file.write('\t\t}\n\n')
 
-                file.write('\t\tvoid Write(mysqlx::Schema &schema) override {\n')
-                file.write('\t\t\tmysqlx::Table table = schema.getTable(GetTableName());\n')
-                file.write('\t\t\tif (!table.existsInDatabase())\n')
-                file.write('\t\t\t\treturn;\n\n')
+                # file.write('\t\tvoid write(mysqlx::Schema &schema) override {\n')
+                # file.write('\t\t\tmysqlx::Table table = schema.getTable(GetTableName());\n')
+                # file.write('\t\t\tif (!table.existsInDatabase())\n')
+                # file.write('\t\t\t\treturn;\n\n')
 
-                file.write('\t\t\tWrite(table);\n')
-                file.write('\t\t}\n\n')
+                # file.write('\t\t\twrite(table);\n')
+                # file.write('\t\t}\n\n')
 
-                file.write('\t\tvoid Remove(mysqlx::Table &table) override {\n')
+                file.write('\t\tvoid remove(mysqlx::Table &table) override {\n')
                 file.write('\t\t\ttable.remove()\n')
                 file.write(f"\t\t\t\t{where_expr}\n")
                 file.write('\t\t\t\t.execute();\n')
                 file.write('\t\t}\n\n')
 
-                file.write('\t\tvoid Remove(mysqlx::Schema &schema) override {\n')
-                file.write('\t\t\tmysqlx::Table table = schema.getTable(GetTableName());\n')
-                file.write('\t\t\tif (!table.existsInDatabase())\n')
-                file.write('\t\t\t\treturn;\n\n')
-                file.write('\t\t\tRemove(table);\n')
-                file.write('\t\t}\n\n')
+                # file.write('\t\tvoid Remove(mysqlx::Schema &schema) override {\n')
+                # file.write('\t\t\tmysqlx::Table table = schema.getTable(GetTableName());\n')
+                # file.write('\t\t\tif (!table.existsInDatabase())\n')
+                # file.write('\t\t\t\treturn;\n\n')
+                # file.write('\t\t\tRemove(table);\n')
+                # file.write('\t\t}\n\n')
 
-                file.write('\t}; // DBTable_%s\n\n' % to_upper_camel_case(table['name']))
+                file.write('\t}; // UTable_%s\n\n' % to_upper_camel_case(table['name']))
         
             file.write('} // orm')
         

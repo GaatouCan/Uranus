@@ -10,7 +10,7 @@
 
 class UStateCT final : public IPlayerComponent {
 
-    orm::DBTable_State state_;
+    orm::UTable_State state_;
 
 public:
     explicit UStateCT(UComponentModule *module);

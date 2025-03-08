@@ -80,7 +80,7 @@ void AppearanceCT::activeAvatar(const int index, const bool bAutoUse) {
         return;
 
     // const auto cfg = cfg_op.value();
-    orm::DBTable_Avatar avatar;
+    orm::UTable_Avatar avatar;
 
     avatar.pid = getOwner()->getFullID();
     avatar.index = index;
@@ -118,7 +118,7 @@ void AppearanceCT::activeAvatarFrame(const int index, bool bAutoUse) {
         return;
 
     // const auto cfg = cfg_op.value();
-    orm::DBTable_AvatarFrame frame;
+    orm::UTable_AvatarFrame frame;
 
     frame.pid = getOwner()->getFullID();
     frame.index = index;

@@ -28,7 +28,7 @@ UPlayerManager::~UPlayerManager() {
 void UPlayerManager::init() {
     if (const auto sys = getWorld()->getSystem<UDatabaseSystem>(); sys != nullptr) {
         sys->syncSelect("player_cache", "", [&](mysqlx::Row row) {
-            orm::DBTable_PlayerCache table;
+            orm::UTable_PlayerCache table;
             table.read(row);
 
             const FPlayerID pid(table.pid);
@@ -194,11 +194,11 @@ void UPlayerManager::onTick(const ATimePoint now, const ADuration interval) {
     const auto ser = std::make_shared<USerializer>();
 
     {
-        auto *array = ser->createTableVector<orm::DBTable_PlayerCache>("player_cache");
+        auto *array = ser->createTableVector<orm::UTable_PlayerCache>("player_cache");
 
         std::shared_lock lock(cacheMutex_);
         for (const auto &val : cacheMap_ | std::views::values) {
-            orm::DBTable_PlayerCache table;
+            orm::UTable_PlayerCache table;
             table.pid = val.pid;
             table.cache << val;
 

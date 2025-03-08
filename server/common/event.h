@@ -1,7 +1,7 @@
 #pragma once
 
 #define DISPATCH_EVENT(event, param) \
-    if (const auto sys = getWorld()->getSystem<EventSystem>(); sys != nullptr) { \
+    if (const auto sys = getWorld()->getSystem<UEventSystem>(); sys != nullptr) { \
         sys->dispatch(static_cast<unsigned int>(EEvent::event), (param)); \
     } else { \
         spdlog::critical("{} - Failed to get event system.", __FUNCTION__); \

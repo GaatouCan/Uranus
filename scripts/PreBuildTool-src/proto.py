@@ -82,7 +82,7 @@ def generate_protobuf_define(src: str, dist: str, proto: list, include_dir: str)
         file.write('#include <cstdint>\n\n')
 
         file.write('namespace protocol {\n')
-        file.write('\tenum class ProtoType : uint32_t {\n')
+        file.write('\tenum class EProtoType : uint32_t {\n')
 
         package_index = 1
         proto_index = 1
@@ -103,14 +103,14 @@ def generate_protobuf_define(src: str, dist: str, proto: list, include_dir: str)
         file.write('\t\tPROTO_TYPE_MAX,\n')
         file.write('\t}; // ProtoType\n\n')
 
-        file.write('\tconstexpr const char* ProtoTypeToString(const ProtoType value) {\n')
+        file.write('\tconstexpr const char* ProtoTypeToString(const EProtoType value) {\n')
         file.write('\t\tswitch (value) {\n')
 
         for package in proto_data:
             file.write(f'\t\t\t// {package['package']}\n')
 
             for proto in package['list']:
-                file.write(f'\t\t\tcase ProtoType::{proto['proto']}: return "{proto['proto']}";\n')
+                file.write(f'\t\t\tcase EProtoType::{proto['proto']}: return "{proto['proto']}";\n')
 
             file.write('\n')
 
@@ -135,7 +135,7 @@ def generate_protobuf_define(src: str, dist: str, proto: list, include_dir: str)
         file.write('class IPackage;\n')
         file.write('class IBasePlayer;\n\n')
 
-        file.write('using ConnectionPointer = std::shared_ptr<class Connection>;\n\n')
+        file.write('using AConnectionPointer = std::shared_ptr<class UConnection>;\n\n')
         # file.write('using asio::awaitable;\n\n')
 
         file.write('namespace protocol {\n\n')
@@ -157,7 +157,7 @@ def generate_protobuf_define(src: str, dist: str, proto: list, include_dir: str)
         file.write('#include "proto_type.h"\n')
         file.write(f'#include \"{include_dir}\"\n\n')
 
-        file.write('inline void LoadProtocol(ProtocolRoute *route) {\n\n')
+        file.write('inline void LoadProtocol(UProtoRoute *route) {\n\n')
         file.write('\tusing namespace protocol;\n\n')
 
         for package in proto_data:

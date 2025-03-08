@@ -64,7 +64,7 @@ public:
  */
 #define WRITE_TABLE(ser, tb, pa) \
 { \
-    auto *array = (ser)->createTableVector<orm::DBTable_##tb>(utils::PascalToUnderline(#tb)); \
+    auto *array = (ser)->createTableVector<orm::UTable_##tb>(utils::PascalToUnderline(#tb)); \
     array->pushBack(pa); \
 }
 
@@ -75,7 +75,7 @@ public:
  */
 #define WRITE_TABLE_MAP(ser, tb, pa) \
 { \
-    auto *array = (ser)->createTableVector<orm::DBTable_##tb>(utils::PascalToUnderline(#tb)); \
+    auto *array = (ser)->createTableVector<orm::UTable_##tb>(utils::PascalToUnderline(#tb)); \
     for (const auto &val : (pa) | std::views::values) { \
         array->pushBack(val); \
     } \
@@ -88,7 +88,7 @@ public:
  */
 #define WRITE_TABLE_VECTOR(ser, tb, pa) \
 { \
-    auto *array = (ser)->createTableVector<orm::DBTable_##tb>(utils::PascalToUnderline(#tb)); \
+    auto *array = (ser)->createTableVector<orm::UTable_##tb>(utils::PascalToUnderline(#tb)); \
     for (const auto &val : (pa)) { \
         array->pushBack(val); \
     } \
