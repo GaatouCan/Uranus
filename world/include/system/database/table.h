@@ -16,15 +16,25 @@ public:
     [[nodiscard]] virtual bool comparePrimaryKey(mysqlx::Row &row) const = 0;
 
     virtual mysqlx::RowResult query(mysqlx::Table &table) = 0;
-    virtual mysqlx::RowResult query(mysqlx::Schema &schema) = 0;
+    virtual mysqlx::RowResult query(mysqlx::Schema &schema) {
+        if (auto table = schema.getTable(getTableName()); table.existsInDatabase())
+            return query(table);
+        return {};
+    }
 
     virtual void read(mysqlx::Row &row) = 0;
 
     virtual void write(mysqlx::Table &table) = 0;
-    virtual void write(mysqlx::Schema &schema) = 0;
+    virtual void write(mysqlx::Schema &schema) {
+        if (auto table = schema.getTable(getTableName()); table.existsInDatabase())
+            write(table);
+    }
 
     virtual void remove(mysqlx::Table &table) = 0;
-    virtual void remove(mysqlx::Schema &schema) = 0;
+    virtual void remove(mysqlx::Schema &schema) {
+        if (auto table = schema.getTable(getTableName()); table.existsInDatabase())
+            remove(table);
+    }
 };
 
 template <typename T>
