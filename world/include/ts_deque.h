@@ -15,54 +15,54 @@ public:
     TDeque() = default;
     ~TDeque() = default;
 
-    T &Front() {
-        std::shared_lock lock(mtx_);
+    T &front() {
+        std::shared_lock lock(mutex_);
         return deque_.front();
     }
 
-    T &Back() {
-        std::shared_lock lock(mtx_);
+    T &back() {
+        std::shared_lock lock(mutex_);
         return deque_.back();
     }
 
-    void PushFront(const T &data) {
+    void pushFront(const T &data) {
         {
-            std::unique_lock lock(mtx_);
+            std::unique_lock lock(mutex_);
             deque_.push_front(data);
         }
 
-        cv_.notify_one();
+        conditionVariable_.notify_one();
     }
 
-    void PushBack(const T &data) {
+    void pushBack(const T &data) {
         {
-            std::unique_lock lock(mtx_);
+            std::unique_lock lock(mutex_);
             deque_.push_back(data);
         }
 
-        cv_.notify_one();
+        conditionVariable_.notify_one();
     }
 
-    void PushFront(T &&data) {
+    void pushFront(T &&data) {
         {
-            std::unique_lock lock(mtx_);
+            std::unique_lock lock(mutex_);
             deque_.emplace_front(data);
         }
 
-        cv_.notify_one();
+        conditionVariable_.notify_one();
     }
 
-    void PushBack(T &&data) {
+    void pushBack(T &&data) {
         {
-            std::unique_lock lock(mtx_);
+            std::unique_lock lock(mutex_);
             deque_.emplace_back(data);
         }
 
-        cv_.notify_one();
+        conditionVariable_.notify_one();
     }
 
-    std::optional<T> PopFront() {
-        std::unique_lock lock(mtx_);
+    std::optional<T> popFront() {
+        std::unique_lock lock(mutex_);
 
         if (deque_.empty())
             return std::nullopt;
@@ -73,8 +73,8 @@ public:
         return data;
     }
 
-    std::optional<T> PopBack() {
-        std::unique_lock lock(mtx_);
+    std::optional<T> popBack() {
+        std::unique_lock lock(mutex_);
         if (deque_.empty())
             return std::nullopt;
 
@@ -84,40 +84,40 @@ public:
         return data;
     }
 
-    bool IsEmpty() const {
-        std::shared_lock lock(mtx_);
+    bool empty() const {
+        std::shared_lock lock(mutex_);
         return deque_.empty();
     }
 
-    size_t Size() const {
-        std::shared_lock lock(mtx_);
+    size_t size() const {
+        std::shared_lock lock(mutex_);
         return deque_.size();
     }
 
-    void Clear() {
-        std::unique_lock blockLock(mtx_);
+    void clear() {
+        std::unique_lock blockLock(mutex_);
         deque_.clear();
     }
 
-    void Quit() {
+    void quit() {
         quit_ = true;
-        cv_.notify_all();
+        conditionVariable_.notify_all();
     }
 
-    bool IsRunning() const {
+    bool running() const {
         return !quit_;
     }
 
-    void Wait() {
-        std::unique_lock lock(mtx_);
-        cv_.wait(lock, [this] { return !deque_.empty() || quit_; });
+    void wait() {
+        std::unique_lock lock(mutex_);
+        conditionVariable_.wait(lock, [this] { return !deque_.empty() || quit_; });
     }
 
 private:
     std::deque<T> deque_;
 
-    mutable std::shared_mutex mtx_;
-    std::condition_variable_any cv_;
+    mutable std::shared_mutex mutex_;
+    std::condition_variable_any conditionVariable_;
 
     std::atomic_bool quit_{false};
 };

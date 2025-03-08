@@ -57,8 +57,8 @@ void UConnection::Disconnect() {
     context_.reset();
 
     // 服务器关闭时数据包池不一定还在
-    while (!output_.IsEmpty() && GetPackagePool()) {
-        if (auto res = output_.PopFront(); res.has_value())
+    while (!output_.empty() && GetPackagePool()) {
+        if (auto res = output_.popFront(); res.has_value())
             GetPackagePool()->Recycle(res.value());
     }
 }
@@ -119,8 +119,8 @@ IPackage *UConnection::BuildPackage() const {
 }
 
 void UConnection::Send(IPackage *pkg) {
-    const bool empty = output_.IsEmpty();
-    output_.PushBack(pkg);
+    const bool empty = output_.empty();
+    output_.pushBack(pkg);
 
     if (empty)
         co_spawn(socket_.get_executor(), WritePackage(), detached);
@@ -165,8 +165,8 @@ awaitable<void> UConnection::WritePackage() {
             co_return;
         }
 
-        while (socket_.is_open() && !output_.IsEmpty()) {
-            auto res = output_.PopFront();
+        while (socket_.is_open() && !output_.empty()) {
+            auto res = output_.popFront();
             if (!res.has_value())
                 continue;
 

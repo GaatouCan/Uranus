@@ -11,7 +11,7 @@ UDatabaseSystem::UDatabaseSystem(UGameWorld *world)
 UDatabaseSystem::~UDatabaseSystem() {
     for (const auto &[th, sess, queue, tid] : sess_list_) {
         if (queue)
-            queue->Quit();
+            queue->quit();
     }
 
     for (const auto &[th, sess, queue, tid] : sess_list_) {
@@ -40,12 +40,12 @@ void UDatabaseSystem::Init() {
         node.thread = std::make_unique<std::thread>([this, &node, schemaName] {
             node.threadID = std::this_thread::get_id();
             spdlog::info("\tThread[{}] - Begin Handle Database Task.", utils::ThreadIdToInt(node.threadID));
-            while (node.queue->IsRunning()) {
-                node.queue->Wait();
-                if (!node.queue->IsRunning())
+            while (node.queue->running()) {
+                node.queue->wait();
+                if (!node.queue->running())
                     break;
 
-                if (const auto op = node.queue->PopFront(); op.has_value() && op.value() != nullptr) {
+                if (const auto op = node.queue->popFront(); op.has_value() && op.value() != nullptr) {
                     const auto task = op.value();
                     try {
                         auto schema = node.session->getSchema(schemaName, true);
@@ -57,7 +57,7 @@ void UDatabaseSystem::Init() {
                 }
             }
 
-            node.queue->Clear();
+            node.queue->clear();
             node.session->close();
         });
     }
@@ -98,5 +98,5 @@ void UDatabaseSystem::SyncSelect(const std::string &tableName, const std::string
 void UDatabaseSystem::PushTransaction(const ATransactionFunctor &func) {
     const auto &[th, sess, queue, tid] = sess_list_[next_node_idx_++];
     next_node_idx_ = next_node_idx_ % sess_list_.size();
-    queue->PushBack(new UTransactionTask(func));
+    queue->pushBack(new UTransactionTask(func));
 }

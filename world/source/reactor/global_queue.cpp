@@ -11,7 +11,7 @@ UGlobalQueue::UGlobalQueue(UGameWorld *world)
 
 UGlobalQueue::~UGlobalQueue() {
     spdlog::info("{} - Shutdown.", __FUNCTION__);
-    queue_.Quit();
+    queue_.quit();
 
     for (auto &th: worker_vec_) {
         if (th.joinable())
@@ -25,13 +25,13 @@ void UGlobalQueue::Init() {
 
     for (int idx = 0; idx < num; idx++) {
         worker_vec_.emplace_back([this] {
-            while (queue_.IsRunning()) {
-                queue_.Wait();
+            while (queue_.running()) {
+                queue_.wait();
 
-                if (!queue_.IsRunning())
+                if (!queue_.running())
                     break;
 
-                auto res = queue_.PopFront();
+                auto res = queue_.popFront();
                 if (!res.has_value()) continue;
 
                 auto task_queue = res.value();
@@ -56,7 +56,7 @@ void UGlobalQueue::Init() {
                     continue;
                 }
 
-                queue_.PushBack(task_queue);
+                queue_.pushBack(task_queue);
                 task_queue->OnPushToGlobal();
             }
         });
@@ -111,7 +111,7 @@ void UGlobalQueue::OnPushTask(const std::shared_ptr<UTaskQueue> &queue) {
         empty_set_.erase(queue->weak_from_this());
     }
 
-    queue_.PushBack(queue);
+    queue_.pushBack(queue);
     queue->OnPushToGlobal();
 }
 

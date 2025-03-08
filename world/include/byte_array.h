@@ -21,20 +21,20 @@ public:
 
     explicit operator std::vector<uint8_t>() const;
 
-    void Reset();
+    void reset();
 
-    [[nodiscard]] size_t Size() const;
-    void Resize(size_t size);
+    [[nodiscard]] size_t size() const;
+    void resize(size_t size);
 
-    [[nodiscard]] uint8_t *Data();
+    [[nodiscard]] uint8_t *data();
 
-    std::vector<uint8_t> &GetRawRef();
+    std::vector<uint8_t> &rawRef();
 
-    auto Begin() -> decltype(array_)::iterator;
-    auto End() -> decltype(array_)::iterator;
+    auto begin() -> decltype(array_)::iterator;
+    auto end() -> decltype(array_)::iterator;
 
-    [[nodiscard]] auto Begin() const -> decltype(array_)::const_iterator;
-    [[nodiscard]] auto End() const -> decltype(array_)::const_iterator;
+    [[nodiscard]] auto begin() const -> decltype(array_)::const_iterator;
+    [[nodiscard]] auto end() const -> decltype(array_)::const_iterator;
 
     [[nodiscard]] uint8_t operator[](size_t pos) const noexcept;
 
@@ -45,7 +45,7 @@ public:
 
     template<typename T>
     requires kPODType<T>
-    void CastFromData(T source) {
+    void castFrom(T source) {
         constexpr auto size = std::is_pointer_v<T> ? sizeof(std::remove_pointer_t<T>) : sizeof(T);
         array_.resize(size);
 
@@ -59,13 +59,13 @@ public:
     template<typename T>
     requires kPODType<T>
     FByteArray &operator << (T source) {
-        CastFromData(source);
+        castFrom(source);
         return *this;
     }
 
     template<typename T>
     requires kPODType<T>
-    bool CastToData(T *target) const {
+    bool castTo(T *target) const {
         const bool ret = array_.size() >= sizeof(std::remove_pointer_t<T>);
         const auto size = ret ?  sizeof(std::remove_pointer_t<T>) : array_.size();
 
@@ -78,15 +78,15 @@ public:
     template<typename T>
     requires kPODType<T>
     FByteArray &operator >> (T *target) {
-        CastToData(target);
+        castTo(target);
         return *this;
     }
 
     template<typename T>
     requires kPODType<T>
-    static FByteArray FromData(T data) {
+    static FByteArray from(T data) {
         FByteArray bytes;
-        bytes.CastFromData(std::forward<T>(data));
+        bytes.castFrom(std::forward<T>(data));
         return bytes;
     }
 };

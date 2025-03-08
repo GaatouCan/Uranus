@@ -38,7 +38,7 @@ public:
     void PushSelectTask(const AQueryArray &vec, Callback &&cb) {
         const auto &[th, sess, queue, tid] = sess_list_[next_node_idx_++];
         next_node_idx_ = next_node_idx_ % sess_list_.size();
-        queue->PushBack(new UQueryTask<Callback>(vec, std::forward<Callback>(cb)));
+        queue->pushBack(new UQueryTask<Callback>(vec, std::forward<Callback>(cb)));
     }
 
     template<asio::completion_token_for<void(AQueryResultPtr)> CompletionToken>

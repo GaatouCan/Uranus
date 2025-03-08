@@ -12,40 +12,40 @@ FByteArray::operator std::vector<unsigned char>() const {
     return array_;
 }
 
-void FByteArray::Reset() {
+void FByteArray::reset() {
     array_.clear();
     array_.shrink_to_fit();
 }
 
-size_t FByteArray::Size() const {
+size_t FByteArray::size() const {
     return array_.size();
 }
 
-void FByteArray::Resize(const size_t size) {
+void FByteArray::resize(const size_t size) {
     array_.resize(size);
 }
 
-uint8_t * FByteArray::Data() {
+uint8_t * FByteArray::data() {
     return array_.data();
 }
 
-std::vector<uint8_t> & FByteArray::GetRawRef() {
+std::vector<uint8_t> & FByteArray::rawRef() {
     return array_;
 }
 
-auto FByteArray::Begin() -> decltype(array_)::iterator {
+auto FByteArray::begin() -> decltype(array_)::iterator {
     return array_.begin();
 }
 
-auto FByteArray::End() -> decltype(array_)::iterator {
+auto FByteArray::end() -> decltype(array_)::iterator {
     return array_.end();
 }
 
-auto FByteArray::Begin() const -> decltype(array_)::const_iterator {
+auto FByteArray::begin() const -> decltype(array_)::const_iterator {
     return array_.begin();
 }
 
-auto FByteArray::End() const -> decltype(array_)::const_iterator {
+auto FByteArray::end() const -> decltype(array_)::const_iterator {
     return array_.end();
 }
 

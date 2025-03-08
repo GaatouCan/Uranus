@@ -22,7 +22,7 @@ FPackage::FPackage(const FPackage &rhs) : FPackage() {
         memcpy(&header_, &rhs.header_, sizeof(header_));
 
         data_ = rhs.data_;
-        header_.length = data_.Size();
+        header_.length = data_.size();
     }
 }
 
@@ -31,7 +31,7 @@ FPackage::FPackage(FPackage &&rhs) noexcept : FPackage() {
         memcpy(&header_, &rhs.header_, sizeof(header_));
 
         data_ = std::move(rhs.data_);
-        header_.length = data_.Size();
+        header_.length = data_.size();
     }
 }
 
@@ -40,7 +40,7 @@ FPackage &FPackage::operator=(const FPackage &rhs) {
         memcpy(&header_, &rhs.header_, sizeof(header_));
 
         data_ = rhs.data_;
-        header_.length = data_.Size();
+        header_.length = data_.size();
     }
     return *this;
 }
@@ -50,7 +50,7 @@ FPackage &FPackage::operator=(FPackage &&rhs) noexcept {
         memcpy(&header_, &rhs.header_, sizeof(header_));
 
         data_ = std::move(rhs.data_);
-        header_.length = data_.Size();
+        header_.length = data_.size();
     }
     return *this;
 }
@@ -67,7 +67,7 @@ FPackage::FPackage(const uint32_t id, const std::stringstream &ss)
 
 void FPackage::Reset() {
     memset(&header_, 0, sizeof(header_));
-    data_.Reset();
+    data_.reset();
 }
 
 void FPackage::Invalid() {
@@ -84,8 +84,8 @@ FPackage &FPackage::SetPackageID(const uint32_t id) {
 }
 
 FPackage &FPackage::SetData(const std::string_view str) {
-    data_.Resize(str.size());
-    memcpy(data_.Data(), str.data(), str.size());
+    data_.resize(str.size());
+    memcpy(data_.data(), str.data(), str.size());
     header_.length = str.size();
     return *this;
 }
@@ -132,11 +132,11 @@ void FPackage::CopyFrom(IPackage *other) {
 }
 
 size_t FPackage::GetDataLength() const {
-    return data_.Size();
+    return data_.size();
 }
 
 std::string FPackage::ToString() const {
-    return {data_.Begin(), data_.End()};
+    return {data_.begin(), data_.end()};
 }
 
 const FByteArray &FPackage::GetByteArray() const {

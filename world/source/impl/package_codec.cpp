@@ -39,7 +39,7 @@ awaitable<void> UPackageCodec::EncodeT(FPackage *pkg) {
     if (pkg->header_.length == 0)
         co_return;
 
-    co_await async_write(conn_.lock()->GetSocket(), asio::buffer(pkg->RawByteArray().GetRawRef()));
+    co_await async_write(conn_.lock()->GetSocket(), asio::buffer(pkg->RawByteArray().rawRef()));
 }
 
 awaitable<void> UPackageCodec::DecodeT(FPackage *pkg) {
@@ -64,6 +64,6 @@ awaitable<void> UPackageCodec::DecodeT(FPackage *pkg) {
     if (pkg->header_.length == 0)
         co_return;
 
-    pkg->data_.Resize(pkg->header_.length);
-    co_await async_read(conn_.lock()->GetSocket(), asio::buffer(pkg->RawByteArray().GetRawRef()));
+    pkg->data_.resize(pkg->header_.length);
+    co_await async_read(conn_.lock()->GetSocket(), asio::buffer(pkg->RawByteArray().rawRef()));
 }
