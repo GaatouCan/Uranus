@@ -1,9 +1,9 @@
 #include "../../include/scene/main_scene.h"
-#include "../../include/package_pool.h"
+#include "../../include/recycler.h"
 
 UMainScene::UMainScene(USceneManager *owner, const int32_t id)
     : IBaseScene(owner, id),
-      pool_(new UPackagePool()) {
+      pool_(nullptr) {
 }
 
 UMainScene::~UMainScene() {
@@ -18,10 +18,10 @@ AThreadID UMainScene::getThreadID() const {
     return thread_;
 }
 
-asio::io_context & UMainScene::getIOContext() {
+asio::io_context &UMainScene::getIOContext() {
     return context_;
 }
 
-UPackagePool * UMainScene::getPackagePool() const {
+IRecycler *UMainScene::getPackagePool() const {
     return pool_;
 }

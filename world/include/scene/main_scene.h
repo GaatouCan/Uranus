@@ -5,7 +5,7 @@
 
 class BASE_API UMainScene final : public IBaseScene {
 
-    class UPackagePool* pool_;
+    class IRecycler* pool_;
 
     asio::io_context context_;
     AThreadID thread_;
@@ -18,5 +18,5 @@ public:
     [[nodiscard]] AThreadID getThreadID() const;
 
     asio::io_context& getIOContext();
-    [[nodiscard]] UPackagePool* getPackagePool() const;
+    [[nodiscard]] IRecycler* getPackagePool() const;
 };

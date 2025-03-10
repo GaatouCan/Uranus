@@ -56,7 +56,7 @@ public:
 
 
 template<class Type>
-    requires std::derived_from<Type, IPoolable>
+requires std::derived_from<Type, IPoolable>
 class BASE_API TRecycler final : public IRecycler {
 public:
     Type *acquire() {
