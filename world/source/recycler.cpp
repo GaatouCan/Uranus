@@ -1,3 +1,116 @@
-//
-// Created by admin on 25-3-10.
-//
+#include "../include/recycler.h"
+
+IRecycler::IRecycler() {
+
+}
+
+IRecycler::~IRecycler() {
+    for (const auto it : usingSet_) {
+        delete it;
+    }
+
+    while (!queue_.empty()) {
+        const auto elem = queue_.front();
+        queue_.pop();
+        delete elem;
+    }
+}
+
+IPoolable * IRecycler::acquireInternal() {
+    expanse();
+
+    IPoolable *res = nullptr;
+
+    {
+        std::unique_lock lock(mutex_);
+        res = queue_.front();
+        queue_.pop();
+        usingSet_.insert(res);
+    }
+
+    res->initial();
+    return res;
+}
+
+size_t IRecycler::capacity() const {
+    std::shared_lock lock(mutex_);
+    return queue_.size() + usingSet_.size();
+}
+
+void IRecycler::expanse() {
+    if (usingSet_.empty() && !queue_.empty())
+        return;
+
+    if (std::floor(queue_.size() / capacity()) <= expanseRate_)
+        return;
+
+    const auto num = static_cast<size_t>(std::ceil(static_cast<float>(capacity()) * expanseScale_));
+
+    std::unique_lock lock(mutex_);
+    for (size_t i = 0; i < num; i++) {
+        if (auto *elem = create(); elem != nullptr) {
+            queue_.push(elem);
+        }
+    }
+}
+
+void IRecycler::collect() {
+    const auto now = NowTimePoint();
+
+    // 不要太频繁
+    if (now - collectTime_.load() < std::chrono::seconds(3))
+        return;
+
+    {
+        std::unique_lock lock(mutex_);
+        for (auto it = usingSet_.begin(); it != usingSet_.end(); ++it) {
+            if (!(*it)->available()) {
+                (*it)->reset();
+                queue_.push(*it);
+                usingSet_.erase(it);
+            }
+        }
+    }
+
+    if (queue_.size() <= minCapacity_ || std::floor(queue_.size() / capacity()) < collectRate_)
+        return;
+
+    collectTime_ = now;
+
+    const auto num = static_cast<size_t>(std::floor(static_cast<float>(capacity()) * collectScale_));
+
+    std::unique_lock lock(mutex_);
+    for (size_t i = 0; i < num && queue_.size() > minCapacity_; i++) {
+        const auto pkg = queue_.front();
+        queue_.pop();
+        delete pkg;
+    }
+}
+
+void IRecycler::recycle(IPoolable *obj) {
+    if (obj == nullptr)
+        return;
+
+    if (obj->handle_ != nullptr && obj->handle_ != this) {
+        obj->recycle();
+        return;
+    }
+
+    {
+        std::shared_lock lock(mutex_);
+        if (!usingSet_.contains(obj))
+            return;
+    }
+
+    if (obj->available())
+        obj->reset();
+
+    {
+        std::unique_lock lock(mutex_);
+
+        queue_.push(obj);
+        usingSet_.erase(obj);
+    }
+
+    collect();
+}

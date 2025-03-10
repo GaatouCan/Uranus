@@ -10,4 +10,6 @@ IPoolable::~IPoolable() {
 }
 
 void IPoolable::recycle() {
+    reset();
+    handle_->recycle(this);
 }
