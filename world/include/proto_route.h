@@ -3,7 +3,7 @@
 #include "proto_handler.h"
 
 #include <concepts>
-#include <unordered_map>
+#include <absl/container/flat_hash_map.h>
 
 
 class UConnection;
@@ -46,7 +46,7 @@ public:
 private:
     UGameWorld *world_;
 
-    std::unordered_map<uint32_t, AProtoFunctor> protoMap_;
+    absl::flat_hash_map<uint32_t, AProtoFunctor> protoMap_;
     // std::unordered_map<uint32_t, ACrossFunctor> mCrossMap;
 
     std::unique_ptr<IProtoHandler> handler_;

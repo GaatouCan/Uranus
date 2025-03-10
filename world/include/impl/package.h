@@ -11,8 +11,9 @@ static constexpr uint32_t MAXIMUM_PACKAGE_ID = 999999;
 
 
 enum class ECodecMethod : uint16_t {
-    BASE_LINE = 0,
-    PROTOBUF = 1,
+    UNAVAILABLE = 0,
+    BASE_LINE = 1,
+    PROTOBUF = 2,
 };
 
 class BASE_API FPackage final : public IPackage {
@@ -42,6 +43,7 @@ public:
     explicit FPackage(IRecycler* handle);
     ~FPackage() override;
 
+    [[nodiscard]] bool unused() const override;
     [[nodiscard]] bool available() const override;
 
     FPackage &setPackageID(uint32_t id);

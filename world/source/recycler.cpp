@@ -34,6 +34,8 @@ IRecyclable *IRecycler::acquire() {
     }
 
     res->initial();
+    assert(res->unused());
+
     return res;
 }
 

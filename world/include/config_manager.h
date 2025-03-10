@@ -6,6 +6,8 @@
 #include <yaml-cpp/yaml.h>
 #include <nlohmann/json.hpp>
 
+#include <absl/container/flat_hash_map.h>
+
 
 class UConfigManager;
 
@@ -22,10 +24,10 @@ class BASE_API UConfigManager final {
     std::string jsonPath_;
 
     YAML::Node config_;
-    std::unordered_map<std::string, nlohmann::json> jsonMap_;
+    absl::flat_hash_map<std::string, nlohmann::json> jsonMap_;
 
-    std::unordered_map<std::type_index, std::vector<std::string>> logicLoadMap_;
-    std::unordered_map<std::type_index, ILogicConfig *> logicConfigMap_;
+    absl::flat_hash_map<std::type_index, std::vector<std::string>> logicLoadMap_;
+    absl::flat_hash_map<std::type_index, ILogicConfig *> logicConfigMap_;
 
     ALogicConfigLoader logicConfigLoader_;
     ALoggerLoader loggerLoader_;

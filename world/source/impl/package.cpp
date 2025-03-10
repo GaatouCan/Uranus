@@ -1,13 +1,15 @@
 #include "../../include/impl/package.h"
 
+#include <assert.h>
+
 #ifdef __linux__
 #include <cstring>
 #endif
 
 
-uint32_t FPackage::kPackageMagic = 20250122;
-uint32_t FPackage::kPackageVersion = 1001;
-ECodecMethod FPackage::kPackageMethod = ECodecMethod::PROTOBUF;
+uint32_t FPackage::kPackageMagic = 0;
+uint32_t FPackage::kPackageVersion = 0;
+ECodecMethod FPackage::kPackageMethod = ECodecMethod::UNAVAILABLE;
 
 FPackage::FPackage(IRecycler *handle)
     : IPackage(handle),
@@ -18,10 +20,19 @@ FPackage::FPackage(IRecycler *handle)
 
 FPackage::~FPackage() = default;
 
+bool FPackage::unused() const {
+    return header_.id == (MINIMUM_PACKAGE_ID - 1)
+        && header_.magic != 0
+        && header_.version != 0
+        && header_.method != ECodecMethod::UNAVAILABLE;
+}
+
 void FPackage::initial() {
     header_.magic = kPackageMagic;
     header_.version = kPackageVersion;
     header_.method = kPackageMethod;
+
+    header_.id = MINIMUM_PACKAGE_ID - 1;
 }
 
 bool FPackage::copyFrom(IRecyclable *other) {
@@ -42,6 +53,9 @@ void FPackage::reset() {
 }
 
 bool FPackage::available() const {
+    if (unused())
+        return true;
+
     return header_.id >= MINIMUM_PACKAGE_ID && header_.id <= MAXIMUM_PACKAGE_ID;
 }
 
@@ -129,4 +143,8 @@ void FPackage::LoadConfig(const YAML::Node &config) {
         if (str == "Protobuf")
             kPackageMethod = ECodecMethod::PROTOBUF;
     }
+
+    assert(kPackageMagic != 0);
+    assert(kPackageVersion != 0);
+    assert(kPackageMethod != ECodecMethod::UNAVAILABLE);
 }
