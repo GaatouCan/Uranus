@@ -1,8 +1,6 @@
 ﻿#include "../include/game_world.h"
 #include "../include/server_logic.h"
 #include "../include/connection.h"
-#include "../include/package_pool.h"
-#include "../include/impl/package.h"
 
 #include "../include/scene/scene_manager.h"
 #include "../include/scene/main_scene.h"
@@ -101,14 +99,14 @@ UGameWorld &UGameWorld::init(const std::string &path) {
 
     const auto &config = getServerConfig();
 
-    UPackagePool::LoadConfig(config);
-
-    // 如果DLL未指定自定义数据包 则使用默认数据包
-    if (!UPackagePool::HasAssignedBuilder()) {
-        FPackage::LoadConfig(config);
-        UPackagePool::SetPackageBuilder(&FPackage::CreatePackage);
-        UPackagePool::SetPackageInitializer(&FPackage::InitPackage);
-    }
+    // UPackagePool::LoadConfig(config);
+    //
+    // // 如果DLL未指定自定义数据包 则使用默认数据包
+    // if (!UPackagePool::HasAssignedBuilder()) {
+    //     FPackage::LoadConfig(config);
+    //     UPackagePool::SetPackageBuilder(&FPackage::CreatePackage);
+    //     UPackagePool::SetPackageInitializer(&FPackage::InitPackage);
+    // }
 
     sceneManager_->init();
     globalQueue_->init();
@@ -239,6 +237,10 @@ const YAML::Node &UGameWorld::getServerConfig() {
 int32_t UGameWorld::getServerID() {
     const auto &cfg = getServerConfig();
     return cfg["server"]["cross_id"].as<int32_t>();
+}
+
+IServerLogic * UGameWorld::getServerLogic() const {
+    return server_;
 }
 
 bool UGameWorld::loadServerDLL(const std::string &path) {

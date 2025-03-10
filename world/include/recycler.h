@@ -1,6 +1,6 @@
 #pragma once
 
-#include "poolable.h"
+#include "recyclable.h"
 #include "utils.h"
 
 #include <absl/container/flat_hash_set.h>
@@ -11,8 +11,9 @@
 
 
 class BASE_API IRecycler {
-    std::queue<IPoolable *> queue_;
-    absl::flat_hash_set<IPoolable *> usingSet_;
+
+    std::queue<IRecyclable *> queue_;
+    absl::flat_hash_set<IRecyclable *> usingSet_;
 
     mutable std::shared_mutex mutex_;
 
@@ -26,8 +27,6 @@ class BASE_API IRecycler {
     float collectScale_;
 
 protected:
-    IPoolable *acquireInternal();
-
     void expanse();
     void collect();
 
@@ -49,22 +48,24 @@ public:
 
     virtual void init(size_t capacity);
 
-    void recycle(IPoolable *obj);
+    IRecyclable *acquire();
+    void recycle(IRecyclable *obj);
 
-    virtual IPoolable *create() const = 0;
+    virtual IRecyclable *create() const = 0;
 };
 
 
 template<class Type>
-requires std::derived_from<Type, IPoolable>
+requires std::derived_from<Type, IRecyclable>
 class BASE_API TRecycler final : public IRecycler {
 public:
-    Type *acquire() {
-        auto res = acquireInternal();
+    Type *acquireT() {
+        auto res = acquire();
         return dynamic_cast<Type *>(res);
     }
 
-    IPoolable *create() const override {
-        return new Type(this);
+    IRecyclable *create() const override {
+        auto res = new Type(this);
+        return res;
     }
 };

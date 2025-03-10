@@ -49,10 +49,10 @@ public:
 
     [[nodiscard]] int32_t getSceneID() const;
     [[nodiscard]] AThreadID getThreadID() const;
-    [[nodiscard]] class UPackagePool *getPackagePool() const;
+    [[nodiscard]] IRecycler *getPackagePool() const;
 
     [[nodiscard]] UMainScene *getMainScene() const;
-    [[nodiscard]] class UGameWorld *getWorld() const;
+    [[nodiscard]] UGameWorld *getWorld() const;
 
     UConnection &setContext(const std::any &ctx);
     UConnection &resetContext();

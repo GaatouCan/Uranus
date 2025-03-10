@@ -1,6 +1,6 @@
 ﻿#include "../include/connection.h"
 #include "../include/game_world.h"
-#include "../include/package_pool.h"
+#include "../include/recycler.h"
 #include "../include/login_authenticator.h"
 #include "../include/proto_route.h"
 #include "../include/scene/main_scene.h"
@@ -98,7 +98,7 @@ AThreadID UConnection::getThreadID() const {
     return scene_->getThreadID();
 }
 
-UPackagePool *UConnection::getPackagePool() const {
+IRecycler *UConnection::getPackagePool() const {
     return scene_->getPackagePool();
 }
 
@@ -115,7 +115,7 @@ bool UConnection::isSameThread() const {
 }
 
 IPackage *UConnection::buildPackage() const {
-    return getPackagePool()->acquire();
+    return dynamic_cast<IPackage *>(getPackagePool()->acquire());
 }
 
 void UConnection::send(IPackage *pkg) {

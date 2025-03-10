@@ -21,10 +21,10 @@ IRecycler::~IRecycler() {
     }
 }
 
-IPoolable *IRecycler::acquireInternal() {
+IRecyclable *IRecycler::acquire() {
     expanse();
 
-    IPoolable *res = nullptr;
+    IRecyclable *res = nullptr;
 
     {
         std::unique_lock lock(mutex_);
@@ -126,7 +126,7 @@ void IRecycler::collect() {
     }
 }
 
-void IRecycler::recycle(IPoolable *obj) {
+void IRecycler::recycle(IRecyclable *obj) {
     if (obj == nullptr)
         return;
 

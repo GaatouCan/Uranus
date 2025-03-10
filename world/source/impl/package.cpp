@@ -7,71 +7,38 @@
 
 uint32_t FPackage::kPackageMagic = 20250122;
 uint32_t FPackage::kPackageVersion = 1001;
-std::string FPackage::kPackageMethod = "PROTOBUF";
+ECodecMethod FPackage::kPackageMethod = ECodecMethod::PROTOBUF;
 
+FPackage::FPackage(IRecycler *handle)
+    : IPackage(handle),
+      header_() {
 
-FPackage::FPackage()
-    : header_() {
     memset(&header_, 0, sizeof(header_));
 }
 
 FPackage::~FPackage() = default;
 
-FPackage::FPackage(const FPackage &rhs) : FPackage() {
-    if (this != &rhs) {
-        memcpy(&header_, &rhs.header_, sizeof(header_));
+void FPackage::initial() {
+    header_.magic = kPackageMagic;
+    header_.version = kPackageVersion;
+    header_.method = kPackageMethod;
+}
 
-        data_ = rhs.data_;
-        header_.length = data_.size();
+bool FPackage::copyFrom(IRecyclable *other) {
+    if (IRecyclable::copyFrom(other)) {
+        if (const auto temp = dynamic_cast<FPackage *>(other); temp != nullptr) {
+            memcpy(&header_, &temp->header_, sizeof(header_));
+            data_ = temp->data_;
+            header_.length = temp->header_.length;
+            return true;
+        }
     }
-}
-
-FPackage::FPackage(FPackage &&rhs) noexcept : FPackage() {
-    if (this != &rhs) {
-        memcpy(&header_, &rhs.header_, sizeof(header_));
-
-        data_ = std::move(rhs.data_);
-        header_.length = data_.size();
-    }
-}
-
-FPackage &FPackage::operator=(const FPackage &rhs) {
-    if (this != &rhs) {
-        memcpy(&header_, &rhs.header_, sizeof(header_));
-
-        data_ = rhs.data_;
-        header_.length = data_.size();
-    }
-    return *this;
-}
-
-FPackage &FPackage::operator=(FPackage &&rhs) noexcept {
-    if (this != &rhs) {
-        memcpy(&header_, &rhs.header_, sizeof(header_));
-
-        data_ = std::move(rhs.data_);
-        header_.length = data_.size();
-    }
-    return *this;
-}
-
-FPackage::FPackage(const uint32_t id, const std::string_view str)
-    : FPackage() {
-    header_.id = id;
-    setData(str);
-}
-
-FPackage::FPackage(const uint32_t id, const std::stringstream &ss)
-    : FPackage(id, ss.str()) {
+    return false;
 }
 
 void FPackage::reset() {
     memset(&header_, 0, sizeof(header_));
     data_.reset();
-}
-
-void FPackage::invalid() {
-    header_.id = MINIMUM_PACKAGE_ID - 1;
 }
 
 bool FPackage::available() const {
@@ -125,10 +92,8 @@ uint32_t FPackage::getPackageID() const {
     return header_.id;
 }
 
-void FPackage::copyFrom(IPackage *other) {
-    if (const auto tmp = dynamic_cast<FPackage *>(other); tmp != nullptr && tmp != this) {
-        *this = *tmp;
-    }
+void FPackage::invalid() {
+    reset();
 }
 
 size_t FPackage::getDataLength() const {
@@ -143,16 +108,8 @@ const FByteArray &FPackage::getByteArray() const {
     return data_;
 }
 
-void FPackage::SetPackageMagic(const uint32_t magic) {
-    kPackageMagic = magic;
-}
-
-void FPackage::SetPackageVersion(const uint32_t version) {
-    kPackageVersion = version;
-}
-
-void FPackage::SetPackageMethod(const std::string &method) {
-    kPackageMethod = method;
+FByteArray &FPackage::rawByteArray() {
+    return data_;
 }
 
 void FPackage::LoadConfig(const YAML::Node &config) {
@@ -160,34 +117,17 @@ void FPackage::LoadConfig(const YAML::Node &config) {
         return;
 
     if (!config["package"]["magic"].IsNull())
-        SetPackageMagic(config["package"]["magic"].as<uint32_t>());
+        kPackageMagic = config["package"]["magic"].as<uint32_t>();
 
     if (!config["package"]["version"].IsNull())
-        SetPackageVersion(config["package"]["version"].as<uint32_t>());
+        kPackageVersion = config["package"]["version"].as<uint32_t>();
 
 
-    if (!config["package"]["method"].IsNull())
-        SetPackageMethod(config["package"]["method"].as<std::string>());
-}
-
-IPackage * FPackage::CreatePackage() {
-    return new FPackage();
-}
-
-void FPackage::InitPackage(IPackage *pkg) {
-    const auto temp = dynamic_cast<FPackage *>(pkg);
-    if (temp == nullptr)
-        return;
-
-    temp->setMagic(kPackageMagic);
-    temp->setVersion(kPackageVersion);
-
-    if (kPackageMethod == "LineBased")
-        temp->setMethod(ECodecMethod::BASE_LINE);
-    if (kPackageMethod == "Protobuf")
-        temp->setMethod(ECodecMethod::PROTOBUF);
-}
-
-FByteArray &FPackage::rawByteArray() {
-    return data_;
+    if (!config["package"]["method"].IsNull()) {
+        const auto str = config["package"]["method"].as<std::string>();
+        if (str == "LineBased")
+            kPackageMethod = ECodecMethod::BASE_LINE;
+        if (str == "Protobuf")
+            kPackageMethod = ECodecMethod::PROTOBUF;
+    }
 }

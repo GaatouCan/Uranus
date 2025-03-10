@@ -5,6 +5,8 @@
 
 class BASE_API UMainScene final : public IBaseScene {
 
+    friend class IServerLogic;
+
     class IRecycler* pool_;
 
     asio::io_context context_;

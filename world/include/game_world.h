@@ -113,6 +113,8 @@ public:
     const YAML::Node &getServerConfig();
     int32_t getServerID();
 
+    [[nodiscard]] IServerLogic *getServerLogic() const;
+
 private:
     bool loadServerDLL(const std::string &path);
     awaitable<void> waitForConnect();

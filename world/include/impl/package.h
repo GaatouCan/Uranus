@@ -34,28 +34,21 @@ class BASE_API FPackage final : public IPackage {
     FHeader header_;
     FByteArray data_;
 
-public:
-    FPackage();
-    ~FPackage() override;
-
-    FPackage(const FPackage &rhs);
-    FPackage(FPackage &&rhs) noexcept;
-
-    FPackage &operator=(const FPackage &rhs);
-    FPackage &operator=(FPackage &&rhs) noexcept;
-
-    FPackage(uint32_t id, std::string_view str);
-    FPackage(uint32_t id, const std::stringstream &ss);
-
+protected:
+    void initial() override;
     void reset() override;
 
-    void invalid() override;
+public:
+    explicit FPackage(IRecycler* handle);
+    ~FPackage() override;
+
     [[nodiscard]] bool available() const override;
 
     FPackage &setPackageID(uint32_t id);
     [[nodiscard]] uint32_t getPackageID() const override;
 
-    void copyFrom(IPackage *other) override;
+    void invalid() override;
+    bool copyFrom(IRecyclable *other) override;
 
     FPackage &setData(std::string_view str);
     FPackage &setData(const std::stringstream &ss);
@@ -74,20 +67,13 @@ public:
     [[nodiscard]] std::string toString() const;
     [[nodiscard]] const FByteArray &getByteArray() const;
 
-    static void SetPackageMagic(uint32_t magic);
-    static void SetPackageVersion(uint32_t version);
-    static void SetPackageMethod(const std::string &method);
-
     static void LoadConfig(const YAML::Node &config);
-
-    static IPackage *CreatePackage();
-    static void InitPackage(IPackage *pkg);
 
     static constexpr size_t PACKAGE_HEADER_SIZE = sizeof(FHeader);
 
     static uint32_t kPackageMagic;
     static uint32_t kPackageVersion;
-    static std::string kPackageMethod;
+    static ECodecMethod kPackageMethod;
 
 private:
     [[nodiscard]] FByteArray &rawByteArray();

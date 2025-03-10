@@ -73,26 +73,25 @@ void USceneManager::init() {
     const auto &cfg = world_->getServerConfig();
     const auto num = cfg["server"]["io_thread"].as<int32_t>();
 
-    for (int32_t idx = 0; idx < num; ++idx)
-        mainSceneList_.emplace_back(new UMainScene(this, idx));
+    for (int32_t idx = 0; idx < num; ++idx) {
+        auto scene = new UMainScene(this, idx);
 
-    for (const auto val: mainSceneList_) {
-        if (const auto scene = dynamic_cast<UMainScene *>(val); scene != nullptr) {
-            workList_.emplace_back(scene->getIOContext());
-            threads_.emplace_back([this, scene] {
-                asio::signal_set signals(scene->getIOContext(), SIGINT, SIGTERM);
-                signals.async_wait([scene](auto, auto) {
-                    scene->getIOContext().stop();
-                    spdlog::info("Main Scene[{}] Shutdown.", scene->getSceneID());
-                });
-
-                scene->setThreadID(std::this_thread::get_id());
-                scene->getIOContext().run();
+        workList_.emplace_back(scene->getIOContext());
+        threads_.emplace_back([this, scene] {
+            asio::signal_set signals(scene->getIOContext(), SIGINT, SIGTERM);
+            signals.async_wait([scene](auto, auto) {
+                scene->getIOContext().stop();
+                spdlog::info("Main Scene[{}] Shutdown.", scene->getSceneID());
             });
-        }
-    }
-    running_ = true;
 
+            scene->setThreadID(std::this_thread::get_id());
+            scene->getIOContext().run();
+        });
+
+        mainSceneList_.emplace_back(scene);
+    }
+
+    running_ = true;
     spdlog::info("Started With {} Thread(s).", num);
 
     co_spawn(getWorld()->getIOContext(), [this]() mutable -> awaitable<void> {
