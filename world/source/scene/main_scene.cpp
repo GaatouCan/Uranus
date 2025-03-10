@@ -5,6 +5,8 @@
 UMainScene::UMainScene(USceneManager *owner, const int32_t id, IRecycler *pool)
     : IBaseScene(owner, id),
       pool_(pool) {
+
+    assert(pool_ != nullptr);
 }
 
 UMainScene::~UMainScene() {

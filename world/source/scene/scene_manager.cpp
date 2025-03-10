@@ -74,7 +74,7 @@ void USceneManager::init() {
     const auto num = cfg["server"]["io_thread"].as<int32_t>();
 
     const auto server = getWorld()->getServerLogic();
-    // assert(server != nullptr);
+    assert(server != nullptr);
 
     for (int32_t idx = 0; idx < num; ++idx) {
         auto scene = new UMainScene(this, idx, server->createPackagePool());
