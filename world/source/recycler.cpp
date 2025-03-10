@@ -81,7 +81,7 @@ void IRecycler::expanse() {
     if (usingSet_.empty() && !queue_.empty())
         return;
 
-    if (static_cast<double>(queue_.size()) / capacity() > expanseRate_)
+    if (static_cast<double>(usingSet_.size()) / capacity() < expanseRate_)
         return;
 
     const auto num = static_cast<size_t>(std::ceil(static_cast<float>(capacity()) * expanseScale_));
@@ -113,7 +113,7 @@ void IRecycler::collect() {
         });
     }
 
-    if (queue_.size() <= minCapacity_ || (static_cast<float>(usingSet_.size()) / capacity() < collectRate_))
+    if (queue_.size() <= minCapacity_ || (static_cast<float>(queue_.size()) / capacity() < collectRate_))
         return;
 
     collectTime_ = now;
