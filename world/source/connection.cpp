@@ -176,11 +176,10 @@ awaitable<void> UConnection::writePackage() {
             if (pkg->available()) {
                 if (handler_ != nullptr)
                     co_await handler_->onWritePackage(pkg);
-
-                getPackagePool()->recycle(pkg);
+                pkg->recycle();
             } else {
                 spdlog::warn("{} - Write Failed - key[{}]", __FUNCTION__, key_.empty() ? "null" : key_);
-                getPackagePool()->recycle(pkg);
+                pkg->recycle();
                 disconnect();
             }
         }
@@ -213,12 +212,14 @@ awaitable<void> UConnection::readPackage() {
                     co_await getWorld()->getLoginAuthenticator()->onLogin(shared_from_this(), pkg);
                 else
                     getWorld()->getProtoRoute()->onReadPackage(shared_from_this(), pkg);
+
+                pkg->recycle();
             } else {
                 spdlog::warn("{} - Read failed - key[{}]", __FUNCTION__, key_.empty() ? "null" : key_);
+
+                pkg->recycle();
                 disconnect();
             }
-
-            getPackagePool()->recycle(pkg);
         }
     } catch (std::exception &e) {
         spdlog::error("{} - {} - key[{}]", __FUNCTION__, e.what(), key_.empty() ? "null" : key_);

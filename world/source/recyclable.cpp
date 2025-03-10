@@ -17,6 +17,5 @@ bool IRecyclable::copyFrom(IRecyclable *other) {
 }
 
 void IRecyclable::recycle() {
-    reset();
     handle_->recycle(this);
 }

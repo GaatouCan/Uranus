@@ -25,7 +25,7 @@ public:
 
     virtual bool copyFrom(IRecyclable *other);
 
-    virtual void recycle();
-
     [[nodiscard]] virtual bool available() const = 0;
+
+    virtual void recycle();
 };

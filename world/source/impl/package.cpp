@@ -93,7 +93,7 @@ uint32_t FPackage::getPackageID() const {
 }
 
 void FPackage::invalid() {
-    reset();
+    header_.id = MINIMUM_PACKAGE_ID - 1;
 }
 
 size_t FPackage::getDataLength() const {
@@ -121,7 +121,6 @@ void FPackage::LoadConfig(const YAML::Node &config) {
 
     if (!config["package"]["version"].IsNull())
         kPackageVersion = config["package"]["version"].as<uint32_t>();
-
 
     if (!config["package"]["method"].IsNull()) {
         const auto str = config["package"]["method"].as<std::string>();

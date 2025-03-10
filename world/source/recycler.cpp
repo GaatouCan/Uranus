@@ -141,8 +141,7 @@ void IRecycler::recycle(IRecyclable *obj) {
             return;
     }
 
-    if (obj->available())
-        obj->reset();
+    obj->reset();
 
     {
         std::unique_lock lock(mutex_);

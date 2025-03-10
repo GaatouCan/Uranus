@@ -97,16 +97,7 @@ UGameWorld &UGameWorld::init(const std::string &path) {
     configManager_->init();
     assert(configManager_->loaded());
 
-    const auto &config = getServerConfig();
-
-    // UPackagePool::LoadConfig(config);
-    //
-    // // 如果DLL未指定自定义数据包 则使用默认数据包
-    // if (!UPackagePool::HasAssignedBuilder()) {
-    //     FPackage::LoadConfig(config);
-    //     UPackagePool::SetPackageBuilder(&FPackage::CreatePackage);
-    //     UPackagePool::SetPackageInitializer(&FPackage::InitPackage);
-    // }
+    server_->setPackage();
 
     sceneManager_->init();
     globalQueue_->init();

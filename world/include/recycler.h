@@ -51,7 +51,7 @@ public:
     IRecyclable *acquire();
     void recycle(IRecyclable *obj);
 
-    virtual IRecyclable *create() const = 0;
+    virtual IRecyclable *create() = 0;
 };
 
 
@@ -64,8 +64,7 @@ public:
         return dynamic_cast<Type *>(res);
     }
 
-    IRecyclable *create() const override {
-        auto res = new Type(this);
-        return res;
+    IRecyclable *create() override {
+        return new Type(this);
     }
 };
