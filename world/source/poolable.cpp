@@ -2,7 +2,7 @@
 #include "../include/recycler.h"
 
 
-IPoolable::IPoolable(IRecycler *handle)
+IPoolable::IPoolable(uranus::internal::IRecycler *handle)
     : handle_(handle) {
 }
 

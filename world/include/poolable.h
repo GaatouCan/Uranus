@@ -8,13 +8,12 @@ namespace uranus::internal {
 
 
 class BASE_API IPoolable {
-    using uranus::internal::IRecycler;
 
-    friend class IRecycler;
-    IRecycler* handle_;
+    friend class uranus::internal::IRecycler;
+    uranus::internal::IRecycler* handle_;
 
 protected:
-    explicit IPoolable(IRecycler* handle);
+    explicit IPoolable(uranus::internal::IRecycler* handle);
     virtual ~IPoolable();
 
     virtual void initial() = 0;
