@@ -2,8 +2,13 @@
 
 #include "common.h"
 
+namespace uranus::internal {
+    class IRecycler;
+}
+
 
 class BASE_API IPoolable {
+    using uranus::internal::IRecycler;
 
     friend class IRecycler;
     IRecycler* handle_;

@@ -9,54 +9,57 @@
 #include <atomic>
 #include <concepts>
 
+namespace uranus::internal {
 
-class BASE_API IRecycler {
+    class BASE_API IRecycler {
 
-    std::queue<IPoolable *> queue_;
-    absl::flat_hash_set<IPoolable *> usingSet_;
+        std::queue<IPoolable *> queue_;
+        absl::flat_hash_set<IPoolable *> usingSet_;
 
-    mutable std::shared_mutex mutex_;
+        mutable std::shared_mutex mutex_;
 
-    std::atomic<ATimePoint> collectTime_;
-    size_t minCapacity_;
+        std::atomic<ATimePoint> collectTime_;
+        size_t minCapacity_;
 
-    float expanseRate_;
-    float expanseScale_;
+        float expanseRate_;
+        float expanseScale_;
 
-    float collectRate_;
-    float collectScale_;
+        float collectRate_;
+        float collectScale_;
 
-protected:
-    IPoolable *acquireInternal();
+    protected:
+        IPoolable *acquireInternal();
 
-    void expanse();
-    void collect();
+        void expanse();
+        void collect();
 
-public:
-    IRecycler();
-    virtual ~IRecycler();
+    public:
+        IRecycler();
+        virtual ~IRecycler();
 
-    DISABLE_COPY_MOVE(IRecycler)
+        DISABLE_COPY_MOVE(IRecycler)
 
-    [[nodiscard]] size_t capacity() const;
+        [[nodiscard]] size_t capacity() const;
 
-    IRecycler& setMinimumCapacity(size_t capacity);
+        IRecycler& setMinimumCapacity(size_t capacity);
 
-    IRecycler& setExpanseRate(float rate);
-    IRecycler& setExpanseScale(float scale);
+        IRecycler& setExpanseRate(float rate);
+        IRecycler& setExpanseScale(float scale);
 
-    IRecycler& setCollectRate(float rate);
-    IRecycler& setCollectScale(float scale);
+        IRecycler& setCollectRate(float rate);
+        IRecycler& setCollectScale(float scale);
 
-    virtual void init(size_t capacity);
-    void recycle(IPoolable *obj);
+        virtual void init(size_t capacity);
+        void recycle(IPoolable *obj);
 
-    virtual IPoolable* create() const = 0;
-};
+        virtual IPoolable* create() const = 0;
+    };
+}
+
 
 template<class Type>
 requires std::derived_from<Type, IPoolable>
-class BASE_API TRecycler final : public IRecycler {
+class BASE_API TRecycler final : public uranus::internal::IRecycler {
 
 public:
     Type *acquire() {
