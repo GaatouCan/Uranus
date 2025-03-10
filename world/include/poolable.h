@@ -2,18 +2,14 @@
 
 #include "common.h"
 
-namespace uranus::internal {
-    class IRecycler;
-}
-
 
 class BASE_API IPoolable {
 
-    friend class uranus::internal::IRecycler;
-    uranus::internal::IRecycler* handle_;
+    friend class IRecycler;
+    IRecycler* handle_;
 
 protected:
-    explicit IPoolable(uranus::internal::IRecycler* handle);
+    explicit IPoolable(IRecycler* handle);
     virtual ~IPoolable();
 
     virtual void initial() = 0;
