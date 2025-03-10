@@ -41,9 +41,7 @@ size_t IRecycler::capacity() const {
 
 void IRecycler::init(const size_t capacity) {
     for (size_t i = 0; i < capacity; i++) {
-        auto *elem = create();;
-
-        if (elem != nullptr) {
+        if (auto *elem = create(); elem != nullptr) {
             queue_.push(elem);
         }
     }
@@ -107,14 +105,18 @@ void IRecycler::recycle(IPoolable *obj) {
     if (obj->handle_ != nullptr && obj->handle_ != this) {
         obj->recycle();
         return;
-    } {
+    }
+
+    {
         std::shared_lock lock(mutex_);
         if (!usingSet_.contains(obj))
             return;
     }
 
     if (obj->available())
-        obj->reset(); {
+        obj->reset();
+
+    {
         std::unique_lock lock(mutex_);
 
         queue_.push(obj);
