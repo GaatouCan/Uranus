@@ -1,11 +1,15 @@
 #include "../include/recycler.h"
 
-IRecycler::IRecycler() {
-
+IRecycler::IRecycler()
+    : minCapacity_(64),
+      expanseRate_(0.3f),
+      expanseScale_(1.f),
+      collectRate_(1.f),
+      collectScale_(0.7f) {
 }
 
 IRecycler::~IRecycler() {
-    for (const auto it : usingSet_) {
+    for (const auto it: usingSet_) {
         delete it;
     }
 
@@ -16,12 +20,10 @@ IRecycler::~IRecycler() {
     }
 }
 
-IPoolable * IRecycler::acquireInternal() {
+IPoolable *IRecycler::acquireInternal() {
     expanse();
 
-    IPoolable *res = nullptr;
-
-    {
+    IPoolable *res = nullptr; {
         std::unique_lock lock(mutex_);
         res = queue_.front();
         queue_.pop();
@@ -35,6 +37,16 @@ IPoolable * IRecycler::acquireInternal() {
 size_t IRecycler::capacity() const {
     std::shared_lock lock(mutex_);
     return queue_.size() + usingSet_.size();
+}
+
+void IRecycler::init(const size_t capacity) {
+    for (size_t i = 0; i < capacity; i++) {
+        auto *elem = create();;
+
+        if (elem != nullptr) {
+            queue_.push(elem);
+        }
+    }
 }
 
 void IRecycler::expanse() {
@@ -63,13 +75,14 @@ void IRecycler::collect() {
 
     {
         std::unique_lock lock(mutex_);
-        for (auto it = usingSet_.begin(); it != usingSet_.end(); ++it) {
-            if (!(*it)->available()) {
-                (*it)->reset();
-                queue_.push(*it);
-                usingSet_.erase(it);
+        erase_if(usingSet_, [this](const auto &it) {
+            if (!it->available()) {
+                it->reset();
+                queue_.push(it);
+                return true;
             }
-        }
+            return false;
+        });
     }
 
     if (queue_.size() <= minCapacity_ || std::floor(queue_.size() / capacity()) < collectRate_)
@@ -81,9 +94,9 @@ void IRecycler::collect() {
 
     std::unique_lock lock(mutex_);
     for (size_t i = 0; i < num && queue_.size() > minCapacity_; i++) {
-        const auto pkg = queue_.front();
+        const auto elem = queue_.front();
         queue_.pop();
-        delete pkg;
+        delete elem;
     }
 }
 
@@ -94,18 +107,14 @@ void IRecycler::recycle(IPoolable *obj) {
     if (obj->handle_ != nullptr && obj->handle_ != this) {
         obj->recycle();
         return;
-    }
-
-    {
+    } {
         std::shared_lock lock(mutex_);
         if (!usingSet_.contains(obj))
             return;
     }
 
     if (obj->available())
-        obj->reset();
-
-    {
+        obj->reset(); {
         std::unique_lock lock(mutex_);
 
         queue_.push(obj);

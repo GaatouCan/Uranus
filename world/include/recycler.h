@@ -7,6 +7,7 @@
 #include <queue>
 #include <shared_mutex>
 #include <atomic>
+#include <concepts>
 
 
 class IRecycler {
@@ -39,8 +40,23 @@ public:
 
     [[nodiscard]] size_t capacity() const;
 
-    virtual void init(size_t capacity) = 0;
+    virtual void init(size_t capacity);
     void recycle(IPoolable *obj);
 
     virtual IPoolable* create() const = 0;
+};
+
+template<class Type>
+requires std::derived_from<Type, IPoolable>
+class BASE_API TRecycler final : public IRecycler {
+
+public:
+    Type *acquire() {
+        auto res = acquireInternal();
+        return dynamic_cast<Type *>(res);
+    }
+
+    IPoolable *create() const override {
+        return new Type(this);
+    }
 };
