@@ -23,7 +23,9 @@ IRecycler::~IRecycler() {
 IPoolable *IRecycler::acquireInternal() {
     expanse();
 
-    IPoolable *res = nullptr; {
+    IPoolable *res = nullptr;
+
+    {
         std::unique_lock lock(mutex_);
         res = queue_.front();
         queue_.pop();
@@ -37,6 +39,31 @@ IPoolable *IRecycler::acquireInternal() {
 size_t IRecycler::capacity() const {
     std::shared_lock lock(mutex_);
     return queue_.size() + usingSet_.size();
+}
+
+IRecycler& IRecycler::setMinimumCapacity(const size_t capacity) {
+    minCapacity_ = capacity;
+    return *this;
+}
+
+IRecycler& IRecycler::setExpanseRate(const float rate) {
+    expanseRate_ = rate;
+    return *this;
+}
+
+IRecycler& IRecycler::setExpanseScale(const float scale) {
+    expanseScale_ = scale;
+    return *this;
+}
+
+IRecycler& IRecycler::setCollectRate(const float rate) {
+    collectRate_ = rate;
+    return *this;
+}
+
+IRecycler& IRecycler::setCollectScale(const float scale) {
+    collectScale_ = scale;
+    return *this;
 }
 
 void IRecycler::init(const size_t capacity) {

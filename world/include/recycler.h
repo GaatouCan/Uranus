@@ -10,7 +10,7 @@
 #include <concepts>
 
 
-class IRecycler {
+class BASE_API IRecycler {
 
     std::queue<IPoolable *> queue_;
     absl::flat_hash_set<IPoolable *> usingSet_;
@@ -39,6 +39,14 @@ public:
     DISABLE_COPY_MOVE(IRecycler)
 
     [[nodiscard]] size_t capacity() const;
+
+    IRecycler& setMinimumCapacity(size_t capacity);
+
+    IRecycler& setExpanseRate(float rate);
+    IRecycler& setExpanseScale(float scale);
+
+    IRecycler& setCollectRate(float rate);
+    IRecycler& setCollectScale(float scale);
 
     virtual void init(size_t capacity);
     void recycle(IPoolable *obj);

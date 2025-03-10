@@ -9,7 +9,6 @@ class BASE_API IPoolable {
     IRecycler* handle_;
 
 protected:
-
     explicit IPoolable(IRecycler* handle);
     virtual ~IPoolable();
 
