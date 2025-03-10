@@ -27,5 +27,5 @@ public:
 
     virtual void setPackage();
 
-    virtual void setPackagePool(class UMainScene *scene);
+    virtual class IRecycler * createPackagePool();
 };

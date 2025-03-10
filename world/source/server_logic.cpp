@@ -5,7 +5,6 @@
 #include "../include/connection.h"
 #include "../include/impl/package_codec.h"
 #include "../include/impl/package.h"
-#include "../include/scene/main_scene.h"
 
 IServerLogic::IServerLogic(UGameWorld *world)
     : world_(world) {
@@ -27,29 +26,30 @@ void IServerLogic::setPackage() {
     FPackage::LoadConfig(cfg);
 }
 
-void IServerLogic::setPackagePool(UMainScene *scene) {
-    scene->pool_ = new TRecycler<FPackage>();
-
+IRecycler * IServerLogic::createPackagePool() {
     const auto &cfg = getWorld()->getServerConfig();
+    const auto pool = new TRecycler<FPackage>();
 
     if (cfg["package"].IsNull() && cfg["package"]["pool"].IsNull())
-        return;
+        return pool;
 
     if (!cfg["package"]["pool"]["minimum_capacity"].IsNull())
-        scene->pool_->setMinimumCapacity(cfg["package"]["pool"]["minimum_capacity"].as<size_t>());
+        pool->setMinimumCapacity(cfg["package"]["pool"]["minimum_capacity"].as<size_t>());
 
     if (!cfg["package"]["pool"]["expanse_rate"].IsNull())
-        scene->pool_->setExpanseRate(cfg["package"]["pool"]["expanse_rate"].as<float>());
+        pool->setExpanseRate(cfg["package"]["pool"]["expanse_rate"].as<float>());
 
     if (!cfg["package"]["pool"]["expanse_scale"].IsNull())
-        scene->pool_->setExpanseScale(cfg["package"]["pool"]["expanse_scale"].as<float>());
+        pool->setExpanseScale(cfg["package"]["pool"]["expanse_scale"].as<float>());
 
     if (!cfg["package"]["pool"]["collect_rate"].IsNull())
-        scene->pool_->setCollectRate(cfg["package"]["pool"]["collect_rate"].as<float>());
+        pool->setCollectRate(cfg["package"]["pool"]["collect_rate"].as<float>());
 
     if (!cfg["package"]["pool"]["collect_scale"].IsNull())
-        scene->pool_->setCollectScale(cfg["package"]["pool"]["collect_scale"].as<float>());
+        pool->setCollectScale(cfg["package"]["pool"]["collect_scale"].as<float>());
 
     if (!cfg["package"]["pool"]["default_capacity"].IsNull())
-        scene->pool_->init(cfg["package"]["pool"]["default_capacity"].as<size_t>());
+        pool->init(cfg["package"]["pool"]["default_capacity"].as<size_t>());
+
+    return pool;
 }

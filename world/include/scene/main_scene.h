@@ -5,15 +5,13 @@
 
 class BASE_API UMainScene final : public IBaseScene {
 
-    friend class IServerLogic;
-
     class IRecycler* pool_;
 
     asio::io_context context_;
     AThreadID thread_;
 
 public:
-    UMainScene(USceneManager *owner, int32_t id);
+    UMainScene(USceneManager *owner, int32_t id, IRecycler *pool);
     ~UMainScene() override;
 
     void setThreadID(AThreadID tid);

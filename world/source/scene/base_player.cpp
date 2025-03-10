@@ -1,7 +1,6 @@
 #include "../../include/scene/base_player.h"
 #include "../../include/scene/base_scene.h"
 #include "../../include/connection.h"
-// #include "../../CrossRoute.h"
 
 #include <utility>
 #include <ranges>

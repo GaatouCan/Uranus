@@ -1,10 +1,10 @@
 #include "../../include/scene/scene_manager.h"
 #include "../../include/scene/main_scene.h"
 #include "../../include/game_world.h"
+#include "../../include/server_logic.h"
 
 #include <ranges>
 #include <spdlog/spdlog.h>
-
 
 USceneManager::USceneManager(UGameWorld *world)
     : world_(world),
@@ -73,8 +73,11 @@ void USceneManager::init() {
     const auto &cfg = world_->getServerConfig();
     const auto num = cfg["server"]["io_thread"].as<int32_t>();
 
+    const auto server = getWorld()->getServerLogic();
+    // assert(server != nullptr);
+
     for (int32_t idx = 0; idx < num; ++idx) {
-        auto scene = new UMainScene(this, idx);
+        auto scene = new UMainScene(this, idx, server->createPackagePool());
 
         workList_.emplace_back(scene->getIOContext());
         threads_.emplace_back([this, scene] {
