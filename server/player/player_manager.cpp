@@ -44,7 +44,7 @@ void UPlayerManager::init() {
 
 void UPlayerManager::onDayChange() {
     for (const auto &plr: playerMap_ | std::views::values) {
-        if (plr != nullptr && plr->isOnline()) {
+        if (plr != nullptr && plr->checkOnline()) {
             plr->onDayChange();
         }
     }
@@ -69,7 +69,7 @@ awaitable<std::shared_ptr<UPlayer>> UPlayerManager::onPlayerLogin(const std::sha
 
         plr->tryLeaveScene();
 
-        if (plr->isOnline()) {
+        if (plr->checkOnline()) {
             plr->onLogout(true, conn->remoteAddress().to_string());
         }
     }
@@ -122,7 +122,7 @@ void UPlayerManager::sendToList(const std::set<FPlayerID> &players, const int32_
         return;
 
     for (const auto [localID, crossID]: players) {
-        if (const auto plr = findPlayer(localID); plr != nullptr && plr->isOnline()) {
+        if (const auto plr = findPlayer(localID); plr != nullptr && plr->checkOnline()) {
             const auto pkg = dynamic_cast<FPackage *>(plr->getConnection()->buildPackage());
             pkg->setPackageID(id).setData(data);
             plr->sendPackage(pkg);

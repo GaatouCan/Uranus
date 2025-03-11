@@ -79,7 +79,7 @@ void UPlayer::onLogout(const bool is_force, const std::string &other_address) {
     DISPATCH_EVENT(PLAYER_LOGOUT, param);
 }
 
-bool UPlayer::isOnline() const {
+bool UPlayer::checkOnline() const {
     constexpr ATimePoint zero_time_point{};
     const auto now = NowTimePoint();
 

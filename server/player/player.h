@@ -36,7 +36,7 @@ public:
     awaitable<void> onLogin();
     void onLogout(bool is_force = false, const std::string &other_address = "");
 
-    bool isOnline() const;
+    bool checkOnline() const;
 
     void send(uint32_t id, std::string_view data) const;
     void send(uint32_t id, const std::stringstream &ss) const;

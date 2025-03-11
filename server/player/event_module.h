@@ -60,5 +60,5 @@ public:
     void dispatch(EEvent event, IEventParam *param, EDispatchType type = EDispatchType::PUSH_QUEUE);
 
 private:
-    asio::awaitable<void> handleEvent();
+    awaitable<void> handleEvent();
 };
