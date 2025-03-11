@@ -17,7 +17,7 @@ UGameWorld *IServerLogic::getWorld() const {
     return world_;
 }
 
-void IServerLogic::setConnectionCodec(const std::shared_ptr<UConnection>& conn) {
+void IServerLogic::setConnectionCodec(const std::shared_ptr<UConnection> &conn) {
     conn->setPackageCodec<UPackageCodec>();
 }
 
@@ -26,30 +26,26 @@ void IServerLogic::setPackage() {
     FPackage::LoadConfig(cfg);
 }
 
-IRecycler * IServerLogic::createPackagePool() {
+IRecycler *IServerLogic::createPackagePool() {
     const auto &cfg = getWorld()->getServerConfig();
+
+    const auto defaultCapacity = cfg["package"]["pool"]["default_capacity"].as<size_t>();
+    const auto minimumCapacity = cfg["package"]["pool"]["minimum_capacity"].as<size_t>();
+
+    const auto expanseRate = cfg["package"]["pool"]["expanse_rate"].as<float>();
+    const auto expanseScale = cfg["package"]["pool"]["expanse_scale"].as<float>();
+
+    const auto collectRate = cfg["package"]["pool"]["collect_rate"].as<float>();
+    const auto collectScale = cfg["package"]["pool"]["collect_scale"].as<float>();
+
     const auto pool = new TRecycler<FPackage>();
 
-    if (cfg["package"].IsNull() && cfg["package"]["pool"].IsNull())
-        return pool;
-
-    if (!cfg["package"]["pool"]["minimum_capacity"].IsNull())
-        pool->setMinimumCapacity(cfg["package"]["pool"]["minimum_capacity"].as<size_t>());
-
-    if (!cfg["package"]["pool"]["expanse_rate"].IsNull())
-        pool->setExpanseRate(cfg["package"]["pool"]["expanse_rate"].as<float>());
-
-    if (!cfg["package"]["pool"]["expanse_scale"].IsNull())
-        pool->setExpanseScale(cfg["package"]["pool"]["expanse_scale"].as<float>());
-
-    if (!cfg["package"]["pool"]["collect_rate"].IsNull())
-        pool->setCollectRate(cfg["package"]["pool"]["collect_rate"].as<float>());
-
-    if (!cfg["package"]["pool"]["collect_scale"].IsNull())
-        pool->setCollectScale(cfg["package"]["pool"]["collect_scale"].as<float>());
-
-    if (!cfg["package"]["pool"]["default_capacity"].IsNull())
-        pool->init(cfg["package"]["pool"]["default_capacity"].as<size_t>());
+    pool->setDefaultCapacity(defaultCapacity)
+            .setMinimumCapacity(minimumCapacity)
+            .setExpanseRate(expanseRate)
+            .setExpanseScale(expanseScale)
+            .setCollectRate(collectRate)
+            .setCollectScale(collectScale);
 
     return pool;
 }

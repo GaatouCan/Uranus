@@ -48,7 +48,7 @@ AThreadID IBasePlayer::getThreadID() const {
 }
 
 bool IBasePlayer::isSameThread() const {
-    return conn_->isSameThread();
+    return conn_->checkSameThread();
 }
 
 int32_t IBasePlayer::getLocalID() const {

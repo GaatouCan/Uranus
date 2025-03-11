@@ -1,12 +1,18 @@
 #include "../../include/scene/main_scene.h"
+#include "../../include/server_logic.h"
 #include "../../include/game_world.h"
 #include "../../include/recycler.h"
 
-UMainScene::UMainScene(USceneManager *owner, const int32_t id, IRecycler *pool)
+UMainScene::UMainScene(USceneManager *owner, const int32_t id)
     : IBaseScene(owner, id),
-      pool_(pool) {
+      pool_(nullptr) {
+
+    if (const auto server = getWorld()->getServerLogic(); server != nullptr) {
+        pool_ = server->createPackagePool();
+    }
 
     assert(pool_ != nullptr);
+    pool_->init();
 }
 
 UMainScene::~UMainScene() {

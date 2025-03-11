@@ -110,7 +110,7 @@ UGameWorld *UConnection::getWorld() const {
     return scene_->getWorld();
 }
 
-bool UConnection::isSameThread() const {
+bool UConnection::checkSameThread() const {
     return getThreadID() == std::this_thread::get_id();
 }
 

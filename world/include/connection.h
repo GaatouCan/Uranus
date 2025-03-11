@@ -63,7 +63,7 @@ public:
     static void setWriteTimeout(uint32_t sec);
     static void setReadTimeout(uint32_t sec);
 
-    [[nodiscard]] bool isSameThread() const;
+    [[nodiscard]] bool checkSameThread() const;
 
     template<typename T, typename ... Args>
     requires std::derived_from<T, IPackageCodec>

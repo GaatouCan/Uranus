@@ -18,13 +18,15 @@ class BASE_API IRecycler {
     mutable std::shared_mutex mutex_;
 
     std::atomic<ATimePoint> collectTime_;
-    size_t minCapacity_;    // 最小容量
 
-    float expanseRate_;     // 已使用到该比例时扩展
-    float expanseScale_;    // 扩展倍数
+    size_t defaultCapacity_;    // 默认容量
+    size_t minCapacity_;        // 最小容量
 
-    float collectRate_;     // 未使用小于该比例时回收
-    float collectScale_;    // 回收总数百分比
+    float expanseRate_;         // 已使用到该比例时扩展
+    float expanseScale_;        // 扩展倍数
+
+    float collectRate_;         // 未使用小于该比例时回收
+    float collectScale_;        // 回收总数百分比
 
 protected:
     void expanse();
@@ -38,6 +40,7 @@ public:
 
     [[nodiscard]] size_t capacity() const;
 
+    IRecycler &setDefaultCapacity(size_t capacity);
     IRecycler &setMinimumCapacity(size_t capacity);
 
     IRecycler &setExpanseRate(float rate);
@@ -46,7 +49,7 @@ public:
     IRecycler &setCollectRate(float rate);
     IRecycler &setCollectScale(float scale);
 
-    virtual void init(size_t capacity);
+    virtual void init();
 
     IRecyclable *acquire();
     void recycle(IRecyclable *obj);

@@ -2,7 +2,8 @@
 
 
 IRecycler::IRecycler()
-    : minCapacity_(64),
+    : defaultCapacity_(64),
+      minCapacity_(32),
       expanseRate_(0.7f),
       expanseScale_(1.f),
       collectRate_(0.9f),
@@ -44,6 +45,11 @@ size_t IRecycler::capacity() const {
     return queue_.size() + usingSet_.size();
 }
 
+IRecycler & IRecycler::setDefaultCapacity(size_t capacity) {
+    defaultCapacity_ = capacity;
+    return *this;
+}
+
 IRecycler &IRecycler::setMinimumCapacity(const size_t capacity) {
     minCapacity_ = capacity;
     return *this;
@@ -69,8 +75,8 @@ IRecycler &IRecycler::setCollectScale(const float scale) {
     return *this;
 }
 
-void IRecycler::init(size_t capacity) {
-    capacity = std::max(capacity, static_cast<size_t>(std::ceil(static_cast<float>(minCapacity_) * 1.5f)));
+void IRecycler::init() {
+    const size_t capacity = std::max(defaultCapacity_, static_cast<size_t>(std::ceil(static_cast<float>(minCapacity_) * 1.5f)));
     for (size_t i = 0; i < capacity; i++) {
         if (auto *elem = create(); elem != nullptr) {
             queue_.push(elem);

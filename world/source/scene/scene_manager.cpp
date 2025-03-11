@@ -73,11 +73,8 @@ void USceneManager::init() {
     const auto &cfg = world_->getServerConfig();
     const auto num = cfg["server"]["io_thread"].as<int32_t>();
 
-    const auto server = getWorld()->getServerLogic();
-    assert(server != nullptr);
-
     for (int32_t idx = 0; idx < num; ++idx) {
-        auto scene = new UMainScene(this, idx, server->createPackagePool());
+        auto scene = new UMainScene(this, idx);
 
         workList_.emplace_back(scene->getIOContext());
         threads_.emplace_back([this, scene] {
