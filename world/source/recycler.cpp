@@ -69,7 +69,8 @@ IRecycler &IRecycler::setCollectScale(const float scale) {
     return *this;
 }
 
-void IRecycler::init(const size_t capacity) {
+void IRecycler::init(size_t capacity) {
+    capacity = std::max(capacity, static_cast<size_t>(std::ceil(static_cast<float>(minCapacity_) * 1.5f)));
     for (size_t i = 0; i < capacity; i++) {
         if (auto *elem = create(); elem != nullptr) {
             queue_.push(elem);
@@ -81,7 +82,7 @@ void IRecycler::expanse() {
     if (usingSet_.empty() && !queue_.empty())
         return;
 
-    if (static_cast<double>(usingSet_.size()) / capacity() < expanseRate_)
+    if (static_cast<double>(usingSet_.size()) / static_cast<float>(capacity()) < expanseRate_)
         return;
 
     const auto num = static_cast<size_t>(std::ceil(static_cast<float>(capacity()) * expanseScale_));
@@ -113,7 +114,7 @@ void IRecycler::collect() {
         });
     }
 
-    if (queue_.size() <= minCapacity_ || (static_cast<float>(queue_.size()) / capacity() < collectRate_))
+    if (capacity() <= minCapacity_ || (static_cast<float>(queue_.size()) / static_cast<float>(capacity()) < collectRate_))
         return;
 
     collectTime_ = now;
@@ -121,7 +122,7 @@ void IRecycler::collect() {
     const auto num = static_cast<size_t>(std::floor(static_cast<float>(capacity()) * collectScale_));
 
     std::unique_lock lock(mutex_);
-    for (size_t i = 0; i < num && queue_.size() > minCapacity_; i++) {
+    for (size_t i = 0; i < num && ((queue_.size() + usingSet_.size()) > minCapacity_); i++) {
         const auto elem = queue_.front();
         queue_.pop();
         delete elem;
