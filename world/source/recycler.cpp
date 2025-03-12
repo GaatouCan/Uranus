@@ -45,8 +45,10 @@ size_t IRecycler::capacity() const {
     return capacity_;
 }
 
-IRecycler & IRecycler::setCapacity(size_t capacity) {
-    capacity_ = capacity;
+IRecycler & IRecycler::setCapacity(const size_t capacity) {
+    if (pool_.empty() && usingSet_.empty())
+        capacity_ = capacity;
+
     return *this;
 }
 
