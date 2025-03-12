@@ -40,12 +40,11 @@ IRecycler *IServerLogic::createPackagePool() {
 
     const auto pool = new TRecycler<FPackage>();
 
-    pool->setDefaultCapacity(defaultCapacity)
-            .setMinimumCapacity(minimumCapacity)
-            .setExpanseRate(expanseRate)
-            .setExpanseScale(expanseScale)
-            .setCollectRate(collectRate)
-            .setCollectScale(collectScale);
+    pool->setCapacity(defaultCapacity).setExpanseScale(expanseScale);
+            // .setMinimumCapacity(minimumCapacity)
+            // .setExpanseRate(expanseRate)
+            // .setCollectRate(collectRate)
+            // .setCollectScale(collectScale);
 
     return pool;
 }

@@ -8,29 +8,21 @@
 #include <shared_mutex>
 #include <atomic>
 #include <concepts>
+#include <vector>
 
 
 class BASE_API IRecycler {
 
-    std::queue<IRecyclable *> queue_;
+    std::vector<IRecyclable *> pool_;
     absl::flat_hash_set<IRecyclable *> usingSet_;
 
     mutable std::shared_mutex mutex_;
 
-    std::atomic<ATimePoint> collectTime_;
-
-    size_t defaultCapacity_;    // 默认容量
-    size_t minCapacity_;        // 最小容量
-
-    float expanseRate_;         // 已使用到该比例时扩展
+    std::atomic_size_t capacity_;    // 默认容量
     float expanseScale_;        // 扩展倍数
 
-    float collectRate_;         // 未使用小于该比例时回收
-    float collectScale_;        // 回收总数百分比
-
 protected:
-    void expanse();
-    void collect();
+    void shrink(size_t rest = 0);
 
 public:
     IRecycler();
@@ -40,14 +32,8 @@ public:
 
     [[nodiscard]] size_t capacity() const;
 
-    IRecycler &setDefaultCapacity(size_t capacity);
-    IRecycler &setMinimumCapacity(size_t capacity);
-
-    IRecycler &setExpanseRate(float rate);
+    IRecycler &setCapacity(size_t capacity);
     IRecycler &setExpanseScale(float scale);
-
-    IRecycler &setCollectRate(float rate);
-    IRecycler &setCollectScale(float scale);
 
     virtual void init();
 
