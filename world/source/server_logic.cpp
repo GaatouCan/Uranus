@@ -30,13 +30,13 @@ IRecycler *IServerLogic::createPackagePool() {
     const auto &cfg = getWorld()->getServerConfig();
 
     const auto defaultCapacity = cfg["package"]["pool"]["default_capacity"].as<size_t>();
-    const auto minimumCapacity = cfg["package"]["pool"]["minimum_capacity"].as<size_t>();
+    // const auto minimumCapacity = cfg["package"]["pool"]["minimum_capacity"].as<size_t>();
 
-    const auto expanseRate = cfg["package"]["pool"]["expanse_rate"].as<float>();
+    // const auto expanseRate = cfg["package"]["pool"]["expanse_rate"].as<float>();
     const auto expanseScale = cfg["package"]["pool"]["expanse_scale"].as<float>();
 
-    const auto collectRate = cfg["package"]["pool"]["collect_rate"].as<float>();
-    const auto collectScale = cfg["package"]["pool"]["collect_scale"].as<float>();
+    // const auto collectRate = cfg["package"]["pool"]["collect_rate"].as<float>();
+    // const auto collectScale = cfg["package"]["pool"]["collect_scale"].as<float>();
 
     const auto pool = new TRecycler<FPackage>();
 
