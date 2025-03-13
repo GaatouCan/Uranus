@@ -11,8 +11,10 @@ IRecycler::~IRecycler() {
         delete val;
     }
 
-    for (const auto &val : pool_) {
-        delete val;
+    while (!queue_.empty()) {
+        const auto elem = queue_.front();
+        queue_.pop();
+        delete elem;
     }
 }
 
@@ -21,17 +23,17 @@ IRecyclable *IRecycler::acquire() {
 
     {
         std::unique_lock lock(mutex_);
-        if (pool_.empty()) {
+        if (queue_.empty()) {
             const auto num = static_cast<size_t>(std::ceil(static_cast<float>(usingSet_.size()) * expanseScale_));
 
             for (auto idx = 0; idx < num; ++idx)
-                pool_.emplace_back(create());
+                queue_.emplace(create());
 
             capacity_ += num;
         }
 
-        res = pool_.back();
-        pool_.pop_back();
+        res = queue_.front();
+        queue_.pop();
         usingSet_.insert(res);
     }
 
@@ -46,7 +48,7 @@ size_t IRecycler::capacity() const {
 }
 
 IRecycler & IRecycler::setCapacity(const size_t capacity) {
-    if (pool_.empty() && usingSet_.empty())
+    if (queue_.empty() && usingSet_.empty())
         capacity_ = capacity;
 
     return *this;
@@ -61,36 +63,37 @@ IRecycler &IRecycler::setExpanseScale(const float scale) {
 void IRecycler::init() {
     std::unique_lock lock(mutex_);
     for (size_t i = 0; i < capacity_; i++) {
-        pool_.emplace_back(create());
+        queue_.emplace(create());
     }
 }
 
 void IRecycler::shrink(const size_t rest) {
     if (rest == 0) {
         std::unique_lock lock(mutex_);
-        for (const auto &val: pool_)
-            delete val;
 
-        pool_.clear();
+        while (!queue_.empty()) {
+            const auto elem = queue_.front();
+            queue_.pop();
+            delete elem;
+        }
 
         capacity_ = usingSet_.size();
-
         return;
     }
 
-    auto num = pool_.size() - rest;
+    auto num = queue_.size() - rest;
 
     std::unique_lock lock(mutex_);
 
-    while (num > 0 && !pool_.empty()) {
-        const auto elem = pool_.back();
-        pool_.pop_back();
-
+    while (num > 0 && !queue_.empty()) {
+        const auto elem = queue_.front();
+        queue_.pop();
         delete elem;
+
         num--;
     }
 
-    capacity_ = pool_.size() + usingSet_.size();
+    capacity_ = queue_.size() + usingSet_.size();
 }
 
 void IRecycler::recycle(IRecyclable *obj) {
@@ -107,6 +110,6 @@ void IRecycler::recycle(IRecyclable *obj) {
     std::unique_lock lock(mutex_);
     if (usingSet_.erase(obj) > 0) {
         // obj->reset();
-        pool_.emplace_back(obj);
+        queue_.emplace(obj);
     }
 }

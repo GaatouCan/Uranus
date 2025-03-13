@@ -8,18 +8,17 @@
 #include <shared_mutex>
 #include <atomic>
 #include <concepts>
-#include <vector>
 
 
 class BASE_API IRecycler {
 
-    std::vector<IRecyclable *> pool_;
+    std::queue<IRecyclable *> queue_;
     absl::flat_hash_set<IRecyclable *> usingSet_;
 
     mutable std::shared_mutex mutex_;
 
     std::atomic_size_t capacity_;    // 默认容量
-    float expanseScale_;        // 扩展倍数
+    float expanseScale_;             // 扩展倍数
 
 protected:
     void shrink(size_t rest = 0);
