@@ -302,7 +302,14 @@ awaitable<void> UGameWorld::waitForConnect() {
                 exit(-1);
             }
 
-            if (auto socket = co_await acceptor_.async_accept(scene->getIOContext()); socket.is_open()) {
+            auto [ec, socket] = co_await acceptor_.async_accept(scene->getIOContext());
+
+            if (ec) {
+                spdlog::error("{} - {}", __FUNCTION__, ec.message());
+                continue;
+            }
+
+            if (socket.is_open()) {
                 const auto addr = socket.remote_endpoint().address();
                 spdlog::info("New Connection From: {}", addr.to_string());
 

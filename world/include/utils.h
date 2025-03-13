@@ -20,8 +20,8 @@ using asio::deferred_t;
 
 using default_token = as_tuple_t<use_awaitable_t<>>;
 
-using ATcpSocket = deferred_t::as_default_on_t<tcp::socket>;
-using ATcpAcceptor = deferred_t::as_default_on_t<tcp::acceptor>;
+using ATcpSocket = default_token::as_default_on_t<tcp::socket>;
+using ATcpAcceptor = default_token::as_default_on_t<tcp::acceptor>;
 
 using ASteadyTimer = default_token::as_default_on_t<asio::steady_timer>;
 using ASystemTimer = default_token::as_default_on_t<asio::system_timer>;
