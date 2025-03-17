@@ -171,17 +171,15 @@ awaitable<void> UConnection::writePackage() {
                 continue;
 
             const auto pkg = res.value();
-            co_await codec_->encode(pkg);
 
-            if (pkg->available()) {
+            if (co_await codec_->encode(pkg)) {
                 if (handler_ != nullptr)
                     co_await handler_->onWritePackage(pkg);
-                pkg->recycle();
             } else {
                 spdlog::warn("{} - Write Failed - key[{}]", __FUNCTION__, key_.empty() ? "null" : key_);
-                pkg->recycle();
-                disconnect();
             }
+
+            pkg->recycle();
         }
     } catch (std::exception &e) {
         spdlog::error("{} - {} - key[{}]", __FUNCTION__, e.what(), key_.empty() ? "null" : key_);
@@ -200,31 +198,29 @@ awaitable<void> UConnection::readPackage() {
         while (socket_.is_open()) {
             const auto pkg = buildPackage();
 
-            co_await codec_->decode(pkg);
-
-            if (pkg->available()) {
+            if (co_await codec_->decode(pkg)) {
                 deadline_ = NowTimePoint() + kExpireTime;
-
-                if (handler_ != nullptr)
-                    co_await handler_->onReadPackage(pkg);
-
-                if (!context_.has_value())
-                    co_await getWorld()->getLoginAuthenticator()->onLogin(shared_from_this(), pkg);
-                else
-                    getWorld()->getProtoRoute()->onReadPackage(shared_from_this(), pkg);
-
-                pkg->recycle();
+                co_await handlePayload(pkg);
             } else {
                 spdlog::warn("{} - Read failed - key[{}]", __FUNCTION__, key_.empty() ? "null" : key_);
-
-                pkg->recycle();
-                disconnect();
             }
+
+            pkg->recycle();
         }
     } catch (std::exception &e) {
         spdlog::error("{} - {} - key[{}]", __FUNCTION__, e.what(), key_.empty() ? "null" : key_);
         disconnect();
     }
+}
+
+awaitable<void> UConnection::handlePayload(IPackage *pkg) {
+    if (handler_ != nullptr)
+        co_await handler_->onReadPackage(pkg);
+
+    if (!context_.has_value())
+        co_await getWorld()->getLoginAuthenticator()->onLogin(shared_from_this(), pkg);
+    else
+        getWorld()->getProtoRoute()->onReadPackage(shared_from_this(), pkg);
 }
 
 awaitable<void> UConnection::Timeout(const std::chrono::duration<uint32_t> expire) {

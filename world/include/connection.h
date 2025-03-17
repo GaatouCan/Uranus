@@ -105,6 +105,8 @@ private:
     awaitable<void> writePackage();
     awaitable<void> readPackage();
 
+    awaitable<void> handlePayload(IPackage *pkg);
+
     static awaitable<void> Timeout(std::chrono::duration<uint32_t> expire);
 };
 

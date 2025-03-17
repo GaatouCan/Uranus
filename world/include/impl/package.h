@@ -33,7 +33,7 @@ class BASE_API FPackage final : public IPackage {
     };
 
     FHeader header_;
-    FByteArray data_;
+    FByteArray payload_;
 
 protected:
     void initial() override;
@@ -49,7 +49,6 @@ public:
     FPackage &setPackageID(uint32_t id);
     [[nodiscard]] uint32_t getPackageID() const override;
 
-    void invalid() override;
     bool copyFrom(IRecyclable *other) override;
 
     FPackage &setData(std::string_view str);
@@ -69,13 +68,7 @@ public:
     [[nodiscard]] std::string toString() const;
     [[nodiscard]] const FByteArray &getByteArray() const;
 
-    static void LoadConfig(const YAML::Node &config);
-
     static constexpr size_t PACKAGE_HEADER_SIZE = sizeof(FHeader);
-
-    static uint32_t kPackageMagic;
-    static uint32_t kPackageVersion;
-    static ECodecMethod kPackageMethod;
 
 private:
     [[nodiscard]] FByteArray &rawByteArray();

@@ -5,9 +5,10 @@
 
 #include <absl/container/flat_hash_set.h>
 #include <queue>
-#include <shared_mutex>
 #include <atomic>
 #include <concepts>
+#include <functional>
+#include <shared_mutex>
 
 
 class BASE_API IRecycler {
@@ -21,7 +22,7 @@ class BASE_API IRecycler {
     float expanseScale_;             // 扩展倍数
 
 protected:
-    void shrink(size_t rest = 0);
+    virtual IRecyclable *create() = 0;
 
 public:
     IRecycler();
@@ -39,20 +40,33 @@ public:
     IRecyclable *acquire();
     void recycle(IRecyclable *obj);
 
-    virtual IRecyclable *create() = 0;
+    void shrink(size_t rest = 0);
 };
 
 
 template<class Type>
 requires std::derived_from<Type, IRecyclable>
 class BASE_API TRecycler final : public IRecycler {
+
+    std::function<void(Type *)> onCreate_;
+
 public:
+    void setCreateCallback(const std::function<void(Type *)> &cb) {
+        onCreate_ = cb;
+    }
+
     Type *acquireT() {
         auto res = acquire();
         return dynamic_cast<Type *>(res);
     }
 
+private:
     IRecyclable *create() override {
-        return new Type(this);
+        auto elem = new Type(this);
+
+        if (onCreate_)
+            onCreate_(elem);
+
+        return elem;
     }
 };

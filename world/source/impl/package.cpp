@@ -1,15 +1,9 @@
 #include "../../include/impl/package.h"
 
-#include <assert.h>
-
 #ifdef __linux__
 #include <cstring>
 #endif
 
-
-uint32_t FPackage::kPackageMagic = 0;
-uint32_t FPackage::kPackageVersion = 0;
-ECodecMethod FPackage::kPackageMethod = ECodecMethod::UNAVAILABLE;
 
 FPackage::FPackage(IRecycler *handle)
     : IPackage(handle),
@@ -21,17 +15,10 @@ FPackage::FPackage(IRecycler *handle)
 FPackage::~FPackage() = default;
 
 bool FPackage::unused() const {
-    return header_.id == (MINIMUM_PACKAGE_ID - 1)
-        && header_.magic != 0
-        && header_.version != 0
-        && header_.method != ECodecMethod::UNAVAILABLE;
+    return header_.id == (MINIMUM_PACKAGE_ID - 1);
 }
 
 void FPackage::initial() {
-    header_.magic = kPackageMagic;
-    header_.version = kPackageVersion;
-    header_.method = kPackageMethod;
-
     header_.id = MINIMUM_PACKAGE_ID - 1;
 }
 
@@ -39,7 +26,7 @@ bool FPackage::copyFrom(IRecyclable *other) {
     if (IRecyclable::copyFrom(other)) {
         if (const auto temp = dynamic_cast<FPackage *>(other); temp != nullptr) {
             memcpy(&header_, &temp->header_, sizeof(header_));
-            data_ = temp->data_;
+            payload_ = temp->payload_;
             header_.length = temp->header_.length;
             return true;
         }
@@ -48,8 +35,8 @@ bool FPackage::copyFrom(IRecyclable *other) {
 }
 
 void FPackage::reset() {
-    memset(&header_, 0, sizeof(header_));
-    data_.reset();
+    header_.id = 0;
+    payload_.reset();
 }
 
 bool FPackage::available() const {
@@ -65,8 +52,8 @@ FPackage &FPackage::setPackageID(const uint32_t id) {
 }
 
 FPackage &FPackage::setData(const std::string_view str) {
-    data_.resize(str.size());
-    memcpy(data_.data(), str.data(), str.size());
+    payload_.resize(str.size());
+    memcpy(payload_.data(), str.data(), str.size());
     header_.length = str.size();
     return *this;
 }
@@ -106,45 +93,18 @@ uint32_t FPackage::getPackageID() const {
     return header_.id;
 }
 
-void FPackage::invalid() {
-    header_.id = MINIMUM_PACKAGE_ID - 1;
-}
-
 size_t FPackage::getDataLength() const {
-    return data_.size();
+    return payload_.size();
 }
 
 std::string FPackage::toString() const {
-    return {data_.begin(), data_.end()};
+    return {payload_.begin(), payload_.end()};
 }
 
 const FByteArray &FPackage::getByteArray() const {
-    return data_;
+    return payload_;
 }
 
 FByteArray &FPackage::rawByteArray() {
-    return data_;
-}
-
-void FPackage::LoadConfig(const YAML::Node &config) {
-    if (config["package"].IsNull())
-        return;
-
-    if (!config["package"]["magic"].IsNull())
-        kPackageMagic = config["package"]["magic"].as<uint32_t>();
-
-    if (!config["package"]["version"].IsNull())
-        kPackageVersion = config["package"]["version"].as<uint32_t>();
-
-    if (!config["package"]["method"].IsNull()) {
-        const auto str = config["package"]["method"].as<std::string>();
-        if (str == "LineBased")
-            kPackageMethod = ECodecMethod::BASE_LINE;
-        if (str == "Protobuf")
-            kPackageMethod = ECodecMethod::PROTOBUF;
-    }
-
-    assert(kPackageMagic != 0);
-    assert(kPackageVersion != 0);
-    assert(kPackageMethod != ECodecMethod::UNAVAILABLE);
+    return payload_;
 }

@@ -97,8 +97,6 @@ UGameWorld &UGameWorld::init(const std::string &path) {
     configManager_->init();
     assert(configManager_->loaded());
 
-    server_->setPackage();
-
     sceneManager_->init();
     globalQueue_->init();
     loginAuthenticator_->init();
