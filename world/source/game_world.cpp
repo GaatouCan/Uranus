@@ -271,7 +271,7 @@ bool UGameWorld::loadServerDLL(const std::string &path) {
     server_ = creator(this);
     destroyer_ = destroyer;
 
-    server_->initGameWorld();
+    server_->initWorld();
 
     configManager_->abort();
     protoRoute_->abort();
@@ -340,7 +340,7 @@ awaitable<void> UGameWorld::waitForConnect() {
 
                 conn->setKey(key);
 
-                server_->setConnectionCodec(conn);
+                server_->setPackageCodec(conn);
                 server_->setConnectionHandler(conn);
 
                 conn->connectToClient();

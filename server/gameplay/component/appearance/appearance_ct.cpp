@@ -20,32 +20,32 @@
 #include <appearance.pb.h>
 
 
-AppearanceCT::AppearanceCT(UComponentModule *module)
+UAppearanceCT::UAppearanceCT(UComponentModule *module)
     : IPlayerComponent(module) {
 
 }
 
-AppearanceCT::~AppearanceCT() {
+UAppearanceCT::~UAppearanceCT() {
 }
 
-void AppearanceCT::serialize(const std::shared_ptr<USerializer> &s) {
+void UAppearanceCT::serialize(const std::shared_ptr<USerializer> &s) {
     WRITE_TABLE(s, Appearance, appear_)
     WRITE_TABLE_MAP(s, Avatar, avatarMap_)
     WRITE_TABLE_MAP(s, AvatarFrame, avatarFrameMap_)
 }
 
-void AppearanceCT::deserialize(UDeserializer &ds) {
+void UAppearanceCT::deserialize(UDeserializer &ds) {
     READ_TABLE(&ds, Appearance, appear_)
     READ_TABLE_MAP(&ds, Avatar, avatarMap_)
     READ_TABLE_MAP(&ds, AvatarFrame, avatarFrameMap_)
 }
 
-void AppearanceCT::onLogin() {
+void UAppearanceCT::onLogin() {
     if (appear_.pid == 0)
         appear_.pid = getOwner()->getFullID();
 }
 
-void AppearanceCT::sendInfo() const {
+void UAppearanceCT::sendInfo() const {
     Appearance::AppearanceResponse res;
 
     res.set_current_avatar(appear_.avatar);
@@ -68,7 +68,7 @@ void AppearanceCT::sendInfo() const {
     SEND_PACKAGE(this, AppearanceResponse, res);
 }
 
-void AppearanceCT::activeAvatar(const int index, const bool bAutoUse) {
+void UAppearanceCT::activeAvatar(const int index, const bool bAutoUse) {
     checkAvatar(index);
 
     auto iter = avatarMap_.find(index);
@@ -96,7 +96,7 @@ void AppearanceCT::activeAvatar(const int index, const bool bAutoUse) {
     }
 }
 
-void AppearanceCT::useAvatar(const int index) {
+void UAppearanceCT::useAvatar(const int index) {
     checkAvatar(index);
 
     const auto iter = avatarMap_.find(index);
@@ -106,7 +106,7 @@ void AppearanceCT::useAvatar(const int index) {
     appear_.avatar = index;
 }
 
-void AppearanceCT::activeAvatarFrame(const int index, bool bAutoUse) {
+void UAppearanceCT::activeAvatarFrame(const int index, bool bAutoUse) {
     checkAvatarFrame(index);
 
     auto iter = avatarFrameMap_.find(index);
@@ -134,7 +134,7 @@ void AppearanceCT::activeAvatarFrame(const int index, bool bAutoUse) {
     }
 }
 
-void AppearanceCT::useAvatarFrame(const int index) {
+void UAppearanceCT::useAvatarFrame(const int index) {
     checkAvatarFrame(index);
 
     const auto iter = avatarFrameMap_.find(index);
@@ -144,12 +144,12 @@ void AppearanceCT::useAvatarFrame(const int index) {
     appear_.avatar_frame = index;
 }
 
-void AppearanceCT::syncCache(FCacheNode* node) {
+void UAppearanceCT::syncCache(FCacheNode* node) {
     node->avatar = appear_.avatar;
     node->avatarFrame = appear_.avatar_frame;
 }
 
-void AppearanceCT::checkAvatar(const int index) {
+void UAppearanceCT::checkAvatar(const int index) {
     const auto iter = avatarMap_.find(index);
     if (iter == avatarMap_.end())
         return;
@@ -165,7 +165,7 @@ void AppearanceCT::checkAvatar(const int index) {
         elem->activated = false;
 }
 
-void AppearanceCT::checkAvatarFrame(const int index) {
+void UAppearanceCT::checkAvatarFrame(const int index) {
     const auto iter = avatarFrameMap_.find(index);
     if (iter == avatarFrameMap_.end())
         return;
@@ -185,7 +185,7 @@ void protocol::AppearanceRequest(const std::shared_ptr<IBasePlayer> &plr, IPacka
     if (plr == nullptr)
         return;
 
-    const auto ct = std::dynamic_pointer_cast<UPlayer>(plr)->getComponent<AppearanceCT>();
+    const auto ct = std::dynamic_pointer_cast<UPlayer>(plr)->getComponent<UAppearanceCT>();
     if (ct == nullptr)
         return;
 

@@ -9,15 +9,15 @@
 #include "appearance.orm.h"
 
 
-class AppearanceCT final : public IPlayerComponent {
+class UAppearanceCT final : public IPlayerComponent {
 
     orm::UTable_Appearance appear_;
     std::unordered_map<int32_t, orm::UTable_Avatar> avatarMap_;
     std::unordered_map<int32_t, orm::UTable_AvatarFrame> avatarFrameMap_;
 
 public:
-    explicit AppearanceCT(UComponentModule *module);
-    ~AppearanceCT() override;
+    explicit UAppearanceCT(UComponentModule *module);
+    ~UAppearanceCT() override;
 
     [[nodiscard]] constexpr std::vector<std::string> getTableList() const  override {
         return {"appearance", "avatar", "avatar_frame"};

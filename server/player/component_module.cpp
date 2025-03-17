@@ -14,7 +14,7 @@ UComponentModule::UComponentModule(UPlayer *plr)
     : owner_(plr){
 
     createComponent<UStateCT>();
-    createComponent<AppearanceCT>();
+    createComponent<UAppearanceCT>();
 }
 
 UComponentModule::~UComponentModule() {

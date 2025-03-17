@@ -18,12 +18,12 @@ public:
 
     [[nodiscard]] UGameWorld* getWorld() const;
 
-    virtual void initGameWorld() = 0;
+    virtual void initWorld() = 0;
 
     virtual void setConnectionHandler(const std::shared_ptr<class UConnection> &conn) = 0;
 
     // 默认数据包编解码 如果使用了自定义数据包 那么需要重写这个函数 为Connection指定一个数据包编解码器
-    virtual void setConnectionCodec(const std::shared_ptr<UConnection> &conn);
+    virtual void setPackageCodec(const std::shared_ptr<UConnection> &conn);
 
     virtual class IRecycler * createPackagePool();
 };

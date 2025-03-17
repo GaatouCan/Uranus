@@ -17,7 +17,7 @@ UGameWorld *IServerLogic::getWorld() const {
     return world_;
 }
 
-void IServerLogic::setConnectionCodec(const std::shared_ptr<UConnection> &conn) {
+void IServerLogic::setPackageCodec(const std::shared_ptr<UConnection> &conn) {
     conn->setPackageCodec<UPackageCodec>();
 }
 

@@ -23,7 +23,7 @@ UGameServer::UGameServer(UGameWorld *world)
 UGameServer::~UGameServer() {
 }
 
-void UGameServer::initGameWorld() {
+void UGameServer::initWorld() {
 #ifdef WIN32
     getWorld()->getConfigManager()->setYamlPath("../../config");
 #else
