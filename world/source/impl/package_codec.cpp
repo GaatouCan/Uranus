@@ -33,7 +33,7 @@ awaitable<bool> UPackageCodec::encodeT(FPackage *pkg) {
     const auto [ec, len] = co_await async_write(conn_.lock()->getSocket(), asio::buffer(&header, FPackage::PACKAGE_HEADER_SIZE));
 
     if (ec) {
-        spdlog::error("{} - {}", __FUNCTION__, ec.message());
+        spdlog::warn("{} - {}", __FUNCTION__, ec.message());
         co_return false;
     }
 
@@ -54,7 +54,7 @@ awaitable<bool> UPackageCodec::decodeT(FPackage *pkg) {
     const auto [ec, len] = co_await async_read(conn_.lock()->getSocket(), asio::buffer(&pkg->header_, FPackage::PACKAGE_HEADER_SIZE));
 
     if (ec) {
-        spdlog::error("{} - {}", __FUNCTION__, ec.message());
+        spdlog::warn("{} - {}", __FUNCTION__, ec.message());
         co_return false;
     }
 

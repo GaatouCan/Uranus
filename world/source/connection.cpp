@@ -173,13 +173,15 @@ awaitable<void> UConnection::writePackage() {
             const auto pkg = res.value();
 
             if (co_await codec_->encode(pkg)) {
-                if (handler_ != nullptr)
+                if (handler_ != nullptr) {
                     co_await handler_->onWritePackage(pkg);
+                }
+                pkg->recycle();
             } else {
                 spdlog::warn("{} - Write Failed - key[{}]", __FUNCTION__, key_.empty() ? "null" : key_);
+                pkg->recycle();
+                disconnect();
             }
-
-            pkg->recycle();
         }
     } catch (std::exception &e) {
         spdlog::error("{} - {} - key[{}]", __FUNCTION__, e.what(), key_.empty() ? "null" : key_);
@@ -201,11 +203,12 @@ awaitable<void> UConnection::readPackage() {
             if (co_await codec_->decode(pkg)) {
                 deadline_ = NowTimePoint() + kExpireTime;
                 co_await handlePayload(pkg);
+                pkg->recycle();
             } else {
                 spdlog::warn("{} - Read failed - key[{}]", __FUNCTION__, key_.empty() ? "null" : key_);
+                pkg->recycle();
+                disconnect();
             }
-
-            pkg->recycle();
         }
     } catch (std::exception &e) {
         spdlog::error("{} - {} - key[{}]", __FUNCTION__, e.what(), key_.empty() ? "null" : key_);
