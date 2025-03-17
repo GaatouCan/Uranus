@@ -2,9 +2,9 @@
 
 #include "../utils.h"
 
-#include <map>
 #include <set>
 #include <shared_mutex>
+#include <absl/container/flat_hash_map.h>
 #include <spdlog/spdlog.h>
 
 
@@ -15,7 +15,7 @@ class BASE_API IBaseScene {
     class USceneManager* owner_;
     const int32_t sceneID_;
 
-    std::map<int32_t, std::shared_ptr<IBasePlayer>> playerMap_;
+    absl::flat_hash_map<int32_t, std::shared_ptr<IBasePlayer>> playerMap_;
     mutable std::shared_mutex mutex_;
 
 public:

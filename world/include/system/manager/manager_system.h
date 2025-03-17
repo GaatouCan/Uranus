@@ -5,10 +5,11 @@
 #include "base_manager.h"
 
 #include <typeindex>
+#include <absl/container/flat_hash_map.h>
 
 class BASE_API UManagerSystem final : public ISubSystem {
 
-    std::unordered_map<std::type_index, IBaseManager *> manager_map_;
+    absl::flat_hash_map<std::type_index, IBaseManager *> manager_map_;
 
     ASystemTimer tick_timer_;
     ATimePoint tick_point_;

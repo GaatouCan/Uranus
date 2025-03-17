@@ -2,13 +2,14 @@
 
 #include <ranges>
 
+
 UDeserializer::~UDeserializer() {
     for (const auto& val : result_map_ | std::views::values) {
         delete val;
     }
 }
 
-UDeserializer::UDeserializer(const std::shared_ptr<std::unordered_map<std::string, mysqlx::RowResult>>& result) {
+UDeserializer::UDeserializer(const std::shared_ptr<absl::flat_hash_map<std::string, mysqlx::RowResult>>& result) {
     for (auto& [name, table] : *result)
         pushBack(name, std::move(table));
 }

@@ -59,7 +59,7 @@ private:
 
     std::atomic_size_t nextMainIndex_;
 
-    std::unordered_map<int32_t, IBaseScene *> sceneMap_;
+    absl::flat_hash_map<int32_t, IBaseScene *> sceneMap_;
     std::atomic_int32_t nextSceneID_;
     mutable std::shared_mutex sceneMutex_;
 

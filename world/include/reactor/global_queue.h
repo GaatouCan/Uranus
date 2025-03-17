@@ -4,14 +4,23 @@
 #include "../ts_deque.h"
 
 #include <memory>
-#include <set>
-#include <map>
 #include <vector>
+#include <absl/container/flat_hash_map.h>
+#include <absl/container/flat_hash_set.h>
 
 
 class IReactor;
 class UTaskQueue;
 class UGameWorld;
+
+struct FWeakPointerHash {
+    using is_transparent = void;
+
+    template<typename T>
+    std::size_t operator()(const std::weak_ptr<T> &wPtr) const {
+        return std::hash<T *>{}(wPtr.lock().get());
+    }
+};
 
 struct FWeakPointerCompare {
     template <typename T>
@@ -47,9 +56,9 @@ private:
     TDeque<std::shared_ptr<UTaskQueue>> queue_;
     std::vector<std::thread> threads_;
 
-    std::map<IReactor *, std::weak_ptr<UTaskQueue>> reactorMap_;
+    absl::flat_hash_map<IReactor *, std::weak_ptr<UTaskQueue>> reactorMap_;
     mutable std::shared_mutex reactorMutex_;
 
-    std::set<std::weak_ptr<UTaskQueue>, FWeakPointerCompare> emptySet_;
+    absl::flat_hash_set<std::weak_ptr<UTaskQueue>, FWeakPointerHash, FWeakPointerCompare> emptySet_;
     mutable std::shared_mutex emptyMutex_;
 };

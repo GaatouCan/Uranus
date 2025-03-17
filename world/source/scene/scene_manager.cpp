@@ -58,14 +58,12 @@ void USceneManager::collectScene(const ATimePoint time) {
     std::unique_lock lock(sceneMutex_);
     constexpr auto zero_time_point = ATimePoint();
 
-    for (auto it = sceneMap_.begin(); it != sceneMap_.end();) {
+    for (auto it = sceneMap_.begin(); it != sceneMap_.end(); ++it) {
         if (it->second->destroyTimePoint_ > zero_time_point && it->second->destroyTimePoint_ < time && it->second->canDestroy()) {
             const auto *scene = it->second;
-            it = sceneMap_.erase(it);
+            sceneMap_.erase(it);
             delete scene;
-            continue;
         }
-        ++it;
     }
 }
 

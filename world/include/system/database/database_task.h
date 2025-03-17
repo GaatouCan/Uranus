@@ -4,10 +4,11 @@
 
 #include <functional>
 #include <string>
+#include <absl/container/flat_hash_map.h>
 #include <mysqlx/xdevapi.h>
 
 using AQueryArray = std::vector<std::pair<std::string, std::string>>;        // [表名, where表达式]
-using AQueryResult = std::unordered_map<std::string, mysqlx::RowResult>;     // [表名, 查询结果]
+using AQueryResult = absl::flat_hash_map<std::string, mysqlx::RowResult>;     // [表名, 查询结果]
 using AQueryResultPtr = std::shared_ptr<AQueryResult>;
 
 using ATransactionFunctor = std::function<void(mysqlx::Schema &)>;

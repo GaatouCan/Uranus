@@ -5,6 +5,7 @@
 
 #include <queue>
 #include <typeindex>
+#include <absl/container/flat_hash_map.h>
 #include <yaml-cpp/yaml.h>
 
 class IServerLogic;
@@ -47,7 +48,7 @@ class BASE_API UGameWorld final {
     class UGlobalQueue *globalQueue_;
     class UProtoRoute *protoRoute_;
 
-    std::unordered_map<std::string, AConnectionPointer, FStringViewHash, FStringViewEqual> connectionMap_;
+    absl::flat_hash_map<std::string, AConnectionPointer, FStringViewHash, FStringViewEqual> connectionMap_;
 
     ASystemTimer fullTimer_;
 
@@ -67,8 +68,8 @@ class BASE_API UGameWorld final {
     std::priority_queue<SystemPriority, std::vector<SystemPriority>, std::greater<>> initPriority_;
     std::priority_queue<SystemPriority, std::vector<SystemPriority>, std::less<>> destroyPriority_;
 
-    std::unordered_map<std::type_index, ISubSystem *> systemMap_;
-    std::unordered_map<std::string, ISubSystem *, FStringViewHash, FStringViewEqual> nameToSystem_;
+    absl::flat_hash_map<std::type_index, ISubSystem *> systemMap_;
+    absl::flat_hash_map<std::string, ISubSystem *, FStringViewHash, FStringViewEqual> nameToSystem_;
 
     AThreadID tid_;
 
