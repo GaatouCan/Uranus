@@ -54,6 +54,9 @@ public:
     // Default true
     virtual bool canDestroy() const;
 
+    virtual void onPlayerEnterScene(const std::shared_ptr<IBasePlayer> &player);
+    virtual void onPlayerLeaveScene(const std::shared_ptr<IBasePlayer> &player);
+
 public:
     ATimePoint destroyTimePoint_;
 };

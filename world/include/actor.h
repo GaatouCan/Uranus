@@ -1,8 +1,7 @@
 #pragma once
 
-#include "common.h"
+#include "object.h"
 
-class BASE_API UActor {
-public:
-    virtual ~UActor() = default;
+class BASE_API UActor : public UObject {
+
 };

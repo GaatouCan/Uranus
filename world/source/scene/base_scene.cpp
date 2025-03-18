@@ -50,6 +50,7 @@ void IBaseScene::playerEnterScene(const std::shared_ptr<IBasePlayer> &player) {
     }
 
     player->onEnterScene(this);
+    onPlayerEnterScene(player);
 }
 
 void IBaseScene::playerLeaveScene(const std::shared_ptr<IBasePlayer> &player, const bool is_change) {
@@ -66,8 +67,10 @@ void IBaseScene::playerLeaveScene(const std::shared_ptr<IBasePlayer> &player, co
         spdlog::info("{} - Player[{}] Leave Scene[{}].", __FUNCTION__, player->getFullID(), sceneID_);
     }
 
-    if (!is_change)
+    if (!is_change) {
         player->onLeaveScene(this);
+        onPlayerLeaveScene(player);
+    }
 }
 
 std::shared_ptr<IBasePlayer> IBaseScene::findPlayer(const int32_t pid) const {
@@ -102,4 +105,10 @@ std::set<std::shared_ptr<IBasePlayer>> IBaseScene::getPlayerInScene() const {
 
 bool IBaseScene::canDestroy() const {
     return true;
+}
+
+void IBaseScene::onPlayerEnterScene(const std::shared_ptr<IBasePlayer> &player) {
+}
+
+void IBaseScene::onPlayerLeaveScene(const std::shared_ptr<IBasePlayer> &player) {
 }
