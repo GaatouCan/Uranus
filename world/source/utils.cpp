@@ -193,6 +193,6 @@ namespace utils {
         const std::chrono::year_month_day formerYmd{std::chrono::floor<std::chrono::days>(formerLocalTime)};
         const std::chrono::year_month_day latterYmd{std::chrono::floor<std::chrono::days>(latterLocalTime)};
 
-        return formerYmd.month() == latterYmd.month();
+        return formerYmd.year() == latterYmd.year() && formerYmd.month() == latterYmd.month();
     }
 }
