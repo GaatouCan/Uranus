@@ -198,5 +198,5 @@ target_link_libraries(server PRIVATE proto_static)
 target_link_libraries(server PUBLIC Uranus)
 
 add_executable(test world/test.cpp)
-target_link_libraries(test PUBLIC spdlog::spdlog)
-target_link_libraries(test PUBLIC mysql::concpp)
+target_include_directories(test PRIVATE ${CMAKE_SOURCE_DIR}/world/include)
+target_link_libraries(test PUBLIC Uranus)

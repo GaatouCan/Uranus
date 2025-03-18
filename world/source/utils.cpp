@@ -114,20 +114,25 @@ namespace utils {
         return result;
     }
 
-    int GetDayOfWeek(const ATimePoint point) {
-        const std::time_t currentTime = std::chrono::system_clock::to_time_t(point);
-        std::tm tm{};
-#if defined(_WIN32) || defined(_WIN64)
-        localtime_s(&tm, &currentTime);
-#else
-        localtime_r(&currentTime, &tm);
-#endif
-        return tm.tm_wday;
+    unsigned GetDayOfWeek(const ATimePoint point) {
+        const auto localTime = std::chrono::current_zone()->to_local(point);
+        const auto weekDay = std::chrono::weekday{std::chrono::floor<std::chrono::days>(localTime)};
+
+        return weekDay.c_encoding();
+
+//         const std::time_t currentTime = std::chrono::system_clock::to_time_t(point);
+//         std::tm tm{};
+// #if defined(_WIN32) || defined(_WIN64)
+//         localtime_s(&tm, &currentTime);
+// #else
+//         localtime_r(&currentTime, &tm);
+// #endif
+//         return tm.tm_wday;
     }
 
     unsigned GetDayOfMonth(const ATimePoint point) {
         const auto localTime = std::chrono::current_zone()->to_local(point);
-        const std::chrono::year_month_day ymd(std::chrono::floor<std::chrono::days>(localTime));
+        const std::chrono::year_month_day ymd{std::chrono::floor<std::chrono::days>(localTime)};
         return static_cast<unsigned>(ymd.day());
     }
 
@@ -156,7 +161,38 @@ namespace utils {
     }
 
     ATimePoint GetDayZeroTime(const ATimePoint point) {
-        const auto zeroLocalTime =  std::chrono::floor<std::chrono::days>(std::chrono::current_zone()->to_local(point));
+        const auto zeroLocalTime = std::chrono::floor<std::chrono::days>(std::chrono::current_zone()->to_local(point));
         return std::chrono::current_zone()->to_sys(zeroLocalTime);
+    }
+
+    bool IsSameWeek(const ATimePoint former, const ATimePoint latter) {
+        if (latter <= former)
+            return false;
+
+        const auto formerLocalTime = std::chrono::current_zone()->to_local(former);
+        const auto latterLocalTime = std::chrono::current_zone()->to_local(latter);
+
+        const std::chrono::year_month_day formerYmd{std::chrono::floor<std::chrono::days>(formerLocalTime)};
+        const std::chrono::year_month_day latterYmd{std::chrono::floor<std::chrono::days>(latterLocalTime)};
+
+        const auto formerWeekDay = std::chrono::weekday{std::chrono::floor<std::chrono::days>(formerLocalTime)};
+        const auto latterWeekDay = std::chrono::weekday{std::chrono::floor<std::chrono::days>(latterLocalTime)};
+
+        const auto formerWeekStart = std::chrono::sys_days{formerYmd} - (formerWeekDay - std::chrono::Monday);
+        const auto latterWeekStart = std::chrono::sys_days{latterYmd} - (latterWeekDay - std::chrono::Monday);
+
+        return formerWeekStart == latterWeekStart;
+    }
+    bool IsSameMonth(const ATimePoint former, const ATimePoint latter) {
+        if (latter <= former)
+            return false;
+
+        const auto formerLocalTime = std::chrono::current_zone()->to_local(former);
+        const auto latterLocalTime = std::chrono::current_zone()->to_local(latter);
+
+        const std::chrono::year_month_day formerYmd{std::chrono::floor<std::chrono::days>(formerLocalTime)};
+        const std::chrono::year_month_day latterYmd{std::chrono::floor<std::chrono::days>(latterLocalTime)};
+
+        return formerYmd.month() == latterYmd.month();
     }
 }

@@ -77,7 +77,7 @@ namespace utils {
      * @param point Time Point, Default Now
      * @return From 0 To 6, Means Sunday(0) To StaterDay(6)
      */
-    int BASE_API GetDayOfWeek(ATimePoint point = std::chrono::system_clock::now());
+    unsigned BASE_API GetDayOfWeek(ATimePoint point = std::chrono::system_clock::now());
     unsigned BASE_API GetDayOfMonth(ATimePoint point = std::chrono::system_clock::now());
     int BASE_API GetDayOfYear(ATimePoint point = std::chrono::system_clock::now());
 
@@ -89,4 +89,7 @@ namespace utils {
      */
     int BASE_API GetDaysGone(ATimePoint former, ATimePoint latter = std::chrono::system_clock::now());
     ATimePoint BASE_API GetDayZeroTime(ATimePoint point = std::chrono::system_clock::now());
+
+    bool IsSameWeek(ATimePoint former, ATimePoint latter = std::chrono::system_clock::now());
+    bool IsSameMonth(ATimePoint former, ATimePoint latter = std::chrono::system_clock::now());
 }
