@@ -56,7 +56,8 @@ void UManagerSystem::onTick(const ATimePoint now) {
     for (const auto mgr: manager_map_ | std::views::values) {
         if (!mgr->tickPerSecond_)
             continue;
-        mgr->onTick(now, now - tick_point_);
+        // mgr->onTick(now, now - tick_point_);
+        mgr->pushTask<IBaseManager>(&IBaseManager::onTick, now, now - tick_point_);
     }
     tick_point_ = now;
 
