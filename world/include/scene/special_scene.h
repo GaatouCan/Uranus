@@ -30,6 +30,8 @@ public:
 
     virtual void onGatherObject(const std::shared_ptr<IBasePlayer> &plr, UGatherObject *obj);
 
+    void createGatherObject(std::map<uint32_t,uint32_t> gatherList);
+
 protected:
     template<typename Type, typename... Args>
     Type *createSceneObject(Args && ... args) {

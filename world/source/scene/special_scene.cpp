@@ -27,3 +27,9 @@ ISpecialScene::~ISpecialScene() {
 
 void ISpecialScene::onGatherObject(const std::shared_ptr<IBasePlayer> &plr, UGatherObject *obj) {
 }
+
+void ISpecialScene::createGatherObject(std::map<uint32_t, uint32_t> gatherList) {
+    for (const auto &[gatherID, num]: gatherList) {
+        createSceneObject<UGatherObject>(gatherID, num);
+    }
+}
