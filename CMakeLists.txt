@@ -106,6 +106,8 @@ target_link_libraries(Uranus PUBLIC yaml-cpp::yaml-cpp)
 target_link_libraries(Uranus PUBLIC protobuf::libprotobuf)
 target_link_libraries(Uranus PUBLIC mysql::concpp)
 
+target_compile_definitions(Uranus PUBLIC USE_DATABASE=1)
+
 set_target_properties(Uranus PROPERTIES
         VERSION ${PROJECT_VERSION}
         SOVERSION ${PROJECT_VERSION_MAJOR}

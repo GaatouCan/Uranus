@@ -36,7 +36,9 @@ UGameWorld::UGameWorld()
     protoRoute_ = new UProtoRoute(this);
 
     // Create Sub System
+#if USE_DATABASE == 1
     createSystem<UDatabaseSystem>(2);
+#endif
     createSystem<UTimerSystem>(3);
     createSystem<UCommandSystem>(4);
     createSystem<UManagerSystem>(9);
