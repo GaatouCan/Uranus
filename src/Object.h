@@ -16,9 +16,6 @@ public:
     template<class Type>
     void SetField(const std::string& name, const Type &value);
 
-    template<class FuncType, class... Args>
-    std::optional<std::invoke_result_t<FuncType, Args ...>> Invoke(Args && ... args);
-
 protected:
     [[nodiscard]] virtual UClazz *GetClazz() const = 0;
 };
@@ -47,11 +44,4 @@ inline void UObject::SetField(const std::string &name, const Type &value) {
         return;
 
     field->Set<Type>(this, value);
-}
-
-template<class FuncType, class ... Args>
-inline std::optional<std::invoke_result_t<FuncType, Args...>> UObject::Invoke(Args &&...args) {
-    const auto *clazz = this->GetClazz();
-    if (clazz == nullptr)
-        return;
 }
