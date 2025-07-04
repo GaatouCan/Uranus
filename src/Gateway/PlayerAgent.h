@@ -37,7 +37,7 @@ class BASE_API IPlayerAgent : public IService {
 
 public:
     IPlayerAgent();
-    ~IPlayerAgent() override = default;
+    ~IPlayerAgent() override;
 
     [[nodiscard]] std::string GetServiceName() const override;
 

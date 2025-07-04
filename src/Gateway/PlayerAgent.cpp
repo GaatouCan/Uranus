@@ -51,6 +51,14 @@ UGateway *UAgentContext::GetGateway() const {
     return dynamic_cast<UGateway *>(GetOwner());
 }
 
+IPlayerAgent::IPlayerAgent() {
+
+}
+
+IPlayerAgent::~IPlayerAgent() {
+
+}
+
 std::string IPlayerAgent::GetServiceName() const {
     if (GetPlayerID() < 0) {
         return "Player Agent Unknown";
@@ -59,6 +67,8 @@ std::string IPlayerAgent::GetServiceName() const {
 }
 
 int64_t IPlayerAgent::GetPlayerID() const {
+    if (mContext == nullptr)
+        return 0;
     return dynamic_cast<UAgentContext *>(mContext)->GetPlayerID();
 }
 
