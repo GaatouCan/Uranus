@@ -1,6 +1,7 @@
 #include "Clazz.h"
 #include "ClazzFactory.h"
 #include "ClazzField.h"
+#include "ClazzMethod.h"
 
 #include <ranges>
 
@@ -8,8 +9,12 @@ UClazz::UClazz() {
 }
 
 UClazz::~UClazz() {
-    for (const auto &field : mFieldMap | std::views::values) {
+    for (const auto &field: mFieldMap | std::views::values) {
         delete field;
+    }
+
+    for (const auto &method: mMethodMap | std::views::values) {
+        delete method;
     }
 }
 
@@ -19,9 +24,14 @@ UClazz::~UClazz() {
 //     }
 // }
 
-FClazzField * UClazz::FindField(const std::string &name) const {
+FClazzField *UClazz::FindField(const std::string &name) const {
     const auto iter = mFieldMap.find(name);
     return iter != mFieldMap.end() ? iter->second : nullptr;
+}
+
+FClazzMethod *UClazz::FindMethod(const std::string &name) const {
+    const auto iter = mMethodMap.find(name);
+    return iter != mMethodMap.end() ? iter->second : nullptr;
 }
 
 void UClazz::RegisterField(FClazzField *field) {

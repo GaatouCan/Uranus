@@ -6,6 +6,7 @@
 
 class UObject;
 class FClazzField;
+class FClazzMethod;
 class UClazzFactory;
 
 class BASE_API UClazz {
@@ -29,11 +30,13 @@ public:
     [[nodiscard]] virtual size_t GetClazzSize() const = 0;
 
     [[nodiscard]] FClazzField *FindField(const std::string &name) const;
+    [[nodiscard]] FClazzMethod *FindMethod(const std::string &name) const;
 
 protected:
     void RegisterField(FClazzField *field);
 
 protected:
     absl::flat_hash_map<std::string, FClazzField *> mFieldMap;
+    absl::flat_hash_map<std::string, FClazzMethod *> mMethodMap;
 };
 
