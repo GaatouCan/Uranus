@@ -1,0 +1,85 @@
+#pragma once
+
+#include "common.h"
+
+#include <Package.h>
+#include <ByteArray.h>
+#include <sstream>
+
+
+// Define Minimum And Maximum Available Package ID
+
+inline constexpr uint32_t MINIMUM_PACKAGE_ID = 1001;
+inline constexpr uint32_t MAXIMUM_PACKAGE_ID = 999999;
+
+
+/* enum class IMPL_API ECodecMethod : uint16_t {
+    UNAVAILABLE = 0,
+    BASE_LINE = 1,
+    PROTOBUF = 2,
+}; */
+
+
+/**
+ * The Implement Of Package For Data Exchange;
+ * Use The Structure Of Header Plus Data Part;
+ * The Header Occupies 24 Bytes And Uses Big-Endian Transmission In Network
+ */
+class IMPL_API FPacket final : public IPackage {
+
+    friend class UPacketCodec;
+
+    /// Packet Header Define
+    struct FHeader {
+        uint32_t magic;
+        uint32_t id;
+
+        int32_t source;
+        int32_t target;
+
+        size_t length;
+    };
+
+    FHeader mHeader;
+    FByteArray mPayload;
+
+protected:
+    void OnCreate() override;
+    void Initial() override;
+    void Reset() override;
+
+public:
+    FPacket();
+    ~FPacket() override;
+
+    [[nodiscard]] bool IsUnused() const override;
+    [[nodiscard]] bool IsAvailable() const override;
+
+    void SetID(uint32_t id) override;
+    [[nodiscard]] uint32_t GetID() const override;
+
+    bool CopyFrom(IRecyclable *other) override;
+    bool CopyFrom(const std::shared_ptr<IRecyclable> &other) override;
+
+    FPacket &SetData(std::string_view str);
+    FPacket &SetData(const std::stringstream &ss);
+
+    FPacket &SetMagic(uint32_t magic);
+    [[nodiscard]] uint32_t GetMagic() const;
+
+    [[nodiscard]] size_t GetPayloadLength() const;
+
+    void SetSource(int32_t source) override;
+    [[nodiscard]] int32_t GetSource() const override;
+
+    void SetTarget(int32_t target) override;
+    [[nodiscard]] int32_t GetTarget() const override;
+
+    [[nodiscard]] std::string ToString() const;
+    [[nodiscard]] const FByteArray &Bytes() const;
+
+    static constexpr size_t PACKAGE_HEADER_SIZE = sizeof(FHeader);
+
+private:
+    [[nodiscard]] std::vector<uint8_t> &RawRef();
+};
