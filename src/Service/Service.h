@@ -1,6 +1,5 @@
 #pragma once
 
-#include "../Module.h"
 #include "../Context.h"
 #include "../Event/EventParam.h"
 
@@ -98,10 +97,6 @@ public:
     [[nodiscard]] std::map<std::string, int32_t> GetServiceList() const;
     [[nodiscard]] int32_t GetOtherServiceID(const std::string &name) const;
 
-    template<CModuleType Module>
-    Module *GetModule() const;
-    [[nodiscard]] IModule *GetModuleByName(const std::string &name) const;
-
     // std::optional<nlohmann::json> FindConfig(const std::string &path, uint64_t id) const;
 
     virtual void ListenEvent(int event) const;
@@ -159,11 +154,6 @@ inline void IService::PostToPlayerT(int64_t pid, Callback &&func, Args &&...args
         std::invoke(func, ptr, args...);
     };
     this->PostToPlayer(pid, task);
-}
-
-template<CModuleType Module>
-inline Module *IService::GetModule() const {
-    return mContext->GetModule<Module>();
 }
 
 template<CEventType Event>

@@ -95,7 +95,7 @@ void IService::PostPackage(const std::shared_ptr<IPackage> &pkg) const {
     if (target <= 0 || target == GetServiceID())
         return;
 
-    if (const auto context = GetModule<UServiceModule>()->FindService(target)) {
+    if (const auto context = mContext->GetModule<UServiceModule>()->FindService(target)) {
         SPDLOG_TRACE("{:<20} - From Service[ID: {}, Name: {}] To Service[ID: {}, Name: {}]",
         __FUNCTION__, GetServiceID(), GetServiceName(), target, context->GetServiceName());
 
@@ -112,7 +112,7 @@ void IService::PostPackage(const std::string &name, const std::shared_ptr<IPacka
     if (pkg == nullptr || name == GetServiceName())
         return;
 
-    if (const auto target = GetModule<UServiceModule>()->FindService(name)) {
+    if (const auto target = mContext->GetModule<UServiceModule>()->FindService(name)) {
         SPDLOG_TRACE("{:<20} - From Service[ID: {}, Name: {}] To Service[ID: {}, Name: {}]",
             __FUNCTION__, GetServiceID(), GetServiceName(), target->GetServiceID(), target->GetServiceName());
 
@@ -131,7 +131,7 @@ void IService::PostTask(const int32_t target, const std::function<void(IService 
     if (target < 0 || target == GetServiceID())
         return;
 
-    if (const auto context = GetModule<UServiceModule>()->FindService(target)) {
+    if (const auto context = mContext->GetModule<UServiceModule>()->FindService(target)) {
         SPDLOG_TRACE("{:<20} - From Service[ID: {}, Name: {}] To Service[ID: {}, Name: {}]",
             __FUNCTION__, GetServiceID(), GetServiceName(), target, context->GetServiceName());
 
@@ -147,7 +147,7 @@ void IService::PostTask(const std::string &name, const std::function<void(IServi
     if (name == GetServiceName())
         return;
 
-    if (const auto target = GetModule<UServiceModule>()->FindService(name)) {
+    if (const auto target = mContext->GetModule<UServiceModule>()->FindService(name)) {
         SPDLOG_TRACE("{:<20} - From Service[ID: {}, Name: {}] To Service[ID: {}, Name: {}]",
             __FUNCTION__, GetServiceID(), GetServiceName(), target->GetServiceID(), target->GetServiceName());
 
@@ -162,7 +162,7 @@ void IService::SendToPlayer(const int64_t pid, const std::shared_ptr<IPackage> &
     if (pkg == nullptr)
         return;
 
-    if (const auto *gateway = GetModule<UGateway>()) {
+    if (const auto *gateway = mContext->GetModule<UGateway>()) {
         SPDLOG_TRACE("{:<20} - From Service[ID: {}, Name: {}] To Player[{}]",
         __FUNCTION__, GetServiceID(), GetServiceName(), pid);
 
@@ -180,7 +180,7 @@ void IService::PostToPlayer(int64_t pid, const std::function<void(IService *)> &
     if (task == nullptr)
         return;
 
-    if (const auto *gateway = GetModule<UGateway>()) {
+    if (const auto *gateway = mContext->GetModule<UGateway>()) {
         SPDLOG_TRACE("{:<20} - From Service[ID: {}, Name: {}] To Player[{}]",
          __FUNCTION__, GetServiceID(), GetServiceName(), pid);
 
@@ -195,7 +195,7 @@ void IService::SendToClient(const int64_t pid, const std::shared_ptr<IPackage> &
     if (pkg == nullptr)
         return;
 
-    if (const auto *gateway = GetModule<UGateway>()) {
+    if (const auto *gateway = mContext->GetModule<UGateway>()) {
         SPDLOG_TRACE("{:<20} - From Service[ID: {}, Name: {}] To Player[{}]",
         __FUNCTION__, GetServiceID(), GetServiceName(), pid);
 
@@ -245,44 +245,33 @@ int32_t IService::GetOtherServiceID(const std::string &name) const {
     return mContext->GetOtherServiceID(name);
 }
 
-IModule *IService::GetModuleByName(const std::string &name) const {
-    return mContext->GetModuleByName(name);
-}
-
-// std::optional<nlohmann::json> IService::FindConfig(const std::string &path, const uint64_t id) const {
-//     if (const auto *config = GetModule<UConfig>()) {
-//         return config->Find(path, id);
-//     }
-//     return std::nullopt;
-// }
-
 void IService::ListenEvent(const int event) const {
-    if (auto *eventModule = GetModule<UEventModule>()) {
+    if (auto *eventModule = mContext->GetModule<UEventModule>()) {
         eventModule->ListenEvent(event, GetServiceID());
     }
 }
 
 void IService::RemoveListener(const int event) const {
-    if (auto *eventModule = GetModule<UEventModule>()) {
+    if (auto *eventModule = mContext->GetModule<UEventModule>()) {
         eventModule->RemoveListener(event, GetServiceID());
     }
 }
 
 void IService::DispatchEvent(const std::shared_ptr<IEventParam> &event) const {
-    if (const auto *eventModule = GetModule<UEventModule>()) {
+    if (const auto *eventModule = mContext->GetModule<UEventModule>()) {
         eventModule->Dispatch(event);
     }
 }
 
 int64_t IService::SetTimer(const std::function<void(IService *)> &task, const int delay, const int rate) const {
-    if (auto *timer = GetModule<UTimerModule>()) {
+    if (auto *timer = mContext->GetModule<UTimerModule>()) {
         return timer->SetTimer(GetServiceID(), -1, task, delay, rate);
     }
     return -1;
 }
 
 void IService::CancelTimer(const int64_t timerID) {
-    auto *timerModule = GetModule<UTimerModule>();
+    auto *timerModule = mContext->GetModule<UTimerModule>();
     if (timerModule == nullptr)
         return;
 
