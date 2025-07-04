@@ -6,13 +6,13 @@ Hello，这里是Uranus C++网络框架！
 
 service是提供具体业务的服务类，通过继承IService基类提供服务，编译为动态库文件由主程序加载。
 
-各个Service之间通过数据包通信，Service不会也不能直接调用Server里面的任何函数，只通过IContext提交数据包，IContext接收到发送给该Service的数据包时会调用
+各个Service之间通过数据包通信，通过IContext提交数据包，IContext接收到发送给自己托管的Service的数据包时会调用
 
 ```c++
 IService::OnPackage(const std::shared_ptr<IPackage> &pkg)
 ```
 
-虽然IService提供了GetServer()和GetModule()的接口，但还是不推荐使用，业务上有任何需要调用Server中某个模块的功能的话，还是改写IService提供一层封装比较好。总之，IContext扮演一个负责IService和UServer通信的中介者角色。
+通知服务处理数据。虽然IService提供了GetServer()和GetModule()的接口，但还是不推荐使用，业务上有任何需要调用Server中某个模块的功能的话，还是改写IService提供一层封装比较好。总之，IContext扮演一个负责IService和UServer通信的中介者角色。
 
 ICoreService作为最主要的核心服务父类之外，IService有另外2个分支，IPlayerAgent和IExtendService。IPlayerAgent作为玩家连接的抽象，管理玩家身上所有可以独立的数据。只需实现一次，路径为`./agent/agent.dll`。由Gateway模块管理，当有新玩家链接到来时便创建一个agent。
 

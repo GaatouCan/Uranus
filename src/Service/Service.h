@@ -92,8 +92,6 @@ public:
 
     [[nodiscard]] EServiceState GetState() const;
 
-    [[nodiscard]] UServer *GetServer() const;
-
     [[nodiscard]] std::map<std::string, int32_t> GetServiceList() const;
     [[nodiscard]] int32_t GetOtherServiceID(const std::string &name) const;
 
@@ -112,6 +110,13 @@ public:
 
     virtual int64_t SetTimer(const std::function<void(IService *)> &task, int delay, int rate) const;
     virtual void CancelTimer(int64_t timerID);
+
+    [[nodiscard]] UServer *GetServer() const;
+
+    template<CModuleType Module>
+    Module *GetModule() const;
+
+    IModule *GetModuleByName(const std::string &name) const;
 
 protected:
     IContext *mContext;
@@ -165,6 +170,13 @@ template<CEventType Event, class ... Args>
 inline void IService::DispatchEventT(Args &&...args) {
     auto event = std::make_shared<Event>(std::forward<Args>(args)...);
     this->DispatchEvent(event);
+}
+
+template<CModuleType Module>
+Module *IService::GetModule() const {
+    if (mContext == nullptr)
+        return nullptr;
+    return mContext->GetModule<Module>();
 }
 
 
