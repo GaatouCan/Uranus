@@ -21,10 +21,12 @@ public:
 
     [[nodiscard]] virtual const char *GetClazzName() const = 0;
 
-    void RegisterToFactory(UClazzFactory *factory);
+    // void RegisterToFactory(UClazzFactory *factory);
 
     [[nodiscard]] virtual UObject *Create() const = 0;
     virtual void Destroy(UObject *obj) const = 0;
+
+    [[nodiscard]] virtual size_t GetClazzSize() const = 0;
 
     [[nodiscard]] FClazzField *FindField(const std::string &name) const;
 
