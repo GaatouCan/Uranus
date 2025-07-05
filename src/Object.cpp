@@ -1,4 +1,5 @@
 #include "Object.h"
+#include "Reflect/ClazzMethod.h"
 
 UObject::UObject() {
 }

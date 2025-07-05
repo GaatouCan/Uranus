@@ -2,7 +2,6 @@
 
 #include "Reflect/Clazz.h"
 #include "Reflect/ClazzField.h"
-#include "Reflect/ClazzMethod.h"
 
 class BASE_API UObject {
 
