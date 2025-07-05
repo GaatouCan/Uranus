@@ -18,18 +18,12 @@ UClazz::~UClazz() {
     }
 }
 
-// void UClazz::RegisterToFactory(UClazzFactory *factory) {
-//     if (factory != nullptr) {
-//         factory->RegisterClazz(this);
-//     }
-// }
-
 FClazzField *UClazz::FindField(const std::string &name) const {
     const auto iter = mFieldMap.find(name);
     return iter != mFieldMap.end() ? iter->second : nullptr;
 }
 
-FClazzMethod *UClazz::FindMethod(const std::string &name) const {
+IClazzMethod *UClazz::FindMethod(const std::string &name) const {
     const auto iter = mMethodMap.find(name);
     return iter != mMethodMap.end() ? iter->second : nullptr;
 }

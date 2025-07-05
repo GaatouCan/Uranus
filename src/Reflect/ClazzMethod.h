@@ -3,41 +3,44 @@
 #include "../common.h"
 
 #include <string>
-#include <optional>
 
 class UObject;
 
-class BASE_API FClazzMethod final {
-
+class BASE_API IClazzMethod {
 public:
-    FClazzMethod() = delete;
+    IClazzMethod() = delete;
 
-    FClazzMethod(std::string name, uintptr_t ptr);
-    ~FClazzMethod();
+    explicit IClazzMethod(std::string name);
+    virtual ~IClazzMethod();
 
     [[nodiscard]] std::string GetName() const;
-    [[nodiscard]] uintptr_t GetPointer() const;
 
-    template<class FuncType, class... Args>
-    std::optional<std::invoke_result_t<FuncType, Args ...>> Invoke(UObject *obj, Args && ... args) const;
+    virtual void Invoke(UObject *obj, void *ret, void *param) const = 0;
 
 private:
     const std::string mName;
-    uintptr_t mMethodPtr;
 };
 
-template<class FuncType, class ... Args>
-std::optional<std::invoke_result_t<FuncType, Args ...>> FClazzMethod::Invoke(UObject *obj, Args &&...args) const {
-    const auto func = reinterpret_cast<FuncType *>(mMethodPtr);
-    if (func != nullptr) {
-        using RetType = std::invoke_result_t<FuncType, Args...>;
+template<class Target, class Ret, class... Args>
+class TClazzMethod final : public IClazzMethod {
+public:
+    using MethodType = Ret (Target::*)(Args...);
+    using TupleType = std::tuple<std::decay_t<Args>...>;
 
-        if constexpr (std::is_void_v<RetType>) {
-            std::invoke(*func, obj, forward<Args>(args)...);
-            return std::nullopt;
-        } else {
-            return std::make_optional<std::invoke_result_t<FuncType, Args ...>>(std::invoke(*func, obj, forward<Args>(args)...));
-        }
+    TClazzMethod(std::string name, const MethodType method)
+        : IClazzMethod(std::move(name)), mMethod(method) {
     }
-    return std::nullopt;
-}
+
+    void Invoke(UObject *obj, void *ret, void *param) const override {
+        auto *target = static_cast<Target *>(obj);
+        auto *args = static_cast<TupleType *>(param);
+        Ret *result = static_cast<Ret *>(ret);
+
+        *result = std::apply([target, this]<typename... Parameter>(Parameter &&... unpacked) -> Ret {
+            return (target->*mMethod)(std::forward<Parameter>(unpacked)...);
+        }, *args);
+    }
+
+private:
+    MethodType mMethod;
+};

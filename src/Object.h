@@ -16,6 +16,8 @@ public:
     template<class Type>
     void SetField(const std::string& name, const Type &value);
 
+    void Invoke(const std::string& name, void *ret, void *param);
+
 protected:
     [[nodiscard]] virtual UClazz *GetClazz() const = 0;
 };
