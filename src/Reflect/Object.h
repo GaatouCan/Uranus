@@ -29,16 +29,16 @@ protected:
 
 
 template<class Type>
-bool UObject::SetField(const std::string &name, Type &&value) {
+inline bool UObject::SetField(const std::string &name, Type &&value) {
     return this->SetFieldValue(name, static_cast<void*>(const_cast<std::remove_cv_t<Type>*>(&value)));
 }
 
 template<class Type>
-std::tuple<Type, bool> UObject::GetField(const std::string &name) const {
+inline std::tuple<Type, bool> UObject::GetField(const std::string &name) const {
     Type result;
-    if (GetFieldValue(name, &result))
-        return {result, true};
-    return {result, false};
+    if (this->GetFieldValue(name, &result))
+        return { result, true };
+    return { result, false };
 }
 
 template<class ... Args>
