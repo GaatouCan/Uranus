@@ -47,3 +47,16 @@ inline bool UObject::Invoke(const std::string &name, void *ret, Args &&...args) 
     TupleType param = std::make_tuple(std::forward<Args>(args)...);
     return this->InvokeMethod(name, ret, reinterpret_cast<void *>(&param));
 }
+
+#define COMBINE_BODY_MACRO_IMPL(A, B, C, D) A##B##C##D
+#define COMBINE_BODY_MACRO(A, B, C, D) COMBINE_BODY_MACRO_IMPL(A, B, C, D)
+
+#define GENERATED_BODY() \
+    COMBINE_BODY_MACRO(CURRENT_FILE_ID, _, __LINE__, _GENERATED_IMPL)
+
+#define COMBINE_BODY_MACRO_IMPL(A, B, C, D) A##B##C##D
+
+#define COMBINE_BODY_MACRO(A, B, C, D) COMBINE_BODY_MACRO_IMPL(A, B, C, D)
+
+#define GENERATED_BODY() \
+    COMBINE_BODY_MACRO(CURRENT_FILE_ID, _, __LINE__, _GENERATED_IMPL)
