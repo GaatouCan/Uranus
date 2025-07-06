@@ -4,7 +4,9 @@
 
 #include <string>
 
+
 class UObject;
+
 
 class BASE_API IClazzMethod {
 public:
@@ -15,7 +17,7 @@ public:
 
     [[nodiscard]] std::string GetName() const;
 
-    virtual void Invoke(UObject *obj, void *ret, void *param) const = 0;
+    virtual bool Invoke(UObject *obj, void *ret, void *param) const = 0;
 
 private:
     const std::string mName;
@@ -28,17 +30,29 @@ public:
     using TupleType = std::tuple<std::decay_t<Args>...>;
 
     TClazzMethod(std::string name, const MethodType method)
-        : IClazzMethod(std::move(name)), mMethod(method) {
+        : IClazzMethod(std::move(name)),
+          mMethod(method) {
     }
 
-    void Invoke(UObject *obj, void *ret, void *param) const override {
+    bool Invoke(UObject *obj, void *ret, void *param) const override {
+        if (obj == nullptr)
+            return false;
+
         auto *target = static_cast<Target *>(obj);
         auto *args = static_cast<TupleType *>(param);
-        Ret *result = static_cast<Ret *>(ret);
 
-        *result = std::apply([target, this]<typename... Parameter>(Parameter &&... unpacked) -> Ret {
-            return (target->*mMethod)(std::forward<Parameter>(unpacked)...);
-        }, *args);
+        if constexpr (std::is_void_v<Ret>) {
+            std::apply([target, this]<typename... Parameter>(Parameter &&... unpacked) -> void {
+                (target->*mMethod)(std::forward<Parameter>(unpacked)...);
+            }, *args);
+        } else {
+            auto *result = static_cast<Ret *>(ret);
+            *result = std::apply([target, this]<typename... Parameter>(Parameter &&... unpacked) -> Ret {
+                return (target->*mMethod)(std::forward<Parameter>(unpacked)...);
+            }, *args);
+        }
+
+        return true;
     }
 
 private:

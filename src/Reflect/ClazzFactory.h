@@ -11,12 +11,6 @@ class BASE_API UClazzFactory final : public IModule {
 
     DECLARE_MODULE(UClazzFactory)
 
-    typedef void(*AReflectRegister)(UClazzFactory *);
-
-    struct FLibraryNode {
-        AModuleHandle mModule;
-        AReflectRegister mFunctor;
-    };
 
 protected:
     explicit UClazzFactory(UServer *server);
@@ -33,7 +27,6 @@ public:
     [[nodiscard]] UClazz *FromName(const std::string &name) const;
 
 private:
-    std::vector<FLibraryNode> mNodeList;
     absl::flat_hash_map<std::string, UClazz *> mClazzMap;
 };
 

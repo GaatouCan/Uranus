@@ -3,50 +3,73 @@
 #include "../common.h"
 
 #include <string>
-#include <optional>
+#include <typeinfo>
+
 
 class UObject;
 
-class BASE_API FClazzField final {
 
+class BASE_API IClazzField {
 public:
-    FClazzField() = delete;
+    IClazzField() = delete;
 
-    FClazzField(std::string name, std::string type, size_t offset, size_t size);
-    ~FClazzField();
+    IClazzField(std::string name, size_t offset);
+    virtual ~IClazzField();
 
     [[nodiscard]] std::string GetName() const;
-    [[nodiscard]] std::string GetType() const;
     [[nodiscard]] size_t GetOffset() const;
-    [[nodiscard]] size_t GetSize() const;
 
-    template<class Type>
-    std::optional<Type> Get(UObject *obj) const;
+    [[nodiscard]] virtual size_t GetSize() const = 0;
+    [[nodiscard]] virtual const char * GetTypeName() const = 0;
 
-    template<class Type>
-    void Set(UObject *obj, const Type &val) const;
+    virtual bool SetValue(UObject *obj, void *value) const = 0;
+    virtual bool GetValue(const UObject *obj, void *ret) const = 0;
 
-private:
+protected:
     const std::string mName;
-    const std::string mType;
     const size_t mOffset;
-    const size_t mSize;
 };
 
+template<class Target, class Type>
+class TClazzField final : public IClazzField {
+public:
+    TClazzField() = delete;
 
-template<class Type>
-inline std::optional<Type> FClazzField::Get(UObject *obj) const {
+    TClazzField(const std::string &name, const size_t offset)
+        : IClazzField(name, offset) {
+    }
+
+    [[nodiscard]] constexpr size_t GetSize() const override {
+        return sizeof(Type);
+    }
+
+    [[nodiscard]] constexpr const char *GetTypeName() const override {
+        return typeid(Type).name();
+    }
+
+    bool SetValue(UObject *obj, void *value) const override;
+    bool GetValue(const UObject *obj, void *ret) const override;
+};
+
+template<class Target, class Type>
+inline bool TClazzField<Target, Type>::SetValue(UObject *obj, void *value) const {
     if (obj == nullptr)
-        return std::nullopt;
+        return false;
 
-    Type result = *reinterpret_cast<Type *>(reinterpret_cast<unsigned char *>(obj) + mOffset);
-    return std::optional<Type>(result);
+    auto target = static_cast<Target *>(obj);
+    *reinterpret_cast<Type *>(reinterpret_cast<unsigned char *>(target) + mOffset) = *static_cast<Type *>(value);
+
+    return true;
 }
 
-template<class Type>
-inline void FClazzField::Set(UObject *obj, const Type &val) const {
+template<class Target, class Type>
+inline bool TClazzField<Target, Type>::GetValue(const UObject *obj, void *ret) const {
     if (obj == nullptr)
-        return;
-    *reinterpret_cast<Type *>(reinterpret_cast<unsigned char *>(obj) + mOffset) = val;
-}
+        return false;
 
+    const auto *target = static_cast<const Target *>(obj);
+    auto *result = static_cast<Type *>(ret);
+
+    *result = *reinterpret_cast<Type *>(reinterpret_cast<unsigned char *>(const_cast<Target *>(target)) + mOffset);
+    return true;
+}

@@ -1,27 +1,19 @@
 #include "ClazzField.h"
 
-FClazzField::FClazzField(std::string name, std::string type, const size_t offset, const size_t size)
+#include <utility>
+
+IClazzField::IClazzField(std::string name, const size_t offset)
     : mName(std::move(name)),
-      mType(std::move(type)),
-      mOffset(offset),
-      mSize(size) {
+      mOffset(offset) {
 }
 
-FClazzField::~FClazzField() {
+IClazzField::~IClazzField() {
 }
 
-std::string FClazzField::GetName() const {
+std::string IClazzField::GetName() const {
     return mName;
 }
 
-std::string FClazzField::GetType() const {
-    return mType;
-}
-
-size_t FClazzField::GetOffset() const {
+size_t IClazzField::GetOffset() const {
     return mOffset;
-}
-
-size_t FClazzField::GetSize() const {
-    return mSize;
 }
