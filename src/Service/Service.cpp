@@ -6,7 +6,7 @@
 #include "../Timer/TimerModule.h"
 #include "../Package.h"
 
-#include <spdlog/spdlog.h>
+#include <spdlog/sinks/daily_file_sink.h>
 
 
 UContext::UContext()
@@ -44,12 +44,95 @@ int32_t IService::GetServiceID() const {
     return mContext->GetServiceID();
 }
 
+std::string IService::GetServiceName() const {
+    return {};
+}
+
+std::shared_ptr<spdlog::logger> IService::CreateLogger(const std::string &name, const std::string &path) {
+    if (mState == EServiceState::TERMINATED)
+        return nullptr;
+
+    if (mLoggerSet.contains(name)) {
+        return GetLogger(name);
+    }
+
+    const auto serviceName = GetServiceName();
+    if (serviceName.empty() || serviceName == "UNKNOWN") {
+        SPDLOG_ERROR("{:<20} - Unknown Service Name: Service ID {}", __FUNCTION__, GetServiceID());
+        return nullptr;
+    }
+
+    const auto *config = GetModule<UConfig>();
+    if (!config)
+        return nullptr;
+
+    const auto &cfg = config->GetServerConfig();
+    const auto rootDir = cfg["server"]["logger_dir"].as<std::string>();
+
+    const auto loggerPath = rootDir + "/" + serviceName + "/" + path;
+    const auto loggerName = fmt::format("{} - {}", serviceName, name);
+
+    auto logger = spdlog::daily_logger_mt(loggerName, loggerPath, 2, 0);
+    mLoggerSet.insert(name);
+
+    return logger;
+}
+
+void IService::CreateLogger(const std::map<std::string, std::string> &loggers) {
+    if (mState == EServiceState::TERMINATED)
+        return;
+
+    const auto serviceName = GetServiceName();
+    if (serviceName.empty() || serviceName == "UNKNOWN") {
+        SPDLOG_ERROR("{:<20} - Unknown Service Name: Service ID {}", __FUNCTION__, GetServiceID());
+        return;
+    }
+
+    const auto *config = GetModule<UConfig>();
+    if (!config)
+        return;
+
+    const auto &cfg = config->GetServerConfig();
+    const auto rootDir = cfg["server"]["logger_dir"].as<std::string>();
+
+    for (const auto &[name, path] : loggers) {
+        if (mLoggerSet.contains(name))
+            continue;
+
+        const auto loggerPath = rootDir + "/" + serviceName + "/" + path;
+        const auto loggerName = fmt::format("{} - {}", serviceName, name);
+
+        spdlog::daily_logger_mt(loggerName, loggerPath, 2, 0);
+        mLoggerSet.insert(name);
+    }
+}
+
+std::shared_ptr<spdlog::logger> IService::GetLogger(const std::string &name) const {
+    if (mState == EServiceState::TERMINATED)
+        return nullptr;
+
+    if (!mLoggerSet.contains(name))
+        return nullptr;
+
+    const auto serviceName = GetServiceName();
+    if (serviceName.empty() || serviceName == "UNKNOWN")
+        return nullptr;
+
+    const auto loggerName = fmt::format("{} - {}", serviceName, name);
+    auto result = spdlog::get(loggerName);
+
+    return result;
+}
+
 asio::io_context &IService::GetIOContext() const {
     // assert(context_ != nullptr);
     return mContext->GetServer()->GetIOContext();
 }
 
 bool IService::Initial(const std::shared_ptr<IPackage> &pkg) {
+    if (mState != EServiceState::CREATED)
+        return false;
+
     if (mContext == nullptr) {
         SPDLOG_ERROR("{:<20} - Context Is Null", __FUNCTION__);
         return false;
@@ -68,6 +151,14 @@ void IService::Stop() {
         return;
 
     mState = EServiceState::TERMINATED;
+
+    // Release All The Loggers Created By This Service
+    if (const auto serviceName = GetServiceName(); !serviceName.empty() && serviceName != "UNKNOWN") {
+        for (const auto &val : mLoggerSet) {
+            const auto loggerName = fmt::format("{} - {}", serviceName, val);
+            spdlog::drop(loggerName);
+        }
+    }
 }
 
 std::shared_ptr<IPackage> IService::BuildPackage() const {

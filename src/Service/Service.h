@@ -5,6 +5,8 @@
 
 #include <functional>
 #include <memory>
+#include <absl/container/flat_hash_set.h>
+#include <spdlog/spdlog.h>
 
 
 class UServiceModule;
@@ -46,7 +48,7 @@ public:
     void SetUpContext(IContext *context);
 
     [[nodiscard]] int32_t GetServiceID() const;
-    [[nodiscard]] virtual std::string GetServiceName() const = 0;
+    [[nodiscard]] virtual std::string GetServiceName() const;
 
     [[nodiscard]] asio::io_context &GetIOContext() const;
 
@@ -118,8 +120,20 @@ public:
 
     IModule *GetModuleByName(const std::string &name) const;
 
+    /** Create Logger For This Service */
+    std::shared_ptr<spdlog::logger> CreateLogger(const std::string &name, const std::string &path);
+
+    void CreateLogger(const std::map<std::string, std::string> &loggers);
+
+    /** Get Logger Pointer Which Registered To This Service */
+    std::shared_ptr<spdlog::logger> GetLogger(const std::string &name) const;
+
 protected:
     IContext *mContext;
+
+    /** Record That Which Logger Is For This Service */
+    absl::flat_hash_set<std::string> mLoggerSet;
+
     std::atomic<EServiceState> mState;
 };
 
