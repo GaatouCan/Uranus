@@ -7,6 +7,7 @@
 #include <memory>
 #include <absl/container/flat_hash_set.h>
 #include <spdlog/spdlog.h>
+#include <nlohmann/json.hpp>
 
 
 class UServiceModule;
@@ -119,6 +120,8 @@ public:
     Module *GetModule() const;
 
     IModule *GetModuleByName(const std::string &name) const;
+
+    [[nodiscard]] std::optional<nlohmann::json> FindConfig(const std::string &path) const;
 
     /** Create Logger For This Service */
     std::shared_ptr<spdlog::logger> CreateLogger(const std::string &name, const std::string &path);

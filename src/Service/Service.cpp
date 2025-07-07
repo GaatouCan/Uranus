@@ -398,3 +398,10 @@ IModule *IService::GetModuleByName(const std::string &name) const {
         return nullptr;
     return mContext->GetModuleByName(name);
 }
+
+std::optional<nlohmann::json> IService::FindConfig(const std::string &path) const {
+    if (const auto *config = GetModule<UConfig>()) {
+        return config->Find(path);
+    }
+    return std::nullopt;
+}
