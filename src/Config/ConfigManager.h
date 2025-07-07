@@ -8,6 +8,8 @@
 
 using absl::flat_hash_map;
 
+class UConfig;
+
 class BASE_API UConfigManager final {
 
     flat_hash_map<std::type_index, ILogicConfig *> mConfigMap;

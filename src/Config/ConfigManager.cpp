@@ -1,4 +1,5 @@
 #include "ConfigManager.h"
+#include "Config.h"
 
 #include <ranges>
 #include <spdlog/spdlog.h>
@@ -23,7 +24,15 @@ int UConfigManager::LoadConfig(UConfig *config) {
             return -2;
         }
 
-        if (const auto res = val->Initial(config); res != 0) {
+        std::map<std::string, nlohmann::json> temp;
+
+        for (const auto &path : val->InitialPathList()) {
+            if (const auto op = config->Find(path); op.has_value()) {
+                temp[path] = op.value();
+            }
+        }
+
+        if (const auto res = val->Initial(temp); res != 0) {
             SPDLOG_ERROR("{:<20} - LogicConfig[{}] Initialize Failed, Result = {}", __FUNCTION__, type.name(), res);
             return res;
         }
