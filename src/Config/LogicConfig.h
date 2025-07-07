@@ -13,7 +13,7 @@ public:
     ILogicConfig() = default;
     virtual ~ILogicConfig() = default;
 
-    virtual std::vector<std::string> InitialPathList() const;
+    virtual std::vector<std::string> InitialPathList() const = 0;
 
     virtual int Initial(const std::map<std::string, nlohmann::json> &config) = 0;
 };
