@@ -99,7 +99,13 @@ void IService::CreateLogger(const std::map<std::string, std::string> &loggers) {
         if (mLoggerSet.contains(name))
             continue;
 
-        const auto loggerPath = rootDir + "/" + serviceName + "/" + path;
+        auto loggerPath = rootDir;
+
+        loggerPath += "/";
+        loggerPath += serviceName;
+        loggerPath += "/";
+        loggerPath += path;
+
         const auto loggerName = fmt::format("{} - {}", serviceName, name);
 
         spdlog::daily_logger_mt(loggerName, loggerPath, 2, 0);
