@@ -1,4 +1,5 @@
 #include "Object.h"
+#include "Clazz.h"
 #include "ClazzMethod.h"
 #include "ClazzField.h"
 
@@ -42,4 +43,34 @@ bool UObject::InvokeMethod(const std::string &name, void *ret, void *param) {
         return false;
 
     return method->Invoke(this, ret, param);
+}
+
+bool UObject::SetFieldWithTypeInfo(const std::string &name, void *value, const std::type_info &info) {
+    const auto *clazz = GetClazz();
+    if (!clazz)
+        return false;
+
+    const auto *field = clazz->FindField(name);
+    if (!field)
+        return false;
+
+    if (field->GetTypeInfo() != info)
+        return false;
+
+    return field->SetValue(this, value);
+}
+
+bool UObject::GetFieldWithTypeInfo(const std::string &name, void *ret, const std::type_info &info) const {
+    const auto *clazz = GetClazz();
+    if (!clazz)
+        return false;
+
+    const auto *field = clazz->FindField(name);
+    if (!field)
+        return false;
+
+    if (field->GetTypeInfo() != info)
+        return false;
+
+    return field->GetValue(this, ret);
 }

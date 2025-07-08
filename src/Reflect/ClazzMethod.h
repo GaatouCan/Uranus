@@ -3,10 +3,9 @@
 #include "../common.h"
 
 #include <string>
-
+#include <typeinfo>
 
 class UObject;
-
 
 class BASE_API IClazzMethod {
 public:
@@ -18,6 +17,8 @@ public:
     [[nodiscard]] std::string GetName() const;
 
     virtual bool Invoke(UObject *obj, void *ret, void *param) const = 0;
+
+    [[nodiscard]] virtual const std::type_info &GetReturnTypeInfo() const = 0;
 
 private:
     const std::string mName;
@@ -53,6 +54,10 @@ public:
         }
 
         return true;
+    }
+
+    [[nodiscard]] const std::type_info &GetReturnTypeInfo() const override {
+        return typeid(std::remove_cvref_t<Ret>);
     }
 
 private:

@@ -1,9 +1,7 @@
 #include "ClazzField.h"
 
-#include <utility>
-
-IClazzField::IClazzField(std::string name, const size_t offset)
-    : mName(std::move(name)),
+IClazzField::IClazzField(const std::string &name, const size_t offset)
+    : mName(name),
       mOffset(offset) {
 }
 

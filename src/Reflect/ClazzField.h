@@ -8,12 +8,11 @@
 
 class UObject;
 
-
 class BASE_API IClazzField {
 public:
     IClazzField() = delete;
 
-    IClazzField(std::string name, size_t offset);
+    IClazzField(const std::string &name, size_t offset);
     virtual ~IClazzField();
 
     [[nodiscard]] std::string GetName() const;
@@ -24,6 +23,8 @@ public:
 
     virtual bool SetValue(UObject *obj, void *value) const = 0;
     virtual bool GetValue(const UObject *obj, void *ret) const = 0;
+
+    [[nodiscard]] virtual const std::type_info &GetTypeInfo() const = 0;
 
 protected:
     const std::string mName;
@@ -43,8 +44,12 @@ public:
         return sizeof(Type);
     }
 
-    [[nodiscard]] constexpr const char *GetTypeName() const override {
-        return typeid(Type).name();
+    [[nodiscard]] const char *GetTypeName() const override {
+        return GetTypeInfo().name();
+    }
+
+    [[nodiscard]] const std::type_info &GetTypeInfo() const override {
+        return typeid(std::remove_cvref_t<Type>);
     }
 
     bool SetValue(UObject *obj, void *value) const override;

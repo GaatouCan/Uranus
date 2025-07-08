@@ -5,10 +5,12 @@
 #include <string>
 #include <absl/container/flat_hash_map.h>
 
+
 class UObject;
 class IClazzField;
 class IClazzMethod;
 class UClazzFactory;
+
 
 class BASE_API UClazz {
 
@@ -39,20 +41,3 @@ protected:
     absl::flat_hash_map<std::string, IClazzMethod *> mMethodMap;
 };
 
-#define STATIC_CLASS_IMPL(clazz) \
-    static UGenerated_##clazz *StaticClazz() { return &UGenerated_##clazz::Instance(); } \
-    UClazz *GetClazz() const override { return StaticClazz(); }
-
-#define GENERATED_CLAZZ_HEADER(clazz) \
-    [[nodiscard]] constexpr const char *GetClazzName() const override { return #clazz; } \
-    static UGenerated_Player &Instance(); \
-    [[nodiscard]] UObject *Create() const override; \
-    void Destroy(UObject *obj) const override; \
-    [[nodiscard]] size_t GetClazzSize() const override;
-
-
-#define REGISTER_FIELD(clazz, field) \
-RegisterField(new TClazzField<clazz, decltype(clazz::field)>(#field, offsetof(clazz, field)));
-
-#define REGISTER_METHOD(clazz, method) \
-RegisterMethod(new TClazzMethod(#method, &##clazz##::##method));
