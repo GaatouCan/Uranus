@@ -1,6 +1,6 @@
 file(GLOB_RECURSE GAME_WORLD_SRC
         ${CMAKE_CURRENT_SOURCE_DIR}/*.h
-        ${CMAKE_CURRENT_SOURCE_DIR}/*.cc
+        ${CMAKE_CURRENT_SOURCE_DIR}/*.cpp
 )
 
 if (MSVC)

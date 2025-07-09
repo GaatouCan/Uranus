@@ -1,4 +1,5 @@
 #include "ProtoRoute.h"
+#include "LoadProtocol.h"
 
 UProtoRoute::UProtoRoute()
     : mPlayer(nullptr) {

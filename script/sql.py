@@ -381,17 +381,17 @@ def generate_orm_clazz(src: str, dist: str, desc: str):
 
                 file.write('\tFEntity_%s::FEntity_%s(\n%s\n\t) : %s {\n\t}\n\n' % (to_upper_camel_case(table['name']), to_upper_camel_case(table['name']), cons_args, cons_init))
 
-                file.write('\t[[nodiscard]] bool FEntity_%s::ComparePrimaryKey(mysqlx::Row &row) const override {\n' % to_upper_camel_case(table['name']))
+                file.write('\t[[nodiscard]] bool FEntity_%s::ComparePrimaryKey(mysqlx::Row &row) const {\n' % to_upper_camel_case(table['name']))
                 file.write(f'\t\treturn {equal_str};\n')
                 file.write('\t}\n\n')
 
-                file.write('\tmysqlx::RowResult FEntity_%s::Query(mysqlx::Table &table) override {\n' % to_upper_camel_case(table['name']))
+                file.write('\tmysqlx::RowResult FEntity_%s::Query(mysqlx::Table &table) {\n' % to_upper_camel_case(table['name']))
                 file.write('\t\treturn table.select()\n')
                 file.write(f'\t\t\t{where_expr}\n')
                 file.write('\t\t\t.execute();\n')
                 file.write('\t}\n\n')
 
-                file.write('\tvoid FEntity_%s::Read(mysqlx::Row &row) override {\n' % to_upper_camel_case(table['name']))
+                file.write('\tvoid FEntity_%s::Read(mysqlx::Row &row) {\n' % to_upper_camel_case(table['name']))
                 file.write('\t\tif (row.isNull())\n \t\t\treturn;\n\n')
 
                 count = 0
@@ -417,7 +417,7 @@ def generate_orm_clazz(src: str, dist: str, desc: str):
 
                 file.write('\t}\n\n')
 
-                file.write('\tvoid FEntity_%s::Write(mysqlx::Table &table) override {\n' % to_upper_camel_case(table['name']))
+                file.write('\tvoid FEntity_%s::Write(mysqlx::Table &table) {\n' % to_upper_camel_case(table['name']))
                 file.write('\t\tmysqlx::RowResult result = Query(table);\n\n')
 
                 # 如果已存在相同键 则调用update()
@@ -443,7 +443,7 @@ def generate_orm_clazz(src: str, dist: str, desc: str):
                 file.write("\t\t}\n")
                 file.write('\t}\n\n')
 
-                file.write('\tvoid FEntity_%s::Remove(mysqlx::Table &table) override {\n' % to_upper_camel_case(table['name']))
+                file.write('\tvoid FEntity_%s::Remove(mysqlx::Table &table) {\n' % to_upper_camel_case(table['name']))
                 file.write('\t\ttable.remove()\n')
                 file.write(f"\t\t\t{where_expr}\n")
                 file.write('\t\t\t.execute();\n')

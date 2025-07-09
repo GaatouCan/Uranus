@@ -6,7 +6,6 @@
 #include <Appear.orm.h>
 
 
-
 class UAppear final : public IPlayerComponent {
 
     orm::FEntity_Appear appear_;
@@ -14,7 +13,6 @@ class UAppear final : public IPlayerComponent {
 
 public:
     UAppear();
-    ~UAppear() override;
 
     void ActiveAvatar(int index);
     void UseAvatar(int index);

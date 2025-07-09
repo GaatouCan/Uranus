@@ -6,10 +6,8 @@
 #include <ProtoType.gen.h>
 #include <appearance.pb.h>
 
-UAppear::UAppear() {
-}
 
-UAppear::~UAppear() {
+UAppear::UAppear() {
 }
 
 void UAppear::ActiveAvatar(const int index) {
