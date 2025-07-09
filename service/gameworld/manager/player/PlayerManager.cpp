@@ -1,8 +1,8 @@
-#include "player_manager.h"
-#include "../../load_protocol.h"
-#include "../../game_world.h"
+#include "PlayerManager.h"
+#include "../../LoadProtocol.h"
+#include "../../GameWorld.h"
 
-#include <packet.h>
+#include <Packet.h>
 #include <utils.h>
 #include <player.pb.h>
 

@@ -3,8 +3,8 @@
 #include <map>
 #include <memory>
 
-#include "../../manager.h"
-#include "player_cache.h"
+#include "../../Manager.h"
+#include "PlayerCache.h"
 
 class FPacket;
 

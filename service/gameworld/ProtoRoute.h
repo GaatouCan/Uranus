@@ -4,28 +4,27 @@
 #include <memory>
 #include <absl/container/flat_hash_map.h>
 
+#include <service/ProtoRoute.h>
+#include <Packet.h>
 
-class FPacket;
+
+
 class UGameWorld;
 
-class UProtoRoute final {
+using ARouteFunctor = std::function<void(uint32_t, const std::shared_ptr<FPacket> &, UGameWorld *)>;
 
-    using ARouteFunctor = std::function<void(uint32_t, const std::shared_ptr<FPacket> &, UGameWorld *)>;
+class UProtoRoute final : public TProtoRoute<FPacket, ARouteFunctor> {
 
 public:
-    UProtoRoute() = delete;
+    UProtoRoute();
 
-    explicit UProtoRoute(UGameWorld *world);
-    ~UProtoRoute();
+    void SetUpGameWorld(UGameWorld *world);
 
     void LoadProtocol();
-    void Register(uint32_t id, const ARouteFunctor &func);
-
-    void OnReceivePacket(const std::shared_ptr<FPacket> &packet);
+    void OnReceivePacket(const std::shared_ptr<FPacket> &packet) const;
 
 private:
-    UGameWorld *world_;
-    absl::flat_hash_map<uint32_t, ARouteFunctor> routeMap_;
+    UGameWorld *mWorld;
 };
 
 #define REGISTER_PROTOCOL(type, func) \

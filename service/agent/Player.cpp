@@ -18,7 +18,7 @@ bool UPlayer::Initial(const std::shared_ptr<IPackage> &pkg) {
     if (!Super::Initial(pkg))
         return false;
 
-    const auto res = mConfig.LoadConfig(GetServer()->GetModule<UConfig>());
+    const auto res = mConfig.LoadConfig(GetModule<UConfig>());
     if (res != 0)
         return false;
 
@@ -89,5 +89,5 @@ extern "C" SERVICE_API IPlayerAgent *NewService() {
 }
 
 extern "C" SERVICE_API void DestroyService(IService *service) {
-    delete dynamic_cast<UPlayer *>(service);
+    delete service;
 }

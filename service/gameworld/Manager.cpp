@@ -1,7 +1,7 @@
-#include "manager.h"
+#include "Manager.h"
 
 IManager::IManager(UGameWorld *world)
-    : world_(world) {
+    : mWorld(world) {
 }
 
 IManager::~IManager() {
@@ -17,5 +17,5 @@ void IManager::EndPlay() {
 }
 
 UGameWorld *IManager::GetWorld() const {
-    return world_;
+    return mWorld;
 }

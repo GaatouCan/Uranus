@@ -1,7 +1,7 @@
 #pragma once
 
-#include "proto_route.h"
-#include <proto_type.gen.h>
+#include "ProtoRoute.h"
+#include <ProtoType.gen.h>
 
 namespace protocol {
     void SyncPlayerInfo(uint32_t id, const std::shared_ptr<FPacket> &pkt, UGameWorld *world);

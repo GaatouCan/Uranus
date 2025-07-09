@@ -1,36 +1,46 @@
-#include "game_world.h"
-#include <packet.h>
+#include "GameWorld.h"
 
-UGameWorld::UGameWorld(UContext *context)
-    : Super(context),
-      route_(this) {
+#include <Config/Config.h>
+
+UGameWorld::UGameWorld() {
+    mRoute.SetUpGameWorld(this);
 }
 
 UGameWorld::~UGameWorld() {
 }
 
-void UGameWorld::Initial(const std::shared_ptr<IPackage> &pkg) {
-    Super::Initial(pkg);
-    for (const auto &type : ordered_) {
-        if (const auto iter = managerMap_.find(type); iter != managerMap_.end()) {
+bool UGameWorld::Initial(const std::shared_ptr<IPackage> &pkg) {
+    if (!Super::Initial(pkg))
+        return false;
+
+    if (const auto res = mConfig.LoadConfig(GetModule<UConfig>()); res != 0)
+        return false;
+
+    for (const auto &type : mOrdered) {
+        if (const auto iter = mManagerMap.find(type); iter != mManagerMap.end()) {
             iter->second->Initial();
         }
     }
+
+    return true;
 }
 
-void UGameWorld::Start() {
-    Super::Start();
-    for (const auto &type : ordered_) {
-        if (const auto iter = managerMap_.find(type); iter != managerMap_.end()) {
+bool UGameWorld::Start() {
+    if (!Super::Start())
+        return false;
+
+    for (const auto &type : mOrdered) {
+        if (const auto iter = mManagerMap.find(type); iter != mManagerMap.end()) {
             iter->second->BeginPlay();
         }
     }
+    return true;
 }
 
 void UGameWorld::Stop() {
     Super::Stop();
-    for (const auto &type : ordered_) {
-        if (const auto iter = managerMap_.find(type); iter != managerMap_.end()) {
+    for (const auto &type : mOrdered) {
+        if (const auto iter = mManagerMap.find(type); iter != mManagerMap.end()) {
             iter->second->EndPlay();
         }
     }
@@ -41,13 +51,13 @@ void UGameWorld::OnPackage(const std::shared_ptr<IPackage> &pkg) {
     if (pkt == nullptr)
         return;
 
-    route_.OnReceivePacket(pkt);
+    mRoute.OnReceivePacket(pkt);
 }
 
-extern "C" SERVICE_API IService *NewService(UContext *context) {
-    return new UGameWorld(context);
+extern "C" SERVICE_API IService *NewService() {
+    return new UGameWorld();
 }
 
 extern "C" SERVICE_API void DestroyService(IService *service) {
-    delete service;
+    delete dynamic_cast<UGameWorld *>(service);
 }
