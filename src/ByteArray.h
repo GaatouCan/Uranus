@@ -60,9 +60,9 @@ public:
         mBytes.resize(size);
 
         if constexpr (std::is_pointer_v<T>) {
-            memcpy(mBytes.data(), source, size);
+            memcpy(static_cast<void *>(mBytes.data()), source, size);
         } else {
-            memcpy(mBytes.data(), &source, size);
+            memcpy(static_cast<void *>(mBytes.data()), &source, size);
         }
     }
 
@@ -74,10 +74,10 @@ public:
 
         if constexpr (std::is_pointer_v<T>) {
             for (size_t idx = 0; idx < size; idx++) {
-                memcpy(mBytes.data() + idx * size, source[idx], size);
+                memcpy(static_cast<void *>(mBytes.data()) + idx * size, source[idx], size);
             }
         } else {
-            memcpy(mBytes.data(), source.data(), mBytes.size());
+            memcpy(static_cast<void *>(mBytes.data()), source.data(), mBytes.size());
         }
     }
 
@@ -104,9 +104,9 @@ public:
         }
 
         if constexpr (std::is_pointer_v<T>) {
-            memcpy(target, mBytes.data(), size);
+            memcpy(target, static_cast<const void *>(mBytes.data()), size);
         } else {
-            memcpy(&target, mBytes.data(), size);
+            memcpy(&target, static_cast<const void *>(mBytes.data()), size);
         }
     }
 
@@ -122,7 +122,7 @@ public:
 
         dist.resize(count);
         memset(dist.data(), 0, length);
-        memcpy(dist.data(), mBytes.data(), length);
+        memcpy(dist.data(), static_cast<const void *>(mBytes.data()), length);
     }
 
     template<typename T>
@@ -157,9 +157,9 @@ std::vector<std::byte> DataToByteArray(T data) {
     bytes.resize(size);
 
     if constexpr (std::is_pointer_v<T>) {
-        memcpy(bytes.data(), data, size);
+        memcpy(static_cast<void *>(bytes.data()), data, size);
     } else {
-        memcpy(bytes.data(), &data, size);
+        memcpy(static_cast<void *>(bytes.data()), &data, size);
     }
 
     return bytes;
@@ -174,9 +174,9 @@ void ByteArrayToData(const std::vector<std::byte> &bytes, T &target) {
     }
 
     if constexpr (std::is_pointer_v<T>) {
-        memcpy(target, bytes.data(), size);
+        memcpy(target, static_cast<const void *>(bytes.data()), size);
     } else {
-        memcpy(&target, bytes.data(), size);
+        memcpy(&target, static_cast<const void *>(bytes.data()), size);
     }
 }
 
@@ -190,10 +190,10 @@ std::vector<std::byte> VectorToByteArray(const std::vector<T> &list) {
 
     if constexpr (std::is_pointer_v<T>) {
         for (size_t idx = 0; idx < size; idx++) {
-            memcpy(bytes.data() + idx * size, list[idx], size);
+            memcpy(static_cast<void *>(bytes.data()) + idx * size, list[idx], size);
         }
     } else {
-        memcpy(bytes.data(), list.data(), bytes.size());
+        memcpy(static_cast<void *>(bytes.data()), list.data(), bytes.size());
     }
 
     return bytes;
@@ -211,5 +211,5 @@ void ByteArrayToVector(const std::vector<std::byte> &src, std::vector<T> &dist) 
 
     dist.resize(count);
     memset(dist.data(), 0, length);
-    memcpy(dist.data(), src.data(), length);
+    memcpy(dist.data(), static_cast<const void *>(src.data()), length);
 }

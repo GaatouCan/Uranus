@@ -13,6 +13,7 @@
 
 #include <spdlog/spdlog.h>
 
+
 int main() {
 #ifdef _DEBUG
     spdlog::set_level(spdlog::level::trace);
