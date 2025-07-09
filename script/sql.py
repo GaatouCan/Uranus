@@ -421,7 +421,7 @@ def generate_orm_clazz(src: str, dist: str, desc: str):
                 file.write('\t\tmysqlx::RowResult result = Query(table);\n\n')
 
                 # 如果已存在相同键 则调用update()
-                file.write("\t\ttif (const mysqlx::Row row = result.fetchOne(); !row.isNull()) {\n")
+                file.write("\t\tif (const mysqlx::Row row = result.fetchOne(); !row.isNull()) {\n")
 
                 file.write("\t\t\ttable.update()\n")
                 for field in table['field'].values():
