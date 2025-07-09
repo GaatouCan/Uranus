@@ -256,9 +256,9 @@ def generate_orm_clazz(src: str, dist: str, desc: str):
                     if field['type'] == "string" or field['type'] == "text" or field['type'] == "blob":
                         cons_args = f"{cons_args}{cpp_type_map[field['type']]} {field['name']},\n\t\t\t"
                     elif 'int' in cpp_type_map[field['type']]:
-                        cons_args = f"{cons_args}const {cpp_type_map[field['type']]} {field['name']},\n\t\t\t"
+                        cons_args = f"{cons_args}{cpp_type_map[field['type']]} {field['name']},\n\t\t\t"
                     else:
-                        cons_args = f"{cons_args}const {cpp_type_map[field['type']]} {field['name']},\n\t\t\t"
+                        cons_args = f"{cons_args}{cpp_type_map[field['type']]} {field['name']},\n\t\t\t"
 
                     count += 1
 
