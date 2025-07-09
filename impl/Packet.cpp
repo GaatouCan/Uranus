@@ -114,13 +114,13 @@ int32_t FPacket::GetTarget() const {
 }
 
 std::string FPacket::ToString() const {
-    return {mPayload.Begin(), mPayload.End()};
+    return {reinterpret_cast<const char *>(mPayload.Data()), mPayload.Size()};
 }
 
 const FByteArray &FPacket::Bytes() const {
     return mPayload;
 }
 
-std::vector<uint8_t> &FPacket::RawRef() {
+std::vector<std::byte> &FPacket::RawRef() {
     return mPayload.RawRef();
 }

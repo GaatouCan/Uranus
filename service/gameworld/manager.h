@@ -25,7 +25,7 @@ public:
     [[nodiscard]] UGameWorld *GetWorld() const;
 
 private:
-    UGameWorld *world_;
+    UGameWorld *mWorld;
 };
 
 template<class Type>

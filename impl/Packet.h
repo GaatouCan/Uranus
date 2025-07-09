@@ -81,5 +81,5 @@ public:
     static constexpr size_t PACKAGE_HEADER_SIZE = sizeof(FHeader);
 
 private:
-    [[nodiscard]] std::vector<uint8_t> &RawRef();
+    [[nodiscard]] std::vector<std::byte> &RawRef();
 };

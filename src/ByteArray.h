@@ -14,15 +14,15 @@
  */
 class BASE_API FByteArray final {
 
-    std::vector<uint8_t> mBytes;
+    std::vector<std::byte> mBytes;
 
 public:
     FByteArray() = default;
 
     explicit FByteArray(size_t size);
-    explicit FByteArray(const std::vector<uint8_t> &bytes);
+    explicit FByteArray(const std::vector<std::byte> &bytes);
 
-    explicit operator std::vector<uint8_t>() const;
+    explicit operator std::vector<std::byte>() const;
 
     FByteArray(const FByteArray &rhs);
     FByteArray &operator=(const FByteArray &rhs);
@@ -36,8 +36,9 @@ public:
     [[nodiscard]] size_t Size() const;
     void Resize(size_t size);
 
-    [[nodiscard]] uint8_t *Data();
-    std::vector<uint8_t> &RawRef();
+    [[nodiscard]] std::byte *Data();
+    [[nodiscard]] const std::byte *Data() const;
+    std::vector<std::byte> &RawRef();
 
     auto Begin() -> decltype(mBytes)::iterator;
     auto End() -> decltype(mBytes)::iterator;
@@ -45,7 +46,7 @@ public:
     [[nodiscard]] auto Begin() const -> decltype(mBytes)::const_iterator;
     [[nodiscard]] auto End() const -> decltype(mBytes)::const_iterator;
 
-    [[nodiscard]] uint8_t operator[](size_t pos) const noexcept;
+    [[nodiscard]] std::byte operator[](size_t pos) const noexcept;
 
     template<typename T>
     static constexpr bool kPODType = std::is_pointer_v<T>
@@ -149,8 +150,8 @@ public:
 
 template<typename T>
 requires FByteArray::kPODType<T>
-std::vector<uint8_t> DataToByteArray(T data) {
-    std::vector<uint8_t> bytes;
+std::vector<std::byte> DataToByteArray(T data) {
+    std::vector<std::byte> bytes;
 
     constexpr auto size = std::is_pointer_v<T> ? sizeof(std::remove_pointer_t<T>) : sizeof(T);
     bytes.resize(size);
@@ -166,7 +167,7 @@ std::vector<uint8_t> DataToByteArray(T data) {
 
 template<typename T>
 requires FByteArray::kPODType<T>
-void ByteArrayToData(const std::vector<uint8_t> &bytes, T &target) {
+void ByteArrayToData(const std::vector<std::byte> &bytes, T &target) {
     constexpr auto size = std::is_pointer_v<T> ? sizeof(std::remove_pointer_t<T>) : sizeof(T);
     if (size > bytes.size()) {
         throw std::runtime_error("FByteArray::CastTo - Overflow.");
@@ -181,8 +182,8 @@ void ByteArrayToData(const std::vector<uint8_t> &bytes, T &target) {
 
 template<typename T>
 requires FByteArray::kPODType<T>
-std::vector<uint8_t> VectorToByteArray(const std::vector<T> &list) {
-    std::vector<uint8_t> bytes;
+std::vector<std::byte> VectorToByteArray(const std::vector<T> &list) {
+    std::vector<std::byte> bytes;
 
     constexpr auto size = std::is_pointer_v<T> ? sizeof(std::remove_pointer_t<T>) : sizeof(T);
     bytes.resize(size * list.size());
@@ -200,7 +201,7 @@ std::vector<uint8_t> VectorToByteArray(const std::vector<T> &list) {
 
 template<typename T>
 requires (!std::is_pointer_v<T>) && std::is_trivial_v<T> && std::is_standard_layout_v<T>
-void ByteArrayToVector(const std::vector<uint8_t> &src, std::vector<T> &dist) {
+void ByteArrayToVector(const std::vector<std::byte> &src, std::vector<T> &dist) {
     constexpr auto size = sizeof(T);
     const size_t count = src.size() / size;
     const size_t length = size * count;

@@ -9,11 +9,11 @@ FByteArray::FByteArray(const size_t size)
     : mBytes(size) {
 }
 
-FByteArray::FByteArray(const std::vector<uint8_t> &bytes)
+FByteArray::FByteArray(const std::vector<std::byte> &bytes)
     : mBytes(bytes) {
 }
 
-FByteArray::operator std::vector<unsigned char>() const {
+FByteArray::operator std::vector<std::byte>() const {
     return mBytes;
 }
 
@@ -54,11 +54,15 @@ void FByteArray::Resize(const size_t size) {
     mBytes.resize(size);
 }
 
-uint8_t *FByteArray::Data() {
+std::byte *FByteArray::Data() {
     return mBytes.data();
 }
 
-std::vector<uint8_t> &FByteArray::RawRef() {
+const std::byte * FByteArray::Data() const {
+    return mBytes.data();
+}
+
+std::vector<std::byte> &FByteArray::RawRef() {
     return mBytes;
 }
 
@@ -78,6 +82,6 @@ auto FByteArray::End() const -> decltype(mBytes)::const_iterator {
     return mBytes.end();
 }
 
-uint8_t FByteArray::operator[](const size_t pos) const noexcept {
+std::byte FByteArray::operator[](const size_t pos) const noexcept {
     return mBytes[pos];
 }

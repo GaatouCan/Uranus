@@ -31,8 +31,8 @@ concept CEntityType = std::derived_from<T, IEntity>;
 #define DB_CAST_FROM_BLOB(field, value) \
 { \
 const auto bytes = (value).getRawBytes(); \
-field = FByteArray(std::vector(bytes.begin(), bytes.end())); \
+field = FByteArray(std::vector(reinterpret_cast<const std::byte *>(bytes.begin()), reinterpret_cast<const std::byte *>(bytes.end()))); \
 }
 
 #define DB_CAST_TO_BLOB(field) \
-mysqlx::bytes((field).Data(), (field).Size())
+mysqlx::bytes(reinterpret_cast<const unsigned char *>((field).Data()), (field).Size())
