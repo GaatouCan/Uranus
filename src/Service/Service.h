@@ -98,8 +98,6 @@ public:
     [[nodiscard]] std::map<std::string, int32_t> GetServiceList() const;
     [[nodiscard]] int32_t GetOtherServiceID(const std::string &name) const;
 
-    // std::optional<nlohmann::json> FindConfig(const std::string &path, uint64_t id) const;
-
     virtual void ListenEvent(int event) const;
     virtual void RemoveListener(int event) const;
 
