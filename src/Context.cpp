@@ -295,7 +295,7 @@ int IContext::Shutdown(const bool bFource, const int second, const std::function
         return -2;
     }
 
-    auto destroyer = mLibrary->GetCreatorT<AServiceDestroyer>();
+    auto destroyer = mLibrary->GetDestroyerT<AServiceDestroyer>();
     if (destroyer == nullptr) {
         SPDLOG_ERROR("{:<20} - Can't Load Destroyer, Path[{}]", __FUNCTION__, mLibrary->GetPath());
         mState = EContextState::STOPPED;
