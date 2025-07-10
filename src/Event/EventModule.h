@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../Module.h"
+#include "Module.h"
 #include "EventParam.h"
 
 #include <absl/container/flat_hash_map.h>

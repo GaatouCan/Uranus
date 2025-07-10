@@ -1,9 +1,9 @@
 #include "LoginAuth.h"
-#include "../Server.h"
-#include "../Package.h"
-#include "../Gateway/Gateway.h"
-#include "../Network/Network.h"
-#include "../Network/Connection.h"
+#include "Server.h"
+#include "Package.h"
+#include "Gateway/Gateway.h"
+#include "Network/Network.h"
+#include "Network/Connection.h"
 
 #include <spdlog/spdlog.h>
 

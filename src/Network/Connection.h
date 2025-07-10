@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../ConcurrentDeque.h"
+#include "ConcurrentDeque.h"
 #include "PackageCodec.h"
 
 

@@ -1,10 +1,10 @@
 #include "Gateway.h"
 #include "PlayerAgent.h"
-#include "../Server.h"
-#include "../ServiceHandle.h"
-#include "../Package.h"
-#include "../Network/Network.h"
-#include "../Service/ServiceModule.h"
+#include "Server.h"
+#include "Service/ServiceHandle.h"
+#include "Package.h"
+#include "Network/Network.h"
+#include "Service/ServiceModule.h"
 
 #include <spdlog/spdlog.h>
 

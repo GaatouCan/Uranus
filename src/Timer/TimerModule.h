@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../Module.h"
-#include "../utils.h"
+#include "Module.h"
+#include "utils.h"
 
 #include <functional>
 #include <absl/container/flat_hash_map.h>

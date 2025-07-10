@@ -1,12 +1,12 @@
 #include "PlayerAgent.h"
 #include "Gateway.h"
-#include "../Server.h"
-#include "../Package.h"
-#include "../Timer/TimerModule.h"
-#include "../Monitor/Monitor.h"
-#include "../Network/Network.h"
-#include "../Event/EventModule.h"
-#include "../Monitor/Watchdog.h"
+#include "Server.h"
+#include "Package.h"
+#include "Timer/TimerModule.h"
+#include "Monitor/Monitor.h"
+#include "Network/Network.h"
+#include "Event/EventModule.h"
+#include "Monitor/Watchdog.h"
 
 #include <spdlog/spdlog.h>
 

@@ -1,8 +1,8 @@
 #include "EventModule.h"
-#include "../Server.h"
-#include "../Gateway/Gateway.h"
-#include "../Gateway/PlayerAgent.h"
-#include "../Service/ServiceModule.h"
+#include "Server.h"
+#include "Gateway/Gateway.h"
+#include "Gateway/PlayerAgent.h"
+#include "Service/ServiceModule.h"
 
 #include <spdlog/spdlog.h>
 

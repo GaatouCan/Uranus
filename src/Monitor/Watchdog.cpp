@@ -1,5 +1,5 @@
 #include "Watchdog.h"
-#include "../utils.h"
+#include "utils.h"
 
 FWatchdog::FWatchdog(const uint32_t sid, const uint64_t pid)
     : sid(sid),

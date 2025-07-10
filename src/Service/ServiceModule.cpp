@@ -1,8 +1,8 @@
 #include "ServiceModule.h"
 #include "Service.h"
-#include "../Package.h"
-#include "../Config/Config.h"
-#include "../ServiceHandle.h"
+#include "Package.h"
+#include "ServiceHandle.h"
+#include "Config/Config.h"
 
 #include <spdlog/spdlog.h>
 

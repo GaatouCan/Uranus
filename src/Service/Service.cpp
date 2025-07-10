@@ -1,10 +1,10 @@
 #include "Service.h"
 #include "ServiceModule.h"
-#include "../Gateway/Gateway.h"
-#include "../Event/EventModule.h"
-#include "../Config/Config.h"
-#include "../Timer/TimerModule.h"
-#include "../Package.h"
+#include "Gateway/Gateway.h"
+#include "Event/EventModule.h"
+#include "Config/Config.h"
+#include "Timer/TimerModule.h"
+#include "Package.h"
 
 #include <spdlog/sinks/daily_file_sink.h>
 

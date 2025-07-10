@@ -1,7 +1,7 @@
 #pragma once
 
-#include "../Service/Service.h"
-#include "../Context.h"
+#include "Service/Service.h"
+#include "Context.h"
 
 
 class IPlayerAgent;

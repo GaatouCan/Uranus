@@ -1,10 +1,10 @@
 #include "Network.h"
 #include "Connection.h"
-#include "../Server.h"
-#include "../Recycler.h"
-#include "../Gateway/Gateway.h"
-#include "../Login/LoginAuth.h"
-#include "../Config/Config.h"
+#include "Server.h"
+#include "Recycler.h"
+#include "Gateway/Gateway.h"
+#include "Login/LoginAuth.h"
+#include "Config/Config.h"
 
 #include <spdlog/spdlog.h>
 

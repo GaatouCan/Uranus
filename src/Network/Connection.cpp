@@ -1,8 +1,8 @@
 #include "Connection.h"
 #include "Network.h"
-#include "../Server.h"
-#include "../Gateway/Gateway.h"
-#include "../Login/LoginAuth.h"
+#include "Server.h"
+#include "Gateway/Gateway.h"
+#include "Login/LoginAuth.h"
 
 #include <asio/experimental/awaitable_operators.hpp>
 #include <spdlog/spdlog.h>

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../Module.h"
+#include "Module.h"
 #include "LoginHandler.h"
 
 #include <memory>

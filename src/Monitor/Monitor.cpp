@@ -1,8 +1,8 @@
 #include "Monitor.h"
 #include "Watchdog.h"
 #include "Argument.h"
-#include "../Server.h"
-#include "../Service/ServiceModule.h"
+#include "Server.h"
+#include "Service/ServiceModule.h"
 
 #include <spdlog/spdlog.h>
 

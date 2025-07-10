@@ -1,8 +1,8 @@
 #pragma once
 
-#include "../Module.h"
-#include "../ConcurrentDeque.h"
-#include "../utils.h"
+#include "Module.h"
+#include "ConcurrentDeque.h"
+#include "utils.h"
 
 #include <memory>
 #include <shared_mutex>
