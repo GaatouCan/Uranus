@@ -62,7 +62,6 @@ public:
         constexpr auto size = std::is_pointer_v<T> ? sizeof(std::remove_pointer_t<T>) : sizeof(T);
         mBytes.resize(size);
 
-        std::span dest = mBytes;
         const void *src = nullptr;
 
         if constexpr (std::is_pointer_v<T>) {
@@ -72,7 +71,7 @@ public:
             src = static_cast<const void *>(&source);
         }
 
-        std::memcpy(dest.data(), src, size);
+        std::memcpy(mBytes.data(), src, size);
     }
 
     template<typename T>
@@ -83,10 +82,10 @@ public:
 
         if constexpr (std::is_pointer_v<T>) {
             for (size_t idx = 0; idx < size; idx++) {
-                memcpy(static_cast<void *>(mBytes.data()) + idx * size, source[idx], size);
+                std::memcpy(mBytes.data() + idx * size, static_cast<const void *>(source[idx]), size);
             }
         } else {
-            memcpy(static_cast<void *>(mBytes.data()), source.data(), mBytes.size());
+            std::memcpy(mBytes.data(), static_cast<const void *>(source.data()), size * size);
         }
     }
 
@@ -108,13 +107,11 @@ public:
     requires kPODType<T>
     void CastTo(T &target) const {
         constexpr auto size = std::is_pointer_v<T> ? sizeof(std::remove_pointer_t<T>) : sizeof(T);
-
-        std::span src = mBytes;
-        void *dist = nullptr;
-
-        if (size > src.size()) {
+        if (size > mBytes.size()) {
             throw std::runtime_error("FByteArray::CastTo - Overflow.");
         }
+
+        void *dist = nullptr;
 
         if constexpr (std::is_pointer_v<T>) {
             static_assert(!std::is_null_pointer_v<T>, "Null Pointer Pass To CastTo");
@@ -123,7 +120,7 @@ public:
             dist = static_cast<void *>(&target);
         }
 
-        std::memcpy(dist, src.data(), size);
+        std::memcpy(dist, mBytes.data(), size);
     }
 
     template<typename T>
@@ -137,8 +134,9 @@ public:
             return;
 
         dist.resize(count);
-        memset(dist.data(), 0, length);
-        memcpy(dist.data(), static_cast<const void *>(mBytes.data()), length);
+
+        std::memset(dist.data(), 0, length);
+        std::memcpy(dist.data(), mBytes.data(), length);
     }
 
     template<typename T>
@@ -172,11 +170,16 @@ std::vector<std::byte> DataToByteArray(T data) {
     constexpr auto size = std::is_pointer_v<T> ? sizeof(std::remove_pointer_t<T>) : sizeof(T);
     bytes.resize(size);
 
+    const void *src = nullptr;
+
     if constexpr (std::is_pointer_v<T>) {
-        memcpy(static_cast<void *>(bytes.data()), data, size);
+        static_assert(!std::is_null_pointer_v<T>, "DataToByteArray Get Null Pointer");
+        src = static_cast<const void *>(data);
     } else {
-        memcpy(static_cast<void *>(bytes.data()), &data, size);
+        src = static_cast<const void *>(&data);
     }
+
+    std::memcpy(bytes.data(), src, size);
 
     return bytes;
 }
@@ -189,11 +192,15 @@ void ByteArrayToData(const std::vector<std::byte> &bytes, T &target) {
         throw std::runtime_error("FByteArray::CastTo - Overflow.");
     }
 
+    void *dist = nullptr;
+
     if constexpr (std::is_pointer_v<T>) {
-        memcpy(target, static_cast<const void *>(bytes.data()), size);
+        dist = static_cast<void *>(&target);
     } else {
-        memcpy(&target, static_cast<const void *>(bytes.data()), size);
+        dist = static_cast<void *>(&target);
     }
+
+    std::memcpy(dist, bytes.data(), size);
 }
 
 template<typename T>
@@ -206,10 +213,10 @@ std::vector<std::byte> VectorToByteArray(const std::vector<T> &list) {
 
     if constexpr (std::is_pointer_v<T>) {
         for (size_t idx = 0; idx < size; idx++) {
-            memcpy(static_cast<void *>(bytes.data()) + idx * size, list[idx], size);
+            std::memcpy(bytes.data() + idx * size, static_cast<const void *>(list[idx]), size);
         }
     } else {
-        memcpy(static_cast<void *>(bytes.data()), list.data(), bytes.size());
+        std::memcpy(bytes.data(), static_cast<const void *>(list.data()), size * size);
     }
 
     return bytes;
@@ -226,6 +233,7 @@ void ByteArrayToVector(const std::vector<std::byte> &src, std::vector<T> &dist) 
         return;
 
     dist.resize(count);
-    memset(dist.data(), 0, length);
-    memcpy(dist.data(), static_cast<const void *>(src.data()), length);
+
+    std::memset(dist.data(), 0, length);
+    std::memcpy(dist.data(), static_cast<const void *>(src.data()), length);
 }
