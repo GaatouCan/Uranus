@@ -1,6 +1,6 @@
 #include "Handler.h"
 #include "PacketCodec.h"
-#include "LoginHandler.h"
+#include "LoginHandlerImpl.h"
 
 #include <Recycler.h>
 #include <Network/Connection.h>

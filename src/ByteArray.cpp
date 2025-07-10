@@ -47,6 +47,10 @@ void FByteArray::FromString(const std::string_view sv) {
     std::memcpy(mBytes.data(), sv.data(), sv.size());
 }
 
+std::string FByteArray::ToString() const {
+    return { reinterpret_cast<const char*>(mBytes.data()), mBytes.size() };
+}
+
 auto FByteArray::Begin() -> decltype(mBytes)::iterator {
     return mBytes.begin();
 }

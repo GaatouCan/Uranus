@@ -1,7 +1,6 @@
 #pragma once
 
 #include "common.h"
-
 #include <Login/LoginHandler.h>
 
 class IMPL_API ULoginHandler final : public ILoginHandler {

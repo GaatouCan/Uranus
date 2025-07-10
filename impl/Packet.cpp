@@ -113,7 +113,7 @@ int32_t FPacket::GetTarget() const {
 }
 
 std::string FPacket::ToString() const {
-    return {reinterpret_cast<const char *>(mPayload.Data()), mPayload.Size()};
+    return mPayload.ToString();
 }
 
 const FByteArray &FPacket::Bytes() const {

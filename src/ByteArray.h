@@ -42,6 +42,7 @@ public:
     std::vector<std::byte> &RawRef();
 
     void FromString(std::string_view sv);
+    std::string ToString() const;
 
     auto Begin() -> decltype(mBytes)::iterator;
     auto End() -> decltype(mBytes)::iterator;
