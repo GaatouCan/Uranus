@@ -42,7 +42,7 @@ public:
     std::vector<std::byte> &RawRef();
 
     void FromString(std::string_view sv);
-    std::string ToString() const;
+    [[nodiscard]] std::string ToString() const;
 
     auto Begin() -> decltype(mBytes)::iterator;
     auto End() -> decltype(mBytes)::iterator;
@@ -196,7 +196,7 @@ void ByteArrayToData(const std::vector<std::byte> &bytes, T &target) {
     void *dist = nullptr;
 
     if constexpr (std::is_pointer_v<T>) {
-        dist = static_cast<void *>(&target);
+        dist = static_cast<void *>(target);
     } else {
         dist = static_cast<void *>(&target);
     }
