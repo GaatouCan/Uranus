@@ -1,7 +1,7 @@
 #include "Context.h"
 #include "Recycler.h"
 #include "Package.h"
-#include "LibraryNode.h"
+#include "ServiceHandle.h"
 #include "Service/ServiceModule.h"
 #include "Service/Service.h"
 #include "Event/EventParam.h"
@@ -68,7 +68,7 @@ void UEventNode::Execute() {
 IContext::IContext()
     : mModule(nullptr),
       mService(nullptr),
-      mLibrary(nullptr),
+      mHandle(nullptr),
       mState(EContextState::CREATED) {
 }
 
@@ -88,16 +88,16 @@ void IContext::SetUpModule(IModule *module) {
     mModule = module;
 }
 
-void IContext::SetUpLibraryNode(FLibraryNode *library) {
+void IContext::SetUpHandle(FServiceHandle *handle) {
     if (mState != EContextState::CREATED)
         return;
-    mLibrary = library;
+    mHandle = handle;
 }
 
 std::string IContext::GetLibraryPath() const {
-    if (mLibrary == nullptr)
+    if (mHandle == nullptr)
         return {};
-    return mLibrary->GetPath();
+    return mHandle->GetPath();
 }
 
 std::string IContext::GetServiceName() const {
@@ -207,7 +207,7 @@ bool IContext::Initial(const std::shared_ptr<IPackage> &pkg) {
     if (mState != EContextState::CREATED)
         return false;
 
-    if (mModule == nullptr || mLibrary == nullptr) {
+    if (mModule == nullptr || mHandle == nullptr) {
         SPDLOG_ERROR("{:<20} - Owner Module Or Library Node Is Null", __FUNCTION__);
         return false;
     }
@@ -215,16 +215,16 @@ bool IContext::Initial(const std::shared_ptr<IPackage> &pkg) {
     // Start To Create Service
     mState = EContextState::INITIALIZING;
 
-    auto creator = mLibrary->GetCreatorT<AServiceCreator>();
+    auto creator = mHandle->GetCreatorT<AServiceCreator>();
     if (creator == nullptr) {
-        SPDLOG_ERROR("{:<20} - Can't Load Creator, Path[{}]", __FUNCTION__, mLibrary->GetPath());
+        SPDLOG_ERROR("{:<20} - Can't Load Creator, Path[{}]", __FUNCTION__, mHandle->GetPath());
         mState = EContextState::CREATED;
         return false;
     }
 
     mService = std::invoke(creator);
     if (mService == nullptr) {
-        SPDLOG_ERROR("{:<20} - Can't Create Service, Path[{}]", __FUNCTION__, mLibrary->GetPath());
+        SPDLOG_ERROR("{:<20} - Can't Create Service, Path[{}]", __FUNCTION__, mHandle->GetPath());
         mState = EContextState::CREATED;
         return false;
     }
@@ -289,15 +289,15 @@ int IContext::Shutdown(const bool bFource, const int second, const std::function
     if (mQueue != nullptr && !mQueue->IsEmpty())
         mQueue->Clear();
 
-    if (mLibrary == nullptr) {
+    if (mHandle == nullptr) {
         SPDLOG_ERROR("{:<20} - Library Node Is Null", __FUNCTION__);
         mState = EContextState::STOPPED;
         return -2;
     }
 
-    auto destroyer = mLibrary->GetDestroyerT<AServiceDestroyer>();
+    auto destroyer = mHandle->GetDestroyerT<AServiceDestroyer>();
     if (destroyer == nullptr) {
-        SPDLOG_ERROR("{:<20} - Can't Load Destroyer, Path[{}]", __FUNCTION__, mLibrary->GetPath());
+        SPDLOG_ERROR("{:<20} - Can't Load Destroyer, Path[{}]", __FUNCTION__, mHandle->GetPath());
         mState = EContextState::STOPPED;
         return -3;
     }
@@ -305,7 +305,7 @@ int IContext::Shutdown(const bool bFource, const int second, const std::function
     std::invoke(destroyer, mService);
 
     mService = nullptr;
-    mLibrary = nullptr;
+    mHandle = nullptr;
 
     mState = EContextState::STOPPED;
     SPDLOG_TRACE("{:<20} - Context[{:p}] Service[{}] Shut Down Success",

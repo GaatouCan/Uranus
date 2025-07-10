@@ -1,26 +1,26 @@
-#include "LibraryNode.h"
+#include "ServiceHandle.h"
 
 #include <spdlog/spdlog.h>
 
 
-FLibraryNode::FLibraryNode()
+FServiceHandle::FServiceHandle()
     : mHandle(nullptr),
       mCreator(nullptr),
       mDestroyer(nullptr) {
 }
 
-FLibraryNode::~FLibraryNode() {
+FServiceHandle::~FServiceHandle() {
     Unload();
 }
 
-void FLibraryNode::Reset() {
+void FServiceHandle::Reset() {
     mHandle = nullptr;
     mCreator = nullptr;
     mDestroyer = nullptr;
     mPath.clear();
 }
 
-bool FLibraryNode::LoadFrom(const std::string &path) {
+bool FServiceHandle::LoadFrom(const std::string &path) {
 #if defined(_WIN32) || defined(_WIN64)
     mHandle = LoadLibrary(path.data());
 
@@ -67,7 +67,7 @@ bool FLibraryNode::LoadFrom(const std::string &path) {
     return true;
 }
 
-void FLibraryNode::Unload() {
+void FServiceHandle::Unload() {
     if (mHandle == nullptr)
         return;
 
@@ -81,14 +81,14 @@ void FLibraryNode::Unload() {
     Reset();
 }
 
-void *FLibraryNode::GetCreator() const {
+void *FServiceHandle::GetCreator() const {
     return mCreator;
 }
 
-void *FLibraryNode::GetDestroyer() const {
+void *FServiceHandle::GetDestroyer() const {
     return mDestroyer;
 }
 
-std::string FLibraryNode::GetPath() const {
+std::string FServiceHandle::GetPath() const {
     return mPath;
 }

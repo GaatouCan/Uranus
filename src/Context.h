@@ -12,7 +12,7 @@ class IModule;
 class IEventParam;
 class UServer;
 class IPackage;
-class FLibraryNode;
+class FServiceHandle;
 
 
 // ~Begin Define Schedule Node
@@ -113,7 +113,7 @@ class BASE_API IContext : public std::enable_shared_from_this<IContext> {
     IService *mService;
 
     /** Loaded Library With Creator And Destroyer Of Service */
-    FLibraryNode *mLibrary;
+    FServiceHandle *mHandle;
 
     /** Internal Package Pool */
     std::shared_ptr<IRecycler> mPool;
@@ -136,7 +136,7 @@ public:
     virtual ~IContext();
 
     void SetUpModule(IModule *module);
-    void SetUpLibraryNode(FLibraryNode *library);
+    void SetUpHandle(FServiceHandle *handle);
 
     /** Return The Path String Of The Dynamic Library File That The Service Defined */
     std::string GetLibraryPath() const;

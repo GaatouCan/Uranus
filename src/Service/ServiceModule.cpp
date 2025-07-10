@@ -2,7 +2,7 @@
 #include "Service.h"
 #include "../Package.h"
 #include "../Config/Config.h"
-#include "../LibraryNode.h"
+#include "../ServiceHandle.h"
 
 #include <spdlog/spdlog.h>
 
@@ -69,8 +69,8 @@ void UServiceModule::Initial() {
     }
 
     for (const auto &[filename, path] : coreMap) {
-        if (auto node = new FLibraryNode(); node->LoadFrom(path.string())) {
-            mCoreLibraries[filename] = node;
+        if (auto node = new FServiceHandle(); node->LoadFrom(path.string())) {
+            mCoreHandleMap[filename] = node;
             SPDLOG_INFO("{:<20} - Load Core Service Library[{}] Success", __FUNCTION__, path.string());
         }
     }
@@ -112,14 +112,14 @@ void UServiceModule::Initial() {
     }
 
     for (const auto &[filename, path] : extendMap) {
-        if (auto *node = new FLibraryNode(); node->LoadFrom(path.string())) {
-            mExtendLibraries[filename] = node;
+        if (auto *node = new FServiceHandle(); node->LoadFrom(path.string())) {
+            mExtendHandleMap[filename] = node;
             SPDLOG_INFO("{:<20} - Load Extend Service Library[{}] Success", __FUNCTION__, path.string());
         }
     }
     SPDLOG_INFO("Load Extend Service Completed!");
 
-    for (const auto &[filename, node] : mCoreLibraries) {
+    for (const auto &[filename, node] : mCoreHandleMap) {
         const int32_t sid = mNextID++;
         // if (mRecycledID.empty()) {
         //     sid = mNextID++;
@@ -131,7 +131,7 @@ void UServiceModule::Initial() {
         const auto context = std::make_shared<UContext>();
 
         context->SetUpModule(this);
-        context->SetUpLibraryNode(node);
+        context->SetUpHandle(node);
         context->SetServiceID(sid);
 
         if (context->Initial(nullptr)) {
@@ -184,11 +184,11 @@ void UServiceModule::Stop() {
         context->ForceShutdown();
     }
 
-    for (const auto &node : mCoreLibraries | std::views::values) {
+    for (const auto &node : mCoreHandleMap | std::views::values) {
         delete node;
     }
 
-    for (const auto &node : mExtendLibraries | std::views::values) {
+    for (const auto &node : mExtendHandleMap | std::views::values) {
         delete node;
     }
 
@@ -199,8 +199,8 @@ std::shared_ptr<UContext> UServiceModule::BootExtendService(const std::string &f
     if (mState != EModuleState::RUNNING)
         return nullptr;
 
-    const auto node = FindLibrary(filename);
-    if (node == nullptr) {
+    const auto handle = FindServiceHandle(filename);
+    if (handle == nullptr) {
         SPDLOG_WARN("{:<20} - Fail To Found Service Library {}", __FUNCTION__, filename);
         return nullptr;
     }
@@ -212,7 +212,7 @@ std::shared_ptr<UContext> UServiceModule::BootExtendService(const std::string &f
     auto context = std::make_shared<UContext>();
 
     context->SetUpModule(this);
-    context->SetUpLibraryNode(node);
+    context->SetUpHandle(handle);
     context->SetServiceID(sid);
 
     if (!context->Initial(pkg)) {
@@ -363,14 +363,14 @@ void UServiceModule::LoadLibraryFrom(const std::string &path, const bool bCore) 
     if (bCore) {
         // TODO:
     } else {
-        std::unique_lock lock(mLibraryMutex);
-        if (mExtendLibraries.contains(path)) {
+        std::unique_lock lock(mHandleMutex);
+        if (mExtendHandleMap.contains(path)) {
             SPDLOG_INFO("{:<20} - Library From {} Exists.", __FUNCTION__, path);
             return;
         }
 
-        if (const auto node = new FLibraryNode(); node->LoadFrom(path)) {
-            mExtendLibraries[path] = node;
+        if (const auto node = new FServiceHandle(); node->LoadFrom(path)) {
+            mExtendHandleMap[path] = node;
             SPDLOG_INFO("{:<20} - Load Extend Library From {} Success.", __FUNCTION__, path);
         }
     }
@@ -385,7 +385,7 @@ void UServiceModule::UnloadLibrary(const std::string &path, const bool bCore) {
     } else {
         SPDLOG_INFO("{:<20} - Begin Unload Extend Service[{}] Library...", __FUNCTION__, path);
 
-        absl::flat_hash_set<int32_t> del;
+        flat_hash_set<int32_t> del;
         bool bComplete = true;
 
         {
@@ -421,9 +421,9 @@ void UServiceModule::UnloadLibrary(const std::string &path, const bool bCore) {
                 RecycleServiceID(sid);
 
                 if (bCanDelete) {
-                    if (const auto iter = mExtendLibraries.find(path); iter != mExtendLibraries.end()) {
+                    if (const auto iter = mExtendHandleMap.find(path); iter != mExtendHandleMap.end()) {
                         delete iter->second;
-                        mExtendLibraries.erase(iter);
+                        mExtendHandleMap.erase(iter);
                     }
                 }
             };
@@ -464,15 +464,15 @@ UServiceModule::FContextInfo UServiceModule::GetContextInfo(int32_t id) const {
     return iter == mInfoMap.end() ? FContextInfo{} : iter->second;
 }
 
-FLibraryNode *UServiceModule::FindLibrary(const std::string &path, const bool bCore) const {
-    std::shared_lock lock(mLibraryMutex);
+FServiceHandle *UServiceModule::FindServiceHandle(const std::string &path, const bool bCore) const {
+    std::shared_lock lock(mHandleMutex);
     if (bCore) {
-        const auto iter = mCoreLibraries.find(path);
-        return iter != mCoreLibraries.end() ? iter->second : nullptr;
+        const auto iter = mCoreHandleMap.find(path);
+        return iter != mCoreHandleMap.end() ? iter->second : nullptr;
     }
 
-    const auto iter = mExtendLibraries.find(path);
-    return iter != mExtendLibraries.end() ? iter->second : nullptr;
+    const auto iter = mExtendHandleMap.find(path);
+    return iter != mExtendHandleMap.end() ? iter->second : nullptr;
 }
 
 int32_t UServiceModule::AllocateServiceID() {

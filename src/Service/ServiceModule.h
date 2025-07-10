@@ -12,7 +12,7 @@
 class IPackage;
 class UContext;
 class IService;
-class FLibraryNode;
+class FServiceHandle;
 
 using absl::flat_hash_map;
 using absl::flat_hash_set;
@@ -58,7 +58,7 @@ public:
 
 private:
     FContextInfo GetContextInfo(int32_t id) const;
-    FLibraryNode *FindLibrary(const std::string &path, bool bCore = false) const;
+    FServiceHandle *FindServiceHandle(const std::string &path, bool bCore = false) const;
 
     int32_t AllocateServiceID();
     void RecycleServiceID(int32_t id);
@@ -66,9 +66,9 @@ private:
     bool OnServiceShutdown(const std::string &filename, int32_t sid, bool bCore = false);
 
 private:
-    flat_hash_map<std::string, FLibraryNode *> mExtendLibraries;
-    flat_hash_map<std::string, FLibraryNode *> mCoreLibraries;
-    mutable std::shared_mutex mLibraryMutex;
+    flat_hash_map<std::string, FServiceHandle *> mExtendHandleMap;
+    flat_hash_map<std::string, FServiceHandle *> mCoreHandleMap;
+    mutable std::shared_mutex mHandleMutex;
 
     flat_hash_map<int32_t, std::shared_ptr<UContext>> mServiceMap;
     mutable std::shared_mutex mServiceMutex;

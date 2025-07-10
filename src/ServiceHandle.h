@@ -6,7 +6,7 @@
  * Used To Load Service Dynamic Library On Windows Or Linux,
  * The Handle Will Be Closed While Call Destructor
  */
-class BASE_API FLibraryNode final {
+class BASE_API FServiceHandle final {
 
     AModuleHandle mHandle;
 
@@ -16,8 +16,8 @@ class BASE_API FLibraryNode final {
     std::string mPath;
 
 public:
-    FLibraryNode();
-    ~FLibraryNode();
+    FServiceHandle();
+    ~FServiceHandle();
 
     void Reset();
 

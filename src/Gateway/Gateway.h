@@ -11,7 +11,7 @@ class IPackage;
 class IService;
 class IPlayerAgent;
 class UAgentContext;
-class FLibraryNode;
+class FServiceHandle;
 
 using absl::flat_hash_map;
 
@@ -48,7 +48,7 @@ public:
     void OnHeartBeat(int64_t pid, const std::shared_ptr<IPackage> &pkg) const;
 
 private:
-    FLibraryNode *mLibrary;
+    FServiceHandle *mLibrary;
 
     flat_hash_map<int64_t, int64_t> mCidToPid;
     flat_hash_map<int64_t, std::shared_ptr<UAgentContext>> mPlayerMap;

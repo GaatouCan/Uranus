@@ -1,7 +1,7 @@
 #include "Gateway.h"
 #include "PlayerAgent.h"
 #include "../Server.h"
-#include "../LibraryNode.h"
+#include "../ServiceHandle.h"
 #include "../Package.h"
 #include "../Network/Network.h"
 #include "../Service/ServiceModule.h"
@@ -25,6 +25,7 @@ void UGateway::OnPlayerLogin(const int64_t pid, const int64_t cid) {
     const auto agent = std::make_shared<UAgentContext>();
 
     agent->SetUpModule(this);
+    agent->SetUpHandle(mLibrary);
     agent->SetPlayerID(pid);
     agent->SetConnectionID(cid);
 
@@ -105,7 +106,7 @@ void UGateway::Initial() {
     agent += "/libagent.so";
 #endif
 
-    mLibrary = new FLibraryNode();
+    mLibrary = new FServiceHandle();
     if (!mLibrary->LoadFrom(agent)) {
         SPDLOG_ERROR("Gateway Module Fail To Load Agent Library");
         GetServer()->Shutdown();
