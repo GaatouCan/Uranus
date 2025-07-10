@@ -2,6 +2,7 @@
 
 #include <stdexcept>
 #include <vector>
+#include <span>
 
 #include "common.h"
 
@@ -24,11 +25,11 @@ public:
 
     explicit operator std::vector<std::byte>() const;
 
-    FByteArray(const FByteArray &rhs);
-    FByteArray &operator=(const FByteArray &rhs);
+    FByteArray(const FByteArray &rhs) = default;
+    FByteArray &operator=(const FByteArray &rhs) = default;
 
-    FByteArray(FByteArray &&rhs) noexcept;
-    FByteArray &operator=(FByteArray &&rhs) noexcept;
+    FByteArray(FByteArray &&rhs) noexcept = default;
+    FByteArray &operator=(FByteArray &&rhs) noexcept = default;
 
     /** Clean The Data And Release The Space */
     void Reset();
@@ -39,6 +40,8 @@ public:
     [[nodiscard]] std::byte *Data();
     [[nodiscard]] const std::byte *Data() const;
     std::vector<std::byte> &RawRef();
+
+    void FromString(std::string_view sv);
 
     auto Begin() -> decltype(mBytes)::iterator;
     auto End() -> decltype(mBytes)::iterator;
@@ -59,11 +62,17 @@ public:
         constexpr auto size = std::is_pointer_v<T> ? sizeof(std::remove_pointer_t<T>) : sizeof(T);
         mBytes.resize(size);
 
+        std::span dest = mBytes;
+        const void *src = nullptr;
+
         if constexpr (std::is_pointer_v<T>) {
-            memcpy(static_cast<void *>(mBytes.data()), source, size);
+            static_assert(!std::is_null_pointer_v<T>, "Null Pointer Pass To CastFrom");
+            src = static_cast<const void *>(source);
         } else {
-            memcpy(static_cast<void *>(mBytes.data()), &source, size);
+            src = static_cast<const void *>(&source);
         }
+
+        std::memcpy(dest.data(), src, size);
     }
 
     template<typename T>
@@ -99,15 +108,22 @@ public:
     requires kPODType<T>
     void CastTo(T &target) const {
         constexpr auto size = std::is_pointer_v<T> ? sizeof(std::remove_pointer_t<T>) : sizeof(T);
-        if (size > mBytes.size()) {
+
+        std::span src = mBytes;
+        void *dist = nullptr;
+
+        if (size > src.size()) {
             throw std::runtime_error("FByteArray::CastTo - Overflow.");
         }
 
         if constexpr (std::is_pointer_v<T>) {
-            memcpy(target, static_cast<const void *>(mBytes.data()), size);
+            static_assert(!std::is_null_pointer_v<T>, "Null Pointer Pass To CastTo");
+            dist = static_cast<void *>(target);
         } else {
-            memcpy(&target, static_cast<const void *>(mBytes.data()), size);
+            dist = static_cast<void *>(&target);
         }
+
+        std::memcpy(dist, src.data(), size);
     }
 
     template<typename T>

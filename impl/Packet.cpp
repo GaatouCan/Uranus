@@ -71,8 +71,7 @@ void FPacket::SetID(const uint32_t id) {
 
 FPacket &FPacket::SetData(const std::string_view str) {
     mHeader.length = str.size();
-    mPayload.Resize(str.size());
-    memcpy(mPayload.Data(), str.data(), str.size());
+    mPayload.FromString(str);
     return *this;
 }
 

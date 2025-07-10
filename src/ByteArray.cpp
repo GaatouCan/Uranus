@@ -17,30 +17,6 @@ FByteArray::operator std::vector<std::byte>() const {
     return mBytes;
 }
 
-FByteArray::FByteArray(const FByteArray &rhs) {
-    mBytes.resize(rhs.mBytes.size());
-    std::ranges::copy(rhs.mBytes, mBytes.begin());
-}
-
-FByteArray &FByteArray::operator=(const FByteArray &rhs) {
-    if (this != &rhs) {
-        mBytes.resize(rhs.mBytes.size());
-        std::ranges::copy(rhs.mBytes, mBytes.begin());
-    }
-    return *this;
-}
-
-FByteArray::FByteArray(FByteArray &&rhs) noexcept {
-    mBytes = std::move(rhs.mBytes);
-}
-
-FByteArray &FByteArray::operator=(FByteArray &&rhs) noexcept {
-    if (this != &rhs) {
-        mBytes = std::move(rhs.mBytes);
-    }
-    return *this;
-}
-
 void FByteArray::Reset() {
     mBytes.clear();
     mBytes.shrink_to_fit();
@@ -58,12 +34,17 @@ std::byte *FByteArray::Data() {
     return mBytes.data();
 }
 
-const std::byte * FByteArray::Data() const {
+const std::byte *FByteArray::Data() const {
     return mBytes.data();
 }
 
 std::vector<std::byte> &FByteArray::RawRef() {
     return mBytes;
+}
+
+void FByteArray::FromString(const std::string_view sv) {
+    mBytes.resize(sv.size());
+    std::memcpy(mBytes.data(), sv.data(), sv.size());
 }
 
 auto FByteArray::Begin() -> decltype(mBytes)::iterator {
