@@ -9,7 +9,7 @@
 #include <Network/Network.h>
 #include <Monitor/Monitor.h>
 #include <Database/DataAccess.h>
-#include <Handler.h>
+#include <ServerHandlerImpl.h>
 
 #include <spdlog/spdlog.h>
 

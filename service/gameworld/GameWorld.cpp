@@ -54,10 +54,10 @@ void UGameWorld::OnPackage(const std::shared_ptr<IPackage> &pkg) {
     mRoute.OnReceivePacket(pkt);
 }
 
-extern "C" SERVICE_API IService *NewService() {
+extern "C" SERVICE_API IService *CreateInstance() {
     return new UGameWorld();
 }
 
-extern "C" SERVICE_API void DestroyService(IService *service) {
+extern "C" SERVICE_API void DestroyInstance(IService *service) {
     delete dynamic_cast<UGameWorld *>(service);
 }

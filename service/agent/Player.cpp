@@ -84,10 +84,10 @@ UComponentModule &UPlayer::GetComponentModule() {
     return mComponent;
 }
 
-extern "C" SERVICE_API IPlayerAgent *NewService() {
+extern "C" SERVICE_API IPlayerAgent *CreateInstance() {
     return new UPlayer();
 }
 
-extern "C" SERVICE_API void DestroyService(IService *service) {
+extern "C" SERVICE_API void DestroyInstance(IService *service) {
     delete service;
 }

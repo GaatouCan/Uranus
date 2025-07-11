@@ -12,7 +12,7 @@
 class IPackage;
 class UContext;
 class IService;
-class FServiceHandle;
+class FLibraryHandle;
 
 using absl::flat_hash_map;
 using absl::flat_hash_set;
@@ -53,12 +53,12 @@ public:
     std::map<std::string, int32_t> GetServiceList() const;
     int32_t GetServiceID(const std::string &name) const;
 
-    void LoadLibraryFrom(const std::string &path, bool bCore = false);
-    void UnloadLibrary(const std::string &path, bool bCore = false);
+    void LoadLibraryFrom(const std::string &filename, bool bCore = false);
+    void UnloadLibrary(const std::string &filename, bool bCore = false);
 
 private:
     FContextInfo GetContextInfo(int32_t id) const;
-    FServiceHandle *FindServiceHandle(const std::string &path, bool bCore = false) const;
+    FLibraryHandle *FindServiceHandle(const std::string &path, bool bCore = false) const;
 
     int32_t AllocateServiceID();
     void RecycleServiceID(int32_t id);
@@ -66,22 +66,26 @@ private:
     bool OnServiceShutdown(const std::string &filename, int32_t sid, bool bCore = false);
 
 private:
-    flat_hash_map<std::string, FServiceHandle *> mExtendHandleMap;
-    flat_hash_map<std::string, FServiceHandle *> mCoreHandleMap;
+    /** Dynamic Library Handle **/
+
+    flat_hash_map<std::string, FLibraryHandle *> mExtendHandleMap;
+    flat_hash_map<std::string, FLibraryHandle *> mCoreHandleMap;
     mutable std::shared_mutex mHandleMutex;
 
+    /** Running Services Map **/
     flat_hash_map<int32_t, std::shared_ptr<UContext>> mServiceMap;
     mutable std::shared_mutex mServiceMutex;
 
-    flat_hash_map<std::string, FContextInfo> mNameToID;
-    flat_hash_map<int32_t, FContextInfo> mInfoMap;
+    /** Service Name To Service ID Mapping **/
+    flat_hash_map<std::string, FContextInfo> mContextInfoMap;
     mutable std::shared_mutex mNameMutex;
 
-    flat_hash_map<std::string, int32_t> mCoreFileNameToID;
-    flat_hash_map<std::string, flat_hash_set<int32_t>> mExtendFileNameToID;
+    /** Service ID Set With Same Library Filename **/
+    flat_hash_map<std::string, flat_hash_set<int32_t>> mFilenameToServiceID;
     mutable std::shared_mutex mFileNameMutex;
 
-    // Service ID Management
+
+    /** Service ID Management **/
 
     std::queue<int32_t> mRecycledID;
     int32_t mNextID;

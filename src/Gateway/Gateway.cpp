@@ -1,7 +1,7 @@
 #include "Gateway.h"
 #include "PlayerAgent.h"
 #include "Server.h"
-#include "Service/ServiceHandle.h"
+#include "Service/LibraryHandle.h"
 #include "Package.h"
 #include "Network/Network.h"
 #include "Service/ServiceModule.h"
@@ -106,7 +106,7 @@ void UGateway::Initial() {
     agent += "/libagent.so";
 #endif
 
-    mLibrary = new FServiceHandle();
+    mLibrary = new FLibraryHandle();
     if (!mLibrary->LoadFrom(agent)) {
         SPDLOG_ERROR("Gateway Module Fail To Load Agent Library");
         GetServer()->Shutdown();

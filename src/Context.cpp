@@ -1,7 +1,7 @@
 #include "Context.h"
 #include "Recycler.h"
 #include "Package.h"
-#include "Service/ServiceHandle.h"
+#include "Service/LibraryHandle.h"
 #include "Service/ServiceModule.h"
 #include "Service/Service.h"
 #include "Event/EventParam.h"
@@ -88,7 +88,7 @@ void IContext::SetUpModule(IModule *module) {
     mModule = module;
 }
 
-void IContext::SetUpHandle(FServiceHandle *handle) {
+void IContext::SetUpHandle(FLibraryHandle *handle) {
     if (mState != EContextState::CREATED)
         return;
     mHandle = handle;
@@ -242,7 +242,7 @@ bool IContext::Initial(const std::shared_ptr<IPackage> &pkg) {
 
     // Context And Service Initialized
     mState = EContextState::INITIALIZED;
-    SPDLOG_TRACE("{:<20} - Context[{:p}] Create Service[{}] Success",
+    SPDLOG_TRACE("{:<20} - Context[{:p}] Service[{}] Initial Successfully",
         __FUNCTION__, static_cast<const void *>(this), mService->GetServiceName());
 
     return true;
@@ -308,7 +308,7 @@ int IContext::Shutdown(const bool bFource, const int second, const std::function
     mHandle = nullptr;
 
     mState = EContextState::STOPPED;
-    SPDLOG_TRACE("{:<20} - Context[{:p}] Service[{}] Shut Down Success",
+    SPDLOG_TRACE("{:<20} - Context[{:p}] Service[{}] Shut Down Successfully",
         __FUNCTION__, static_cast<void *>(this), name);
 
     if (mShutdownCallback) {
