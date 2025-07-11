@@ -27,7 +27,7 @@ void UNetwork::Initial() {
     if (mState != EModuleState::CREATED)
         return;
 
-    mPool = GetServer()->GetServerHandler()->CreatePackagePool(mIOContext);
+    mPool = GetServer()->CreatePackagePool(mIOContext);
     mPool->Initial();
 
     mThread = std::thread([this] {

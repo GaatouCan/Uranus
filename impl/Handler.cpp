@@ -13,13 +13,13 @@ UServerHandler::UServerHandler() {
 UServerHandler::~UServerHandler() {
 }
 
-void UServerHandler::InitLoginAuth(ULoginAuth *auth) {
+void UServerHandler::InitLoginAuth(ULoginAuth *auth) const {
     if (auth != nullptr) {
         auth->SetLoginHandler<ULoginHandler>();
     }
 }
 
-void UServerHandler::InitConnection(const std::shared_ptr<UConnection> &conn) {
+void UServerHandler::InitConnection(const std::shared_ptr<UConnection> &conn) const {
     if (conn != nullptr) {
         conn->SetPackageCodec<UPacketCodec>();
     }

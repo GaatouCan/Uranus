@@ -233,7 +233,7 @@ bool IContext::Initial(const std::shared_ptr<IPackage> &pkg) {
     mQueue = std::make_unique<AScheduleQueue>();
 
     // Create Package Pool For Data Exchange
-    mPool = GetServer()->GetServerHandler()->CreatePackagePool(GetServer()->GetIOContext());
+    mPool = GetServer()->CreatePackagePool(GetServer()->GetIOContext());
     mPool->Initial();
 
     // Initialize The Service With Package

@@ -5,6 +5,12 @@
 
 #include <typeindex>
 #include <absl/container/flat_hash_map.h>
+#include <memory>
+
+
+class IRecycler;
+class ULoginAuth;
+class UConnection;
 
 
 class BASE_API UServer final {
@@ -47,6 +53,10 @@ public:
     void SetServerHandler();
 
     [[nodiscard]] IServerHandler *GetServerHandler() const;
+
+    std::shared_ptr<IRecycler> CreatePackagePool(asio::io_context &ctx) const;
+    void InitLoginAuth(ULoginAuth *auth) const;
+    void InitConnection(const std::shared_ptr<UConnection> &conn) const;
 
     void Initial();
     void Run();

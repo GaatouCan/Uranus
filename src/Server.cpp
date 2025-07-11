@@ -42,6 +42,22 @@ IServerHandler *UServer::GetServerHandler() const {
     return mHandler.get();
 }
 
+std::shared_ptr<IRecycler> UServer::CreatePackagePool(asio::io_context &ctx) const {
+    if (mHandler != nullptr)
+        return mHandler->CreatePackagePool(ctx);
+    return nullptr;
+}
+
+void UServer::InitLoginAuth(ULoginAuth *auth) const {
+    if (mHandler != nullptr)
+        mHandler->InitLoginAuth(auth);
+}
+
+void UServer::InitConnection(const std::shared_ptr<UConnection> &conn) const {
+    if (mHandler != nullptr)
+        mHandler->InitConnection(conn);
+}
+
 void UServer::Initial() {
     if (bInitialized)
         return;
