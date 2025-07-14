@@ -7,9 +7,6 @@
 class IMPL_API UServerHandler final : public IServerHandler {
 
 public:
-    UServerHandler();
-    ~UServerHandler() override;
-
     void InitLoginAuth(ULoginAuth *auth) const override;
     void InitConnection(const std::shared_ptr<UConnection> &conn) const override;
 

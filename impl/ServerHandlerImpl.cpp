@@ -7,12 +7,6 @@
 #include <Login/LoginAuth.h>
 
 
-UServerHandler::UServerHandler() {
-}
-
-UServerHandler::~UServerHandler() {
-}
-
 void UServerHandler::InitLoginAuth(ULoginAuth *auth) const {
     if (auth != nullptr) {
         auth->SetLoginHandler<ULoginHandler>();
