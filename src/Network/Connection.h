@@ -16,14 +16,11 @@ class BASE_API UConnection final : public std::enable_shared_from_this<UConnecti
     TConcurrentDeque<std::shared_ptr<IPackage>> mOutput;
 
     ASystemTimer mWatchdog;
-    ATimePoint mReceivedTime;
+    ATimePoint mReceiveTime;
     ATimePoint::duration mExpiration;
 
     int64_t mID;
     std::atomic_int64_t mPlayerID;
-    std::atomic_int64_t mLastLoginTime;
-
-    std::atomic_bool bDisconnected;
 
 public:
     UConnection() = delete;
@@ -55,8 +52,6 @@ public:
     [[nodiscard]] int64_t GetPlayerID() const;
 
     void SendPackage(const std::shared_ptr<IPackage> &pkg);
-
-    [[nodiscard]] int64_t GetLastLoginTime() const;
 
 private:
     awaitable<void> WritePackage();

@@ -49,7 +49,7 @@ void ULoginAuth::OnPlayerLogin(const int64_t cid, const std::shared_ptr<IPackage
         return; {
         std::unique_lock lock(mMutex);
         if (const auto iter = mLoginMap.find(cid); iter != mLoginMap.end()) {
-            if (std::chrono::system_clock::now() - iter->second < std::chrono::seconds(3))
+            if (std::chrono::system_clock::now() - iter->second < std::chrono::seconds(1))
                 return;
         }
 

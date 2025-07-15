@@ -1,9 +1,9 @@
 #pragma once
 
-#include "common.h"
 
-#include <Package.h>
-#include <ByteArray.h>
+#include "Package.h"
+#include "ByteArray.h"
+
 #include <sstream>
 
 
@@ -13,19 +13,12 @@ inline constexpr uint32_t MINIMUM_PACKAGE_ID = 1001;
 inline constexpr uint32_t MAXIMUM_PACKAGE_ID = 999999;
 
 
-/* enum class IMPL_API ECodecMethod : uint16_t {
-    UNAVAILABLE = 0,
-    BASE_LINE = 1,
-    PROTOBUF = 2,
-}; */
-
-
 /**
  * The Implement Of Package For Data Exchange;
  * Use The Structure Of Header Plus Data Part;
  * The Header Occupies 24 Bytes And Uses Big-Endian Transmission In Network
  */
-class IMPL_API FPacket final : public IPackage {
+class BASE_API FPacket final : public IPackage {
 
     friend class UPacketCodec;
 

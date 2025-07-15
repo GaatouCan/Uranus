@@ -20,8 +20,8 @@ awaitable<bool> UPacketCodec::EncodeT(const std::shared_ptr<FPacket> &pkt) {
     header.magic = htonl(pkt->mHeader.magic);
     header.id = htonl(pkt->mHeader.id);
 
-    header.source = htonl(pkt->mHeader.source);
-    header.target = htonl(pkt->mHeader.target);
+    header.source = static_cast<int32_t>(htonl(pkt->mHeader.source));
+    header.target = static_cast<int32_t>(htonl(pkt->mHeader.target));
 
 #if defined(_WIN32) || defined(_WIN64)
     header.length = htonll(pkt->mHeader.length);
@@ -43,7 +43,7 @@ awaitable<bool> UPacketCodec::EncodeT(const std::shared_ptr<FPacket> &pkt) {
         }
 
         if (len == 0) {
-            SPDLOG_WARN("{:<20} - Write Packet Length Equal Zero", __FUNCTION__);
+            SPDLOG_WARN("{:<20} - Packet Length Equal Zero", __FUNCTION__);
             co_return false;
         }
 
@@ -57,7 +57,7 @@ awaitable<bool> UPacketCodec::EncodeT(const std::shared_ptr<FPacket> &pkt) {
     }
 
     if (len == 0) {
-        SPDLOG_WARN("{:<20} - Write Packet Header Length Equal Zero", __FUNCTION__);
+        SPDLOG_WARN("{:<20} - Packet Header Length Equal Zero", __FUNCTION__);
         co_return false;
     }
 
@@ -73,15 +73,15 @@ awaitable<bool> UPacketCodec::DecodeT(const std::shared_ptr<FPacket> &pkt) {
     }
 
     if (len == 0) {
-        SPDLOG_WARN("{:<20} - Read Package Header Length Equal Zero", __FUNCTION__);
+        SPDLOG_WARN("{:<20} - Package Header Length Equal Zero", __FUNCTION__);
         co_return false;
     }
 
     pkt->mHeader.magic = ntohl(pkt->mHeader.magic);
     pkt->mHeader.id = ntohl(pkt->mHeader.id);
 
-    pkt->mHeader.source = ntohl(pkt->mHeader.source);
-    pkt->mHeader.target = ntohl(pkt->mHeader.target);
+    pkt->mHeader.source = static_cast<int32_t>(ntohl(pkt->mHeader.source));
+    pkt->mHeader.target = static_cast<int32_t>(ntohl(pkt->mHeader.target));
 
 #if defined(_WIN32) || defined(_WIN64)
     pkt->mHeader.length = ntohll(pkt->mHeader.length);
@@ -94,11 +94,15 @@ awaitable<bool> UPacketCodec::DecodeT(const std::shared_ptr<FPacket> &pkt) {
 
     pkt->mPayload.Resize(pkt->mHeader.length);
 
-    if (
-        const auto [payload_ec, payload_length] = co_await async_read(GetSocket(), asio::buffer(pkt->RawRef()));
-        payload_ec
-    ) {
+    const auto [payload_ec, payload_length] = co_await async_read(GetSocket(), asio::buffer(pkt->RawRef()));
+
+    if (payload_ec) {
         SPDLOG_WARN("{:<20} - {}", __FUNCTION__, ec.message());
+        co_return false;
+    }
+
+    if (payload_length == 0) {
+        SPDLOG_WARN("{:<20} - Packet Payload Length Equal Zero But Header 's Length Is [{}]", __FUNCTION__, pkt->mHeader.length);
         co_return false;
     }
 

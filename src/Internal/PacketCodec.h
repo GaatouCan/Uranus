@@ -1,10 +1,10 @@
 #pragma once
 
 #include "Packet.h"
-#include <Network/PackageCodec.h>
+#include "Network/PackageCodec.h"
 
 
-class IMPL_API UPacketCodec final : public TPackageCodec<FPacket> {
+class BASE_API UPacketCodec final : public TPackageCodec<FPacket> {
 
     friend class UConnection;
 

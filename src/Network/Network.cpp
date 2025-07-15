@@ -5,6 +5,7 @@
 #include "Gateway/Gateway.h"
 #include "Login/LoginAuth.h"
 #include "Config/Config.h"
+#include "Internal/Packet.h"
 
 #include <spdlog/spdlog.h>
 
@@ -96,8 +97,7 @@ awaitable<void> UNetwork::WaitForClient(uint16_t port) {
                 }
 
                 const auto conn = std::make_shared<UConnection>(this, std::move(socket));
-
-                GetServer()->GetServerHandler()->InitConnection(conn);
+                GetServer()->InitConnection(conn);
 
                 if (const auto id = conn->GetConnectionID(); id > 0) {
                     std::unique_lock lock(mMutex);
@@ -164,13 +164,8 @@ void UNetwork::OnLoginSuccess(const int64_t cid, const int64_t pid, const std::s
         return;
     }
 
-    // 如果登录成功回调超过5秒
-    // 则有可能客户端发起了另一次登录请求并使Connection的playerID_减一
-    // 所以登录验证必须在5秒内完成 或者增大客户端登录请求间隔
-    if (utils::UnixTime() - conn->GetLastLoginTime() < 5) {
-        conn->SetPlayerID(pid);
-        conn->SendPackage(pkg);
-    }
+    conn->SetPlayerID(pid);
+    conn->SendPackage(pkg);
 }
 
 void UNetwork::OnLoginFailure(const int64_t cid, const std::shared_ptr<IPackage> &pkg) {

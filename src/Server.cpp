@@ -1,9 +1,13 @@
 #include "Server.h"
 #include "Config/Config.h"
+#include "Internal/PacketCodec.h"
+#include "Recycler.h"
+#include "Network/Connection.h"
 #include "utils.h"
 
 #include <spdlog/spdlog.h>
 #include <mimalloc-new-delete.h>
+
 
 UServer::UServer()
     : mGuard(asio::make_work_guard(mContext)),
@@ -43,9 +47,10 @@ IServerHandler *UServer::GetServerHandler() const {
 }
 
 std::shared_ptr<IRecycler> UServer::CreatePackagePool(asio::io_context &ctx) const {
-    if (mHandler != nullptr)
+    if (mHandler != nullptr && !mHandler->IsUseCustomPackage()) {}
         return mHandler->CreatePackagePool(ctx);
-    return nullptr;
+
+    return std::make_shared<TRecycler<FPacket>>(ctx);
 }
 
 void UServer::InitLoginAuth(ULoginAuth *auth) const {
@@ -54,8 +59,12 @@ void UServer::InitLoginAuth(ULoginAuth *auth) const {
 }
 
 void UServer::InitConnection(const std::shared_ptr<UConnection> &conn) const {
-    if (mHandler != nullptr)
+    if (mHandler != nullptr && !mHandler->IsUseCustomPackage()) {
         mHandler->InitConnection(conn);
+        return;
+    }
+
+    conn->SetPackageCodec<UPacketCodec>();
 }
 
 void UServer::Initial() {

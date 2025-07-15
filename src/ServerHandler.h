@@ -16,6 +16,10 @@ public:
 
     DISABLE_COPY_MOVE(IServerHandler)
 
+    [[nodiscard]] virtual bool IsUseCustomPackage() const {
+        return false;
+    }
+
     virtual void InitLoginAuth(ULoginAuth *auth) const = 0;
     virtual void InitConnection(const std::shared_ptr<UConnection> &conn) const = 0;
 

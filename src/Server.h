@@ -55,6 +55,7 @@ public:
     [[nodiscard]] IServerHandler *GetServerHandler() const;
 
     std::shared_ptr<IRecycler> CreatePackagePool(asio::io_context &ctx) const;
+
     void InitLoginAuth(ULoginAuth *auth) const;
     void InitConnection(const std::shared_ptr<UConnection> &conn) const;
 

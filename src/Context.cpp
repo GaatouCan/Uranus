@@ -418,7 +418,7 @@ void IContext::SendCommand(const std::string &type, const std::string &args, con
     if (mState < EContextState::INITIALIZED)
         return;
 
-    auto *monitor = GetServer()->GetModule<UMonitor>();
+    auto *monitor = GetModule<UMonitor>();
     if (monitor == nullptr)
         return;
 
@@ -437,7 +437,7 @@ std::shared_ptr<IPackage> IContext::BuildPackage() const {
 }
 
 std::map<std::string, int32_t> IContext::GetServiceList() const {
-    if (const auto *service = GetServer()->GetModule<UServiceModule>()) {
+    if (const auto *service = GetModule<UServiceModule>()) {
         return service->GetServiceList();
     }
     return {};
@@ -451,7 +451,7 @@ int32_t IContext::GetOtherServiceID(const std::string &name) const {
     if (name.empty() || name == GetServiceName())
         return -11;
 
-    if (const auto *service = GetServer()->GetModule<UServiceModule>()) {
+    if (const auto *service = GetModule<UServiceModule>()) {
         if (const auto sid = service->GetServiceID(name); sid != GetServiceID())
             return sid;
         return -14;

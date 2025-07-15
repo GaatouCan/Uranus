@@ -1,5 +1,4 @@
 #include "ServerHandlerImpl.h"
-#include "PacketCodec.h"
 #include "LoginHandlerImpl.h"
 
 #include <Recycler.h>
@@ -14,11 +13,9 @@ void UServerHandler::InitLoginAuth(ULoginAuth *auth) const {
 }
 
 void UServerHandler::InitConnection(const std::shared_ptr<UConnection> &conn) const {
-    if (conn != nullptr) {
-        conn->SetPackageCodec<UPacketCodec>();
-    }
+
 }
 
 std::shared_ptr<IRecycler> UServerHandler::CreatePackagePool(asio::io_context &ctx) {
-    return std::make_shared<TRecycler<FPacket>>(ctx);
+    return nullptr;
 }

@@ -17,9 +17,7 @@ UConnection::UConnection(UNetwork *module, ATcpSocket socket)
       mCodec(nullptr),
       mWatchdog(mSocket.get_executor()),
       mExpiration(std::chrono::seconds(30)),
-      mPlayerID(-1),
-      mLastLoginTime(0),
-      bDisconnected(false) {
+      mPlayerID(-1) {
     mID = static_cast<int64_t>(mSocket.native_handle());
 }
 
@@ -40,13 +38,12 @@ void UConnection::SetPlayerID(const int64_t id) {
         return;
 
     mPlayerID = id;
-    mLastLoginTime = 0;
 }
 
 void UConnection::ConnectToClient() {
     assert(mCodec != nullptr);
 
-    mReceivedTime = NowTimePoint();
+    mReceiveTime = NowTimePoint();
 
     co_spawn(mSocket.get_executor(), [self = shared_from_this()]() -> awaitable<void> {
         co_await (self->ReadPackage() || self->Watchdog());
@@ -54,19 +51,14 @@ void UConnection::ConnectToClient() {
 }
 
 void UConnection::Disconnect() {
-    if (bDisconnected)
+    if (!mSocket.is_open())
         return;
 
-    bDisconnected = true;
+    mSocket.close();
+    mWatchdog.cancel();
+    mOutput.Clear();
 
     mModule->RemoveConnection(mID, mPlayerID);
-
-    if (mSocket.is_open()) {
-        mSocket.close();
-    }
-
-    mOutput.Clear();
-    mWatchdog.cancel();
 
     if (mPlayerID > 0) {
         mPlayerID = -1;
@@ -112,10 +104,6 @@ void UConnection::SendPackage(const std::shared_ptr<IPackage> &pkg) {
     }
 }
 
-int64_t UConnection::GetLastLoginTime() const {
-    return mLastLoginTime;
-}
-
 awaitable<void> UConnection::WritePackage() {
     try {
         while (mSocket.is_open() && !mOutput.IsEmpty()) {
@@ -152,30 +140,33 @@ awaitable<void> UConnection::ReadPackage() {
                 break;
             }
 
-            mReceivedTime = NowTimePoint();
+            const auto now = NowTimePoint();
 
+            // Run The Login Branch
             if (mPlayerID < 0) {
-                const auto now = utils::UnixTime();
-                // 最近5秒内请求登录过
-                if (now - mLastLoginTime.load() < 5)
-                    continue;
+                // Do Not Try Login Too Frequently
+                if (now - mReceiveTime > std::chrono::seconds(3)) {
+                    --mPlayerID;
 
-                --mPlayerID;
-                mLastLoginTime = now;
+                    // Try Login Failed 3 Times Then Disconnect This
+                    if (mPlayerID < -3) {
+                        SPDLOG_WARN("{:<20} - Connection[{}] Try Login Too Many Times", __FUNCTION__, RemoteAddress().to_string());
+                        Disconnect();
+                        break;
+                    }
 
-                if (mPlayerID < -3) {
-                    SPDLOG_WARN("{:<20} - Connection[{}] Try Login Too Many Times",
-                        __FUNCTION__, RemoteAddress().to_string());
-                    Disconnect();
-                    break;
+                    // Handle Login Logic
+                    if (auto *login = GetServer()->GetModule<ULoginAuth>(); login != nullptr) {
+                        login->OnPlayerLogin(mID, pkg);
+                    }
                 }
 
-                // Handle Login Logic
-                if (auto *login = GetServer()->GetModule<ULoginAuth>(); login != nullptr) {
-                    login->OnPlayerLogin(mID, pkg);
-                }
+                mReceiveTime = now;
                 continue;
             }
+
+            // Update Receive Time Point For Watchdog
+            mReceiveTime = now;
 
             if (const auto *gateway = GetServer()->GetModule<UGateway>(); gateway != nullptr) {
                 if (pkg->GetID() == 1001) {
@@ -200,7 +191,7 @@ awaitable<void> UConnection::Watchdog() {
         ATimePoint now;
 
         do {
-            mWatchdog.expires_at(mReceivedTime + mExpiration);
+            mWatchdog.expires_at(mReceiveTime + mExpiration);
 
             if (auto [ec] = co_await mWatchdog.async_wait(); ec) {
                 SPDLOG_DEBUG("{:<20} - Timer Canceled.", __FUNCTION__);
@@ -208,7 +199,7 @@ awaitable<void> UConnection::Watchdog() {
             }
 
             now = NowTimePoint();
-        } while ((mReceivedTime + mExpiration) > now);
+        } while ((mReceiveTime + mExpiration) > now);
 
         if (mSocket.is_open()) {
             SPDLOG_WARN("{:<20} - Watchdog Timeout", __FUNCTION__);
