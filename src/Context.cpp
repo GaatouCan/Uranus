@@ -119,6 +119,12 @@ void IContext::PushNode(std::unique_ptr<IScheduleNode> &&node) {
     if (mState < EContextState::INITIALIZED || mState >= EContextState::WAITING)
         return;
 
+    if (mQueue->Size() >= MAX_CONTEXT_QUEUE_LENGTH) {
+        SPDLOG_WARN("{:<20} - Context[{:p}], Service[{}] - Schedule Queue Too Long",
+            __FUNCTION__, static_cast<void *>(this), GetServiceName());
+        return;
+    }
+
     const auto bEmpty = mQueue->IsEmpty();
     mQueue->PushBack(std::move(node));
 

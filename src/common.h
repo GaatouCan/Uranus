@@ -49,6 +49,7 @@ inline constexpr int PLAYER_AGENT_ID = -1;
 inline constexpr int CLIENT_TARGET_ID = -2;
 inline constexpr int SERVER_SOURCE_ID = -3;
 inline constexpr int INVALID_SERVICE_ID = -10;
+inline constexpr int MAX_CONTEXT_QUEUE_LENGTH = 10'000;
 
 inline constexpr auto LOGIN_HANDLER_PATH = "login";
 inline constexpr auto CORE_SERVICE_DIRECTORY = "service";
