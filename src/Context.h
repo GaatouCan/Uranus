@@ -177,8 +177,6 @@ protected:
 
 private:
     void PushNode(const std::shared_ptr<IChannelNode> &node);
-    awaitable<void> AsyncSend(const std::shared_ptr<IChannelNode> &node) const;
-
     awaitable<void> ProcessChannel();
 };
 
