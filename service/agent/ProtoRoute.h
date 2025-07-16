@@ -1,7 +1,7 @@
 #pragma once
 
 
-#include <Service/ProtoRoute.h>
+#include <Service/ProtocolRoute.h>
 #include <Packet.h>
 
 #include <functional>
@@ -11,7 +11,7 @@ class UPlayer;
 
 using AProtoFunctor = std::function<void(uint32_t, const std::shared_ptr<FPacket> &, UPlayer *)>;
 
-class UProtoRoute final : public TProtoRoute<FPacket, AProtoFunctor>{
+class UProtoRoute final : public TProtocolRoute<FPacket, AProtoFunctor>{
 
     UPlayer *mPlayer;
 

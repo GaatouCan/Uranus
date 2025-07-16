@@ -5,13 +5,13 @@
 
 
 template<CPackageType Package, typename Functor>
-class TProtoRoute {
+class TProtocolRoute {
 
 public:
-    TProtoRoute() = default;
-    virtual ~TProtoRoute() = default;
+    TProtocolRoute() = default;
+    virtual ~TProtocolRoute() = default;
 
-    DISABLE_COPY_MOVE(TProtoRoute)
+    DISABLE_COPY_MOVE(TProtocolRoute)
 
     void Register(const uint32_t id, const Functor &func) {
         mProtocolMap.insert_or_assign(id, func);

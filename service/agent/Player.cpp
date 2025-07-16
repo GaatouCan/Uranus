@@ -2,7 +2,7 @@
 #include "ProtoRoute.h"
 
 #include <Config/Config.h>
-#include <Packet.h>
+#include <Internal/Packet.h>
 
 #include <player.pb.h>
 
@@ -84,10 +84,13 @@ UComponentModule &UPlayer::GetComponentModule() {
     return mComponent;
 }
 
-extern "C" SERVICE_API IPlayerAgent *CreateInstance() {
-    return new UPlayer();
-}
 
-extern "C" SERVICE_API void DestroyInstance(IService *service) {
-    delete service;
+extern "C" {
+    SERVICE_API IPlayerAgent *CreateInstance() {
+        return new UPlayer();
+    }
+
+    SERVICE_API void DestroyInstance(IService *service) {
+        delete service;
+    }
 }

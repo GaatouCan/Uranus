@@ -4,7 +4,7 @@
 #include <memory>
 #include <absl/container/flat_hash_map.h>
 
-#include <service/ProtoRoute.h>
+#include <service/ProtocolRoute.h>
 #include <Packet.h>
 
 
@@ -13,7 +13,7 @@ class UGameWorld;
 
 using ARouteFunctor = std::function<void(uint32_t, const std::shared_ptr<FPacket> &, UGameWorld *)>;
 
-class UProtoRoute final : public TProtoRoute<FPacket, ARouteFunctor> {
+class UProtoRoute final : public TProtocolRoute<FPacket, ARouteFunctor> {
 
 public:
     UProtoRoute();
