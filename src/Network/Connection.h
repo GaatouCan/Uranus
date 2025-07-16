@@ -1,23 +1,24 @@
 #pragma once
 
-#include "ConcurrentDeque.h"
 #include "PackageCodec.h"
 
 
 class UNetwork;
 class UServer;
 
+
 class BASE_API UConnection final : public std::enable_shared_from_this<UConnection> {
 
     UNetwork *mModule;
     ATcpSocket mSocket;
 
-    std::unique_ptr<IPackageCodec> mCodec;
-    TConcurrentDeque<std::shared_ptr<IPackage>> mOutput;
+    unique_ptr<IPackageCodec> mCodec;
+    // TConcurrentDeque<std::shared_ptr<IPackage>> mOutput;
+    APackageChannel mChannel;
 
-    ASystemTimer mWatchdog;
-    ATimePoint mReceiveTime;
-    ATimePoint::duration mExpiration;
+    ASteadyTimer mWatchdog;
+    ASteadyTimePoint mReceiveTime;
+    ASteadyDuration mExpiration;
 
     int64_t mID;
     std::atomic_int64_t mPlayerID;
@@ -31,6 +32,7 @@ public:
     DISABLE_COPY_MOVE(UConnection)
 
     [[nodiscard]] ATcpSocket &GetSocket();
+    [[nodiscard]] APackageChannel &GetChannel();
 
     template<class Type, class ... Args>
     requires std::derived_from<Type, IPackageCodec>
@@ -45,13 +47,13 @@ public:
     [[nodiscard]] UNetwork *GetNetworkModule() const;
     [[nodiscard]] UServer *GetServer() const;
 
-    std::shared_ptr<IPackage> BuildPackage() const;
+    shared_ptr<IPackage> BuildPackage() const;
 
     asio::ip::address RemoteAddress() const;
     [[nodiscard]] int64_t GetConnectionID() const;
     [[nodiscard]] int64_t GetPlayerID() const;
 
-    void SendPackage(const std::shared_ptr<IPackage> &pkg);
+    void SendPackage(const shared_ptr<IPackage> &pkg);
 
 private:
     awaitable<void> WritePackage();
@@ -62,5 +64,5 @@ private:
 template<class Type, class ... Args>
 requires std::derived_from<Type, IPackageCodec>
 inline void UConnection::SetPackageCodec(Args && ... args) {
-    mCodec = std::unique_ptr<Type>(std::forward<Args>(args)...);
+    mCodec = make_unique<Type>(mSocket, std::forward<Args>(args)...);
 }

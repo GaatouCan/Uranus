@@ -1,8 +1,9 @@
-#include "utils.h"
+#include "Utils.h"
 
 #include <cassert>
 #include <random>
 #include <ranges>
+
 
 namespace utils {
     void TraverseFolder(const std::string &folder, const std::function<void(const std::filesystem::directory_entry &)> &func) {
@@ -53,7 +54,7 @@ namespace utils {
         return secondsSinceEpoch.count();
     }
 
-    long long ToUnixTime(const ATimePoint point) {
+    long long ToUnixTime(const ASystemTimePoint point) {
         const auto durationSinceEpoch = point.time_since_epoch();
         const auto secondsSinceEpoch = std::chrono::duration_cast<std::chrono::seconds>(durationSinceEpoch);
         return secondsSinceEpoch.count();
@@ -104,20 +105,20 @@ namespace utils {
         return result;
     }
 
-    unsigned GetDayOfWeek(const ATimePoint point) {
+    unsigned GetDayOfWeek(const ASystemTimePoint point) {
         const auto localTime = std::chrono::current_zone()->to_local(point);
         const auto weekDay = std::chrono::weekday{std::chrono::floor<std::chrono::days>(localTime)};
 
         return weekDay.c_encoding();
     }
 
-    unsigned GetDayOfMonth(const ATimePoint point) {
+    unsigned GetDayOfMonth(const ASystemTimePoint point) {
         const auto localTime = std::chrono::current_zone()->to_local(point);
         const std::chrono::year_month_day ymd{std::chrono::floor<std::chrono::days>(localTime)};
         return static_cast<unsigned>(ymd.day());
     }
 
-    int GetDayOfYear(const ATimePoint point) {
+    int GetDayOfYear(const ASystemTimePoint point) {
         const auto localTime = std::chrono::current_zone()->to_local(point);
 
         const auto today = std::chrono::floor<std::chrono::days>(localTime);
@@ -128,7 +129,7 @@ namespace utils {
         return today.time_since_epoch().count() - firstDayOfYear.time_since_epoch().count() + 1;
     }
 
-    int GetDaysGone(const ATimePoint former, const ATimePoint latter) {
+    int GetDaysGone(const ASystemTimePoint former, const ASystemTimePoint latter) {
         if (latter <= former)
             return 0;
 
@@ -141,12 +142,12 @@ namespace utils {
         return latterDays.time_since_epoch().count() - formerDays.time_since_epoch().count();
     }
 
-    ATimePoint GetDayZeroTime(const ATimePoint point) {
+    ASystemTimePoint GetDayZeroTime(const ASystemTimePoint point) {
         const auto zeroLocalTime = std::chrono::floor<std::chrono::days>(std::chrono::current_zone()->to_local(point));
         return std::chrono::current_zone()->to_sys(zeroLocalTime);
     }
 
-    bool IsSameWeek(const ATimePoint former, const ATimePoint latter) {
+    bool IsSameWeek(const ASystemTimePoint former, const ASystemTimePoint latter) {
         if (latter <= former)
             return false;
 
@@ -165,7 +166,7 @@ namespace utils {
         return formerWeekStart == latterWeekStart;
     }
 
-    bool IsSameMonth(const ATimePoint former, const ATimePoint latter) {
+    bool IsSameMonth(const ASystemTimePoint former, const ASystemTimePoint latter) {
         if (latter <= former)
             return false;
 

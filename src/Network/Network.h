@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Module.h"
-#include "utils.h"
+#include "Types.h"
 
 #include <shared_mutex>
 #include <absl/container/flat_hash_map.h>
@@ -12,7 +12,6 @@ class IPackage;
 class IRecycler;
 
 using absl::flat_hash_map;
-using AConnectionPointer = std::shared_ptr<UConnection>;
 
 /**
  * The Network Module Of The Server;
@@ -38,34 +37,34 @@ public:
     }
 
     /** Return The Independent asio::io_context Reference */
-    [[nodiscard]] asio::io_context &GetIOContext();
+    [[nodiscard]] io_context &GetIOContext();
 
     /** Find The Connection With Connection ID */
-    AConnectionPointer FindConnection(int64_t cid) const;
+    shared_ptr<UConnection> FindConnection(int64_t cid) const;
     void RemoveConnection(int64_t cid, int64_t pid);
 
-    void OnLoginSuccess(int64_t cid, int64_t pid, const std::shared_ptr<IPackage> &pkg) const;
-    void OnLoginFailure(int64_t cid, const std::shared_ptr<IPackage> &pkg);
+    void OnLoginSuccess(int64_t cid, int64_t pid, const shared_ptr<IPackage> &pkg) const;
+    void OnLoginFailure(int64_t cid, const shared_ptr<IPackage> &pkg);
 
     /** Send The Package To The Client */
-    void SendToClient(int64_t cid, const std::shared_ptr<IPackage> &pkg) const;
+    void SendToClient(int64_t cid, const shared_ptr<IPackage> &pkg) const;
 
     /** Acquire One Package From The Internal Package Pool */
-    std::shared_ptr<IPackage> BuildPackage() const;
+    shared_ptr<IPackage> BuildPackage() const;
 
 private:
     awaitable<void> WaitForClient(uint16_t port);
 
 private:
-    asio::io_context mIOContext;
+    io_context mIOContext;
     ATcpAcceptor mAcceptor;
 
     /** Independent Thread To Run IO Context */
     std::thread mThread;
 
     /** Package Pool For I/O Data */
-    std::shared_ptr<IRecycler> mPool;
+    shared_ptr<IRecycler> mPool;
 
-    flat_hash_map<int64_t, AConnectionPointer> mConnectionMap;
+    flat_hash_map<int64_t, shared_ptr<UConnection>> mConnectionMap;
     mutable std::shared_mutex mMutex;
 };

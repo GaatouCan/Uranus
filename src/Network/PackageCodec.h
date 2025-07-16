@@ -1,12 +1,10 @@
 ﻿#pragma once
 
-#include "utils.h"
 #include "Package.h"
+#include "Types.h"
 
 
 class BASE_API IPackageCodec {
-
-    friend class UConnection;
 
 protected:
     explicit IPackageCodec(ATcpSocket &socket);
@@ -27,8 +25,6 @@ private:
 
 template<CPackageType Type>
 class TPackageCodec : public IPackageCodec {
-
-    friend class UConnection;
 
 protected:
     explicit TPackageCodec(ATcpSocket &socket)

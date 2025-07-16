@@ -1,7 +1,7 @@
 ﻿#pragma once
 
 #include "Recyclable.h"
-#include "utils.h"
+#include "Types.h"
 
 #include <queue>
 #include <concepts>
@@ -15,7 +15,7 @@
 class BASE_API IRecycler : public std::enable_shared_from_this<IRecycler> {
 
     /** asio::io_context Reference For Shrink Timer */
-    asio::io_context &mContext;
+    io_context &mContext;
 
     /** Internal Container */
     std::queue<std::unique_ptr<IRecyclable>>    mQueue;
@@ -24,7 +24,7 @@ class BASE_API IRecycler : public std::enable_shared_from_this<IRecycler> {
     std::atomic_int64_t                         mUsage;
 
     /** Shrink Timer */
-    std::shared_ptr<ASystemTimer>               mShrinkTimer;
+    shared_ptr<ASteadyTimer>                    mShrinkTimer;
 
     /** Expand Flag */
     std::atomic_bool                            bExpanding;
@@ -38,7 +38,7 @@ class BASE_API IRecycler : public std::enable_shared_from_this<IRecycler> {
     static constexpr int        RECYCLER_MINIMUM_CAPACITY   = 64;
 
 protected:
-    explicit IRecycler(asio::io_context &ctx);
+    explicit IRecycler(io_context &ctx);
 
     [[nodiscard]] virtual IRecyclable *Create() const = 0;
 

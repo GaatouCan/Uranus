@@ -2,7 +2,7 @@
 
 #include "Module.h"
 #include "ConcurrentDeque.h"
-#include "utils.h"
+#include "Utils.h"
 
 #include <memory>
 #include <shared_mutex>
@@ -70,7 +70,7 @@ private:
     flat_hash_map<int64_t, std::weak_ptr<FWatchdog>> mAgentWatchdogMap;
     mutable std::shared_mutex mWatchdogMutex;
 
-    ASystemTimer mLoopTimer;
+    ASteadyTimer mLoopTimer;
 #endif
 
     TConcurrentDeque<FCommandNode> mCommandQueue;

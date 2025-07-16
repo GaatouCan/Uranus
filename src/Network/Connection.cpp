@@ -11,10 +11,12 @@
 using namespace asio::experimental::awaitable_operators;
 using namespace std::literals::chrono_literals;
 
+
 UConnection::UConnection(UNetwork *module, ATcpSocket socket)
     : mModule(module),
       mSocket(std::move(socket)),
       mCodec(nullptr),
+      mChannel(mSocket.get_executor(), 1024),
       mWatchdog(mSocket.get_executor()),
       mExpiration(std::chrono::seconds(30)),
       mPlayerID(-1) {
@@ -27,6 +29,10 @@ UConnection::~UConnection() {
 
 ATcpSocket &UConnection::GetSocket() {
     return mSocket;
+}
+
+APackageChannel &UConnection::GetChannel() {
+    return mChannel;
 }
 
 void UConnection::SetExpireSecond(const int sec) {
@@ -43,10 +49,14 @@ void UConnection::SetPlayerID(const int64_t id) {
 void UConnection::ConnectToClient() {
     assert(mCodec != nullptr);
 
-    mReceiveTime = NowTimePoint();
+    mReceiveTime = std::chrono::steady_clock::now();
 
     co_spawn(mSocket.get_executor(), [self = shared_from_this()]() -> awaitable<void> {
-        co_await (self->ReadPackage() || self->Watchdog());
+        co_await (
+            self->ReadPackage() ||
+            self->WritePackage() ||
+            self->Watchdog()
+        );
     }, detached);
 }
 
@@ -56,7 +66,7 @@ void UConnection::Disconnect() {
 
     mSocket.close();
     mWatchdog.cancel();
-    mOutput.Clear();
+    mChannel.close();
 
     mModule->RemoveConnection(mID, mPlayerID);
 
@@ -96,21 +106,17 @@ void UConnection::SendPackage(const std::shared_ptr<IPackage> &pkg) {
     if (pkg == nullptr)
         return;
 
-    const auto bEmpty = mOutput.IsEmpty();
-    mOutput.PushBack(pkg);
-
-    if (bEmpty) {
-        co_spawn(mSocket.get_executor(), WritePackage(), detached);
-    }
+    co_spawn(mSocket.get_executor(), [self = shared_from_this(), pkg]() -> awaitable<void> {
+        co_await self->mChannel.async_send(std::error_code{}, pkg);
+    }, detached);
 }
 
 awaitable<void> UConnection::WritePackage() {
     try {
-        while (mSocket.is_open() && !mOutput.IsEmpty()) {
-            const auto pkg = mOutput.PopFront();
-            if (pkg == nullptr) {
+        while (mSocket.is_open()) {
+            const auto [ec, pkg] = co_await mChannel.async_receive();
+            if (ec || pkg == nullptr)
                 co_return;
-            }
 
             if (const auto ret = co_await mCodec->Encode(pkg); !ret) {
                 SPDLOG_WARN("{:<20} - Failed To Write Package", __FUNCTION__);
@@ -130,9 +136,8 @@ awaitable<void> UConnection::ReadPackage() {
     try {
         while (mSocket.is_open()) {
             const auto pkg = BuildPackage();
-            if (pkg == nullptr) {
+            if (pkg == nullptr)
                 co_return;
-            }
 
             if (const auto ret = co_await mCodec->Decode(pkg); !ret) {
                 SPDLOG_WARN("{:<20} - Failed To Read Package", __FUNCTION__);
@@ -140,7 +145,7 @@ awaitable<void> UConnection::ReadPackage() {
                 break;
             }
 
-            const auto now = NowTimePoint();
+            const auto now = std::chrono::steady_clock::now();
 
             // Run The Login Branch
             if (mPlayerID < 0) {
@@ -183,12 +188,12 @@ awaitable<void> UConnection::ReadPackage() {
 }
 
 awaitable<void> UConnection::Watchdog() {
-    if (mExpiration == ATimePoint::duration::zero()) {
+    if (mExpiration == ASteadyDuration::zero()) {
         co_return;
     }
 
     try {
-        ATimePoint now;
+        ASteadyTimePoint now;
 
         do {
             mWatchdog.expires_at(mReceiveTime + mExpiration);
@@ -198,7 +203,7 @@ awaitable<void> UConnection::Watchdog() {
                 co_return;
             }
 
-            now = NowTimePoint();
+            now = std::chrono::steady_clock::now();
         } while ((mReceiveTime + mExpiration) > now);
 
         if (mSocket.is_open()) {

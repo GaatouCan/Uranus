@@ -6,7 +6,7 @@
 #endif
 
 
-IRecycler::IRecycler(asio::io_context &ctx)
+IRecycler::IRecycler(io_context &ctx)
     : mContext(ctx),
       mUsage(-1),
       mShrinkTimer(nullptr),
@@ -173,7 +173,7 @@ void IRecycler::Recycle(IRecyclable *elem) {
         return;
 
     // Do Shrink Later
-    mShrinkTimer = std::make_shared<ASystemTimer>(mContext);
+    mShrinkTimer = make_shared<ASteadyTimer>(mContext);
 
     co_spawn(mContext, [weak = weak_from_this(), timer = mShrinkTimer]() mutable -> awaitable<void> {
         timer->expires_after(std::chrono::seconds(RECYCLER_SHRINK_DELAY));

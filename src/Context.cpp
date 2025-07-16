@@ -263,7 +263,7 @@ int IContext::Shutdown(const bool bFource, const int second, const std::function
     if (!bFource && mState == EContextState::RUNNING) {
         mState = EContextState::WAITING;
 
-        mShutdownTimer = std::make_shared<ASystemTimer>(GetServer()->GetIOContext());
+        mShutdownTimer = make_shared<ASteadyTimer>(GetServer()->GetIOContext());
         if (cb != nullptr)
             mShutdownCallback = cb;
 

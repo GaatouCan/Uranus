@@ -51,6 +51,7 @@ awaitable<bool> UPacketCodec::EncodeT(const std::shared_ptr<FPacket> &pkt) {
     }
 
     const auto [ec, len] = co_await async_write(GetSocket(), asio::buffer(&header, FPacket::PACKAGE_HEADER_SIZE));
+
     if (ec) {
         SPDLOG_WARN("{:<20} - {}", __FUNCTION__, ec.message());
         co_return false;

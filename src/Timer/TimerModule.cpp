@@ -26,7 +26,7 @@ int64_t UTimerModule::SetTimer(const int32_t sid, const int64_t pid, const ATime
     FTimerNode node {
         sid,
         pid,
-        std::make_shared<ASystemTimer>(GetServer()->GetIOContext())
+        make_shared<ASteadyTimer>(GetServer()->GetIOContext())
     };
 
     mTimerMap.emplace(id, std::move(node));
@@ -45,7 +45,7 @@ int64_t UTimerModule::SetTimer(const int32_t sid, const int64_t pid, const ATime
 
     co_spawn(GetServer()->GetIOContext(), [this, timer = mTimerMap[id].timer, id, sid, pid, delay, rate, task]() -> awaitable<void> {
         try {
-            auto point = NowTimePoint() + std::chrono::milliseconds(delay * 100);
+            auto point = std::chrono::steady_clock::now() + std::chrono::milliseconds(delay * 100);
 
             do {
                 timer->expires_at(point);

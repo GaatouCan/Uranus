@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Module.h"
-#include "utils.h"
+#include "Utils.h"
 
 #include <functional>
 #include <absl/container/flat_hash_map.h>
@@ -21,7 +21,7 @@ class BASE_API UTimerModule final : public IModule {
     struct FTimerNode final {
         int32_t sid;
         int64_t pid;
-        std::shared_ptr<ASystemTimer> timer;
+        shared_ptr<ASteadyTimer> timer;
     };
 
 protected:

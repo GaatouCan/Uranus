@@ -2,7 +2,7 @@
 
 #include "ConcurrentDeque.h"
 #include "Server.h"
-#include "utils.h"
+#include "Utils.h"
 
 #include <memory>
 
@@ -122,7 +122,7 @@ class BASE_API IContext : public std::enable_shared_from_this<IContext> {
     std::unique_ptr<AScheduleQueue> mQueue;
 
     /** When Timeout, Force Shut Down This Context */
-    std::shared_ptr<ASystemTimer> mShutdownTimer;
+    shared_ptr<ASteadyTimer> mShutdownTimer;
 
     /** Called While This Context Stopped */
     std::function<void(IContext *)> mShutdownCallback;

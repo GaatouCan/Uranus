@@ -73,8 +73,8 @@ void UNetwork::Stop() {
 
 awaitable<void> UNetwork::WaitForClient(uint16_t port) {
     try {
-        mAcceptor.open(tcp::v4());
-        mAcceptor.bind({tcp::v4(), port});
+        mAcceptor.open(asio::ip::tcp::v4());
+        mAcceptor.bind({asio::ip::tcp::v4(), port});
         mAcceptor.listen(port);
 
         SPDLOG_INFO("Waiting For Client To Connect - Server Port: {}", port);
@@ -96,7 +96,7 @@ awaitable<void> UNetwork::WaitForClient(uint16_t port) {
                     }
                 }
 
-                const auto conn = std::make_shared<UConnection>(this, std::move(socket));
+                const auto conn = make_shared<UConnection>(this, std::move(socket));
                 GetServer()->InitConnection(conn);
 
                 if (const auto id = conn->GetConnectionID(); id > 0) {
@@ -119,11 +119,11 @@ awaitable<void> UNetwork::WaitForClient(uint16_t port) {
     }
 }
 
-asio::io_context &UNetwork::GetIOContext() {
+io_context &UNetwork::GetIOContext() {
     return mIOContext;
 }
 
-AConnectionPointer UNetwork::FindConnection(const int64_t cid) const {
+shared_ptr<UConnection> UNetwork::FindConnection(const int64_t cid) const {
     if (mState != EModuleState::RUNNING)
         return nullptr;
 
@@ -148,11 +148,11 @@ void UNetwork::RemoveConnection(const int64_t cid, const int64_t pid) {
     }
 }
 
-void UNetwork::OnLoginSuccess(const int64_t cid, const int64_t pid, const std::shared_ptr<IPackage> &pkg) const {
+void UNetwork::OnLoginSuccess(const int64_t cid, const int64_t pid, const shared_ptr<IPackage> &pkg) const {
     if (mState != EModuleState::RUNNING)
         return;
 
-    AConnectionPointer conn;
+    shared_ptr<UConnection> conn;
     {
         std::unique_lock lock(mMutex);
         if (const auto it = mConnectionMap.find(cid); it != mConnectionMap.end()) {
@@ -168,11 +168,11 @@ void UNetwork::OnLoginSuccess(const int64_t cid, const int64_t pid, const std::s
     conn->SendPackage(pkg);
 }
 
-void UNetwork::OnLoginFailure(const int64_t cid, const std::shared_ptr<IPackage> &pkg) {
+void UNetwork::OnLoginFailure(const int64_t cid, const shared_ptr<IPackage> &pkg) {
     if (mState != EModuleState::RUNNING)
         return;
 
-    AConnectionPointer conn;
+    shared_ptr<UConnection> conn;
     {
         std::unique_lock lock(mMutex);
         if (const auto it = mConnectionMap.find(cid); it != mConnectionMap.end()) {
@@ -188,7 +188,7 @@ void UNetwork::OnLoginFailure(const int64_t cid, const std::shared_ptr<IPackage>
     conn->Disconnect();
 }
 
-void UNetwork::SendToClient(const int64_t cid, const std::shared_ptr<IPackage> &pkg) const {
+void UNetwork::SendToClient(const int64_t cid, const shared_ptr<IPackage> &pkg) const {
     if (mState != EModuleState::RUNNING)
         return;
 

@@ -39,7 +39,7 @@ void ULoginAuth::Stop() {
     mState = EModuleState::STOPPED;
 }
 
-bool ULoginAuth::VerifyAddress(const tcp::endpoint &endpoint) {
+bool ULoginAuth::VerifyAddress(const asio::ip::tcp::endpoint &endpoint) {
     // TODO
     return true;
 }

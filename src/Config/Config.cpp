@@ -1,5 +1,5 @@
 #include "Config.h"
-#include "utils.h"
+#include "Utils.h"
 
 #include <fstream>
 #include <spdlog/spdlog.h>
