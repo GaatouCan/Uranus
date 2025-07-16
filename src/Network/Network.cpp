@@ -97,7 +97,6 @@ awaitable<void> UNetwork::WaitForClient(uint16_t port) {
                 }
 
                 const auto conn = make_shared<UConnection>(this, std::move(socket));
-                GetServer()->InitConnection(conn);
 
                 if (const auto id = conn->GetConnectionID(); id > 0) {
                     std::unique_lock lock(mMutex);
@@ -105,11 +104,14 @@ awaitable<void> UNetwork::WaitForClient(uint16_t port) {
                 } else {
                     SPDLOG_WARN("{:<20} - Failed To Get Connection ID From {}",
                         __FUNCTION__, conn->RemoteAddress().to_string());
+                    conn->Disconnect();
                     continue;
                 }
 
                 SPDLOG_INFO("{:<20} - New Connection From {} - fd[{}]",
                     __FUNCTION__, conn->RemoteAddress().to_string(), conn->GetConnectionID());
+
+                GetServer()->InitConnection(conn);
 
                 conn->ConnectToClient();
             }

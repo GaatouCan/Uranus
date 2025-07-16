@@ -66,7 +66,7 @@ void UConnection::Disconnect() {
 
     mSocket.close();
     mWatchdog.cancel();
-    mChannel.close();
+    mSocket.close();
 
     mModule->RemoveConnection(mID, mPlayerID);
 

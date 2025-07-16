@@ -13,7 +13,6 @@ class BASE_API UConnection final : public std::enable_shared_from_this<UConnecti
     ATcpSocket mSocket;
 
     unique_ptr<IPackageCodec> mCodec;
-    // TConcurrentDeque<std::shared_ptr<IPackage>> mOutput;
     APackageChannel mChannel;
 
     ASteadyTimer mWatchdog;

@@ -14,52 +14,52 @@ typedef IService *(*AServiceCreator)();
 typedef void (*AServiceDestroyer)(IService *);
 
 
-IScheduleNode::IScheduleNode(IService *service)
+IContext::IChannelNode::IChannelNode(IService *service)
     : mService(service) {
 }
 
-IService *IScheduleNode::GetService() const {
+IService *IContext::IChannelNode::GetService() const {
     return mService;
 }
 
-UPackageNode::UPackageNode(IService *service)
-    : IScheduleNode(service),
+IContext::UPackageNode::UPackageNode(IService *service)
+    : IChannelNode(service),
       mPackage(nullptr) {
 }
 
-void UPackageNode::SetPackage(const shared_ptr<IPackage> &pkg) {
+void IContext::UPackageNode::SetPackage(const shared_ptr<IPackage> &pkg) {
     mPackage = pkg;
 }
 
-void UPackageNode::Execute() {
+void IContext::UPackageNode::Execute() {
     if (mService && mPackage) {
         mService->OnPackage(mPackage);
     }
 }
 
-UTaskNode::UTaskNode(IService *service)
-    : IScheduleNode(service) {
+IContext::UTaskNode::UTaskNode(IService *service)
+    : IChannelNode(service) {
 }
 
-void UTaskNode::SetTask(const std::function<void(IService *)> &task) {
+void IContext::UTaskNode::SetTask(const std::function<void(IService *)> &task) {
     mTask = task;
 }
 
-void UTaskNode::Execute() {
+void IContext::UTaskNode::Execute() {
     if (mService && mTask) {
         std::invoke(mTask, mService);
     }
 }
 
-UEventNode::UEventNode(IService *service)
-    : IScheduleNode(service) {
+IContext::UEventNode::UEventNode(IService *service)
+    : IChannelNode(service) {
 }
 
-void UEventNode::SetEventParam(const shared_ptr<IEventParam> &event) {
+void IContext::UEventNode::SetEventParam(const shared_ptr<IEventParam> &event) {
     mEvent = event;
 }
 
-void UEventNode::Execute() {
+void IContext::UEventNode::Execute() {
     if (mService && mEvent) {
         mService->OnEvent(mEvent);
     }
@@ -116,7 +116,7 @@ IService *IContext::GetService() const {
     return mService;
 }
 
-void IContext::PushNode(const shared_ptr<IScheduleNode> &node) {
+void IContext::PushNode(const shared_ptr<IChannelNode> &node) {
     if (mState < EContextState::INITIALIZED || mState >= EContextState::WAITING)
         return;
 
@@ -128,7 +128,7 @@ void IContext::PushNode(const shared_ptr<IScheduleNode> &node) {
     }, detached);
 }
 
-awaitable<void> IContext::DoSchedule() {
+awaitable<void> IContext::ProcessChannel() {
     if (mState <= EContextState::INITIALIZED || mState >= EContextState::WAITING) {
         co_return;
     }
@@ -296,7 +296,7 @@ bool IContext::BootService() {
         __FUNCTION__, static_cast<const void *>(this), GetServiceID(), GetServiceName());
 
     co_spawn(GetServer()->GetIOContext(), [self = shared_from_this()] -> awaitable<void> {
-        co_await self->DoSchedule();
+        co_await self->ProcessChannel();
     }, detached);
 
     return true;
