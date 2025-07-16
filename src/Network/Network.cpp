@@ -150,7 +150,7 @@ void UNetwork::RemoveConnection(const int64_t cid, const int64_t pid) {
     }
 }
 
-void UNetwork::OnLoginSuccess(const int64_t cid, const int64_t pid, const shared_ptr<IPackage> &pkg) const {
+void UNetwork::OnLoginSuccess(const int64_t cid, const int64_t pid, const shared_ptr<IPackageBase> &pkg) const {
     if (mState != EModuleState::RUNNING)
         return;
 
@@ -170,7 +170,7 @@ void UNetwork::OnLoginSuccess(const int64_t cid, const int64_t pid, const shared
     conn->SendPackage(pkg);
 }
 
-void UNetwork::OnLoginFailure(const int64_t cid, const shared_ptr<IPackage> &pkg) {
+void UNetwork::OnLoginFailure(const int64_t cid, const shared_ptr<IPackageBase> &pkg) {
     if (mState != EModuleState::RUNNING)
         return;
 
@@ -190,7 +190,7 @@ void UNetwork::OnLoginFailure(const int64_t cid, const shared_ptr<IPackage> &pkg
     conn->Disconnect();
 }
 
-void UNetwork::SendToClient(const int64_t cid, const shared_ptr<IPackage> &pkg) const {
+void UNetwork::SendToClient(const int64_t cid, const shared_ptr<IPackageBase> &pkg) const {
     if (mState != EModuleState::RUNNING)
         return;
 
@@ -202,9 +202,9 @@ void UNetwork::SendToClient(const int64_t cid, const shared_ptr<IPackage> &pkg) 
     }
 }
 
-std::shared_ptr<IPackage> UNetwork::BuildPackage() const {
+std::shared_ptr<IPackageBase> UNetwork::BuildPackage() const {
     if (mState != EModuleState::RUNNING)
         return nullptr;
 
-    return std::dynamic_pointer_cast<IPackage>(mPool->Acquire());
+    return std::dynamic_pointer_cast<IPackageBase>(mPool->Acquire());
 }

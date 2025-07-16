@@ -7,10 +7,10 @@
 /**
  * Abstract Base Class Of Internal Data Exchange With The Server
  */
-class BASE_API IPackage : public IRecyclable {
+class BASE_API IPackageBase : public IRecyclable {
 
 public:
-    IPackage() = default;
+    IPackageBase() = default;
 
     virtual void SetID(uint32_t id) = 0;
     virtual void SetSource(int32_t source) = 0;
@@ -22,4 +22,4 @@ public:
 };
 
 template<typename T>
-concept CPackageType = std::derived_from<T, IPackage> && !std::is_same_v<T, IPackage>;
+concept CPackageType = std::derived_from<T, IPackageBase> && !std::is_same_v<T, IPackageBase>;

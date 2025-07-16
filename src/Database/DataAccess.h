@@ -9,7 +9,7 @@
 #include <thread>
 
 
-class BASE_API UDataAccess final : public IModule {
+class BASE_API UDataAccess final : public IModuleBase {
 
     DECLARE_MODULE(UDataAccess)
 

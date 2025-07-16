@@ -12,7 +12,7 @@ class BASE_API UConnection final : public std::enable_shared_from_this<UConnecti
     UNetwork *mModule;
     ATcpSocket mSocket;
 
-    unique_ptr<IPackageCodec> mCodec;
+    unique_ptr<IPackageCodecBase> mCodec;
     APackageChannel mChannel;
 
     ASteadyTimer mWatchdog;
@@ -34,7 +34,7 @@ public:
     [[nodiscard]] APackageChannel &GetChannel();
 
     template<class Type, class ... Args>
-    requires std::derived_from<Type, IPackageCodec>
+    requires std::derived_from<Type, IPackageCodecBase>
     void SetPackageCodec(Args && ... args);
 
     void SetExpireSecond(int sec);
@@ -46,13 +46,13 @@ public:
     [[nodiscard]] UNetwork *GetNetworkModule() const;
     [[nodiscard]] UServer *GetServer() const;
 
-    shared_ptr<IPackage> BuildPackage() const;
+    shared_ptr<IPackageBase> BuildPackage() const;
 
     asio::ip::address RemoteAddress() const;
     [[nodiscard]] int64_t GetConnectionID() const;
     [[nodiscard]] int64_t GetPlayerID() const;
 
-    void SendPackage(const shared_ptr<IPackage> &pkg);
+    void SendPackage(const shared_ptr<IPackageBase> &pkg);
 
 private:
     awaitable<void> WritePackage();
@@ -61,7 +61,7 @@ private:
 };
 
 template<class Type, class ... Args>
-requires std::derived_from<Type, IPackageCodec>
+requires std::derived_from<Type, IPackageCodecBase>
 inline void UConnection::SetPackageCodec(Args && ... args) {
     mCodec = make_unique<Type>(mSocket, std::forward<Args>(args)...);
 }

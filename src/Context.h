@@ -6,11 +6,11 @@
 #include <memory>
 
 
-class IService;
-class IModule;
+class IServiceBase;
+class IModuleBase;
 class IEventParam;
 class UServer;
-class IPackage;
+class IPackageBase;
 class FLibraryHandle;
 
 
@@ -28,25 +28,25 @@ enum class BASE_API EContextState {
 /**
  * Context For Interaction Between Service And The Server
  */
-class BASE_API IContext : public std::enable_shared_from_this<IContext> {
+class BASE_API IContextBase : public std::enable_shared_from_this<IContextBase> {
 
     /**
  * The Schedulable Node For Context To Schedule
  */
-    class BASE_API IChannelNode {
+    class BASE_API INodeBase {
 
     protected:
-        IService *const mService;
+        IServiceBase *const mService;
 
     public:
-        IChannelNode() = delete;
+        INodeBase() = delete;
 
-        explicit IChannelNode(IService *service);
-        virtual ~IChannelNode() = default;
+        explicit INodeBase(IServiceBase *service);
+        virtual ~INodeBase() = default;
 
-        DISABLE_COPY_MOVE(IChannelNode)
+        DISABLE_COPY_MOVE(INodeBase)
 
-        [[nodiscard]] IService *GetService() const;
+        [[nodiscard]] IServiceBase *GetService() const;
 
         virtual void Execute() = 0;
     };
@@ -55,15 +55,15 @@ class BASE_API IContext : public std::enable_shared_from_this<IContext> {
      * The Wrapper Of Package,
      * While Service Received Package
      */
-    class BASE_API UPackageNode final : public IChannelNode {
+    class BASE_API UPackageNode final : public INodeBase {
 
-        shared_ptr<IPackage> mPackage;
+        shared_ptr<IPackageBase> mPackage;
 
     public:
-        explicit UPackageNode(IService *service);
+        explicit UPackageNode(IServiceBase *service);
         ~UPackageNode() override = default;
 
-        void SetPackage(const shared_ptr<IPackage> &pkg);
+        void SetPackage(const shared_ptr<IPackageBase> &pkg);
         void Execute() override;
     };
 
@@ -71,15 +71,15 @@ class BASE_API IContext : public std::enable_shared_from_this<IContext> {
      * The Wrapper Of Task,
      * While The Service Received The Task
      */
-    class BASE_API UTaskNode final : public IChannelNode {
+    class BASE_API UTaskNode final : public INodeBase {
 
-        std::function<void(IService *)> mTask;
+        std::function<void(IServiceBase *)> mTask;
 
     public:
-        explicit UTaskNode(IService *service);
+        explicit UTaskNode(IServiceBase *service);
         ~UTaskNode() override = default;
 
-        void SetTask(const std::function<void(IService *)> &task);
+        void SetTask(const std::function<void(IServiceBase *)> &task);
         void Execute() override;
     };
 
@@ -87,31 +87,31 @@ class BASE_API IContext : public std::enable_shared_from_this<IContext> {
      * The Wrapper Of Event,
      * While The Service Received Event Parameter
      */
-    class BASE_API UEventNode final : public IChannelNode {
+    class BASE_API UEventNode final : public INodeBase {
 
         shared_ptr<IEventParam> mEvent;
 
     public:
-        explicit UEventNode(IService *service);
+        explicit UEventNode(IServiceBase *service);
         ~UEventNode() override = default;
 
         void SetEventParam(const shared_ptr<IEventParam> &event);
         void Execute() override;
     };
 
-    using AContextChannel = DefaultToken::as_default_on_t<asio::experimental::channel<void(std::error_code, shared_ptr<IChannelNode>)>>;
+    using AContextChannel = DefaultToken::as_default_on_t<asio::experimental::channel<void(std::error_code, shared_ptr<INodeBase>)>>;
 
     /** The Owner Module */
-    IModule *mModule;
+    IModuleBase *mModule;
 
     /** The Owned Service */
-    IService *mService;
+    IServiceBase *mService;
 
     /** Loaded Library With Creator And Destroyer Of Service */
     FLibraryHandle *mHandle;
 
     /** Internal Package Pool */
-    shared_ptr<IRecycler> mPool;
+    shared_ptr<IRecyclerBase> mPool;
 
     /** Internal Node Channel */
     unique_ptr<AContextChannel> mChannel;
@@ -120,19 +120,19 @@ class BASE_API IContext : public std::enable_shared_from_this<IContext> {
     unique_ptr<ASteadyTimer> mTimer;
 
     /** Invoked While This Context Stopped */
-    std::function<void(IContext *)> mCallback;
+    std::function<void(IContextBase *)> mCallback;
 
 protected:
     /** Current Context State */
     std::atomic<EContextState> mState;
 
 public:
-    IContext();
-    virtual ~IContext();
+    IContextBase();
+    virtual ~IContextBase();
 
-    DISABLE_COPY_MOVE(IContext)
+    DISABLE_COPY_MOVE(IContextBase)
 
-    void SetUpModule(IModule *module);
+    void SetUpModule(IModuleBase *module);
     void SetUpHandle(FLibraryHandle *handle);
 
     /** Return The Path String Of The Dynamic Library File That The Service Defined */
@@ -142,10 +142,10 @@ public:
     [[nodiscard]] virtual int32_t GetServiceID() const = 0;
 
     /** Create The Service Ant Initial It, And Other Resource It Needs */
-    virtual bool Initial(const shared_ptr<IPackage> &pkg);
+    virtual bool Initial(const shared_ptr<IPackageBase> &pkg);
 
     /** Shutdown And Delete The Service, Release The Resource */
-    virtual int Shutdown(bool bForce, int second, const std::function<void(IContext *)> &cb);
+    virtual int Shutdown(bool bForce, int second, const std::function<void(IContextBase *)> &cb);
 
     /** Equal Shutdown(true, 5, nullptr) */
     int ForceShutdown();
@@ -155,33 +155,33 @@ public:
     [[nodiscard]] EContextState GetState() const;
     [[nodiscard]] UServer *GetServer() const;
 
-    void PushPackage(const shared_ptr<IPackage> &pkg);
-    void PushTask(const std::function<void(IService *)> &task);
+    void PushPackage(const shared_ptr<IPackageBase> &pkg);
+    void PushTask(const std::function<void(IServiceBase *)> &task);
     void PushEvent(const shared_ptr<IEventParam> &event);
 
     void SendCommand(const std::string &type, const std::string &args, const std::string &comment = "") const;
 
     /** Acquire One Package From Internal Package Pool */
-    shared_ptr<IPackage> BuildPackage() const;
+    shared_ptr<IPackageBase> BuildPackage() const;
 
     [[nodiscard]] std::map<std::string, int32_t> GetServiceList() const;
     [[nodiscard]] int32_t GetOtherServiceID(const std::string &name) const;
 
     template<CModuleType Module>
     Module *GetModule() const;
-    [[nodiscard]] IModule *GetModuleByName(const std::string &name) const;
+    [[nodiscard]] IModuleBase *GetModule(const std::string &name) const;
 
 protected:
-    IModule *GetOwner() const;
-    IService *GetService() const;
+    IModuleBase *GetOwner() const;
+    IServiceBase *GetService() const;
 
 private:
-    void PushNode(const std::shared_ptr<IChannelNode> &node);
+    void PushNode(const std::shared_ptr<INodeBase> &node);
     awaitable<void> ProcessChannel();
 };
 
 
 template<CModuleType Module>
-inline Module *IContext::GetModule() const {
+inline Module *IContextBase::GetModule() const {
     return GetServer()->GetModule<Module>();
 }

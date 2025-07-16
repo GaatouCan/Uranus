@@ -1,26 +1,26 @@
 #include "Plugin.h"
 #include "Monitor.h"
 
-IPlugin::IPlugin(UMonitor *monitor)
+IPluginBase::IPluginBase(UMonitor *monitor)
     : mMonitor(monitor) {
 }
 
-IPlugin::~IPlugin() {
+IPluginBase::~IPluginBase() {
 }
 
-UMonitor *IPlugin::GetMonitor() const {
+UMonitor *IPluginBase::GetMonitor() const {
     return mMonitor;
 }
 
-UServer *IPlugin::GetServer() const {
+UServer *IPluginBase::GetServer() const {
     return mMonitor->GetServer();
 }
 
-void IPlugin::Initial() {
+void IPluginBase::Initial() {
 }
 
-void IPlugin::Start() {
+void IPluginBase::Start() {
 }
 
-void IPlugin::Stop() {
+void IPluginBase::Stop() {
 }

@@ -6,7 +6,7 @@
 #endif
 
 
-IRecycler::IRecycler(io_context &ctx)
+IRecyclerBase::IRecyclerBase(io_context &ctx)
     : mContext(ctx),
       mUsage(-1),
       mTimer(nullptr),
@@ -15,13 +15,13 @@ IRecycler::IRecycler(io_context &ctx)
     static_assert(RECYCLER_SHRINK_RATE > RECYCLER_SHRINK_THRESHOLD);
 }
 
-IRecycler::~IRecycler() {
+IRecyclerBase::~IRecyclerBase() {
     if (mTimer != nullptr) {
         mTimer->cancel();
     }
 }
 
-std::shared_ptr<IRecyclable> IRecycler::Acquire() {
+std::shared_ptr<IRecyclable> IRecyclerBase::Acquire() {
     // Not Initialized
     if (mUsage < 0)
         return nullptr;
@@ -81,13 +81,13 @@ std::shared_ptr<IRecyclable> IRecycler::Acquire() {
     return { elem, deleter };
 }
 
-size_t IRecycler::GetUsage() const {
+size_t IRecyclerBase::GetUsage() const {
     if (mUsage < 0)
         return 0;
     return mUsage;
 }
 
-size_t IRecycler::GetIdle() const {
+size_t IRecyclerBase::GetIdle() const {
     if (mUsage < 0)
         return 0;
 
@@ -95,7 +95,7 @@ size_t IRecycler::GetIdle() const {
     return mQueue.size();
 }
 
-size_t IRecycler::GetCapacity() const {
+size_t IRecyclerBase::GetCapacity() const {
     if (mUsage < 0)
         return 0;
 
@@ -103,7 +103,7 @@ size_t IRecycler::GetCapacity() const {
     return mQueue.size() + mUsage.load();
 }
 
-void IRecycler::Shrink() {
+void IRecyclerBase::Shrink() {
     if (bExpanding) {
         mTimer.reset();
         return;
@@ -152,7 +152,7 @@ void IRecycler::Shrink() {
     mTimer.reset();
 }
 
-void IRecycler::Recycle(IRecyclable *elem) {
+void IRecyclerBase::Recycle(IRecyclable *elem) {
     if (mUsage < 0) {
         delete elem;
         return;
@@ -187,7 +187,7 @@ void IRecycler::Recycle(IRecyclable *elem) {
     }, detached);
 }
 
-void IRecycler::Expand() {
+void IRecyclerBase::Expand() {
     // Cancel The Shrink Timer
     if (mTimer != nullptr) {
         mTimer->cancel();
@@ -220,7 +220,7 @@ void IRecycler::Expand() {
     bExpanding = false;
 }
 
-void IRecycler::Initial(const size_t capacity) {
+void IRecyclerBase::Initial(const size_t capacity) {
     if (mUsage >= 0)
         return;
 

@@ -9,16 +9,16 @@
 #include <absl/container/flat_hash_set.h>
 
 
-class IPackage;
+class IPackageBase;
 class UContext;
-class IService;
+class IServiceBase;
 class FLibraryHandle;
 
 using absl::flat_hash_map;
 using absl::flat_hash_set;
 
 
-class BASE_API UServiceModule final : public IModule {
+class BASE_API UServiceModule final : public IModuleBase {
 
     DECLARE_MODULE(UServiceModule)
 
@@ -43,7 +43,7 @@ public:
         return "Service Module";
     }
 
-    std::shared_ptr<UContext> BootExtendService(const std::string &filename, const std::shared_ptr<IPackage> &pkg = nullptr);
+    std::shared_ptr<UContext> BootExtendService(const std::string &filename, const std::shared_ptr<IPackageBase> &pkg = nullptr);
 
     void ShutdownService(int32_t id);
 

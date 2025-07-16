@@ -12,7 +12,7 @@
  * The Abstract Base Class Of Recycler,
  * Its Subclass Must Be Created By std::make_shared
  */
-class BASE_API IRecycler : public std::enable_shared_from_this<IRecycler> {
+class BASE_API IRecyclerBase : public std::enable_shared_from_this<IRecyclerBase> {
 
     /** asio::io_context Reference For Shrink Timer */
     io_context &mContext;
@@ -38,15 +38,15 @@ class BASE_API IRecycler : public std::enable_shared_from_this<IRecycler> {
     static constexpr int        RECYCLER_MINIMUM_CAPACITY   = 64;
 
 protected:
-    explicit IRecycler(io_context &ctx);
+    explicit IRecyclerBase(io_context &ctx);
 
     [[nodiscard]] virtual IRecyclable *Create() const = 0;
 
 public:
-    IRecycler() = delete;
-    virtual ~IRecycler();
+    IRecyclerBase() = delete;
+    virtual ~IRecyclerBase();
 
-    DISABLE_COPY_MOVE(IRecycler)
+    DISABLE_COPY_MOVE(IRecyclerBase)
 
     void Initial(size_t capacity = 64);
 
@@ -67,7 +67,7 @@ private:
 
 template<class Type>
 requires std::derived_from<Type, IRecyclable> && (!std::is_same_v<Type, IRecyclable>)
-class TRecycler final : public IRecycler {
+class TRecycler final : public IRecyclerBase {
 
 protected:
     IRecyclable *Create() const override {
@@ -76,7 +76,7 @@ protected:
 
 public:
     explicit TRecycler(io_context &ctx)
-        : IRecycler(ctx) {
+        : IRecyclerBase(ctx) {
     }
 
     shared_ptr<Type> AcquireT() {

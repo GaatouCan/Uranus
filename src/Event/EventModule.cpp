@@ -8,7 +8,7 @@
 
 
 UEventModule::UEventModule(UServer *server)
-    : IModule(server) {
+    : IModuleBase(server) {
 }
 
 void UEventModule::Dispatch(const std::shared_ptr<IEventParam> &event) const {

@@ -9,7 +9,7 @@ UGameWorld::UGameWorld() {
 UGameWorld::~UGameWorld() {
 }
 
-bool UGameWorld::Initial(const std::shared_ptr<IPackage> &pkg) {
+bool UGameWorld::Initial(const std::shared_ptr<IPackageBase> &pkg) {
     if (!Super::Initial(pkg))
         return false;
 
@@ -46,7 +46,7 @@ void UGameWorld::Stop() {
     }
 }
 
-void UGameWorld::OnPackage(const std::shared_ptr<IPackage> &pkg) {
+void UGameWorld::OnPackage(const std::shared_ptr<IPackageBase> &pkg) {
     const auto pkt = std::dynamic_pointer_cast<FPacket>(pkg);
     if (pkt == nullptr)
         return;
@@ -54,10 +54,10 @@ void UGameWorld::OnPackage(const std::shared_ptr<IPackage> &pkg) {
     mRoute.OnReceivePacket(pkt);
 }
 
-extern "C" SERVICE_API IService *CreateInstance() {
+extern "C" SERVICE_API IServiceBase *CreateInstance() {
     return new UGameWorld();
 }
 
-extern "C" SERVICE_API void DestroyInstance(IService *service) {
+extern "C" SERVICE_API void DestroyInstance(IServiceBase *service) {
     delete dynamic_cast<UGameWorld *>(service);
 }

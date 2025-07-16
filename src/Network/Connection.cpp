@@ -83,7 +83,7 @@ UServer *UConnection::GetServer() const {
     return mModule->GetServer();
 }
 
-std::shared_ptr<IPackage> UConnection::BuildPackage() const {
+std::shared_ptr<IPackageBase> UConnection::BuildPackage() const {
     return mModule->BuildPackage();
 }
 
@@ -102,7 +102,7 @@ int64_t UConnection::GetPlayerID() const {
     return mPlayerID;
 }
 
-void UConnection::SendPackage(const std::shared_ptr<IPackage> &pkg) {
+void UConnection::SendPackage(const std::shared_ptr<IPackageBase> &pkg) {
     if (pkg == nullptr)
         return;
 

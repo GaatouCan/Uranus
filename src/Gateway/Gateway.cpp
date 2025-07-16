@@ -10,7 +10,7 @@
 
 
 UGateway::UGateway(UServer *server)
-    : IModule(server),
+    : IModuleBase(server),
       mLibrary(nullptr) {
 }
 
@@ -130,7 +130,7 @@ void UGateway::Stop() {
     delete mLibrary;
 }
 
-void UGateway::SendToPlayer(const int64_t pid, const std::shared_ptr<IPackage> &pkg) const {
+void UGateway::SendToPlayer(const int64_t pid, const std::shared_ptr<IPackageBase> &pkg) const {
     if (mState != EModuleState::RUNNING)
         return;
 
@@ -141,7 +141,7 @@ void UGateway::SendToPlayer(const int64_t pid, const std::shared_ptr<IPackage> &
         agent->PushPackage(pkg);
 }
 
-void UGateway::PostToPlayer(const int64_t pid, const std::function<void(IService *)> &task) const {
+void UGateway::PostToPlayer(const int64_t pid, const std::function<void(IServiceBase *)> &task) const {
     if (mState != EModuleState::RUNNING)
         return;
 
@@ -152,7 +152,7 @@ void UGateway::PostToPlayer(const int64_t pid, const std::function<void(IService
         agent->PushTask(task);
 }
 
-void UGateway::OnClientPackage(const int64_t pid, const std::shared_ptr<IPackage> &pkg) const {
+void UGateway::OnClientPackage(const int64_t pid, const std::shared_ptr<IPackageBase> &pkg) const {
     if (mState != EModuleState::RUNNING)
         return;
 
@@ -172,7 +172,7 @@ void UGateway::OnClientPackage(const int64_t pid, const std::shared_ptr<IPackage
         context->PushPackage(pkg);
 }
 
-void UGateway::SendToClient(const int64_t pid, const std::shared_ptr<IPackage> &pkg) const {
+void UGateway::SendToClient(const int64_t pid, const std::shared_ptr<IPackageBase> &pkg) const {
     if (mState != EModuleState::RUNNING)
         return;
 
@@ -187,7 +187,7 @@ void UGateway::SendToClient(const int64_t pid, const std::shared_ptr<IPackage> &
         network->SendToClient(agent->GetConnectionID(), pkg);
 }
 
-void UGateway::OnHeartBeat(const int64_t pid, const std::shared_ptr<IPackage> &pkg) const {
+void UGateway::OnHeartBeat(const int64_t pid, const std::shared_ptr<IPackageBase> &pkg) const {
     if (mState != EModuleState::RUNNING)
         return;
 

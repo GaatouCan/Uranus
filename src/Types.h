@@ -5,7 +5,7 @@
 #include <chrono>
 #include <memory>
 
-class IPackage;
+class IPackageBase;
 using DefaultToken = asio::as_tuple_t<asio::use_awaitable_t<>>;
 
 using asio::awaitable;
@@ -25,7 +25,7 @@ using ATcpSocket = DefaultToken::as_default_on_t<asio::ip::tcp::socket>;
 
 using ASteadyTimer = DefaultToken::as_default_on_t<asio::steady_timer>;
 
-using APackageChannel = DefaultToken::as_default_on_t<asio::experimental::channel<void(std::error_code, shared_ptr<IPackage>)>>;
+using APackageChannel = DefaultToken::as_default_on_t<asio::experimental::channel<void(std::error_code, shared_ptr<IPackageBase>)>>;
 
 using ASteadyTimePoint = std::chrono::steady_clock::time_point;
 using ASteadyDuration = std::chrono::steady_clock::duration;

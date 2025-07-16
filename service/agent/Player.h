@@ -19,11 +19,11 @@ public:
     UPlayer();
     ~UPlayer() override;
 
-    bool Initial(const std::shared_ptr<IPackage> &pkg) override;
+    bool Initial(const std::shared_ptr<IPackageBase> &pkg) override;
     bool Start() override;
     void Stop() override;
 
-    void OnPackage(const std::shared_ptr<IPackage> &pkg) override;
+    void OnPackage(const std::shared_ptr<IPackageBase> &pkg) override;
 
     void SendToClient(uint32_t id, const std::string &data) const;
 

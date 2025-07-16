@@ -5,16 +5,16 @@
 class UMonitor;
 class UServer;
 
-class BASE_API IPlugin {
+class BASE_API IPluginBase {
 
 
 public:
-    IPlugin() = delete;
+    IPluginBase() = delete;
 
-    explicit IPlugin(UMonitor* monitor);
-    virtual ~IPlugin();
+    explicit IPluginBase(UMonitor* monitor);
+    virtual ~IPluginBase();
 
-    DISABLE_COPY_MOVE(IPlugin)
+    DISABLE_COPY_MOVE(IPluginBase)
 
     [[nodiscard]] virtual const char *GetPluginName() const = 0;
 

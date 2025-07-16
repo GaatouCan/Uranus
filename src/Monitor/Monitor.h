@@ -10,12 +10,12 @@
 
 
 struct FWatchdog;
-class IPlugin;
+class IPluginBase;
 
 using absl::flat_hash_map;
 
 
-class BASE_API UMonitor final : public IModule {
+class BASE_API UMonitor final : public IModuleBase {
 
     DECLARE_MODULE(UMonitor)
 
@@ -27,8 +27,8 @@ class BASE_API UMonitor final : public IModule {
         long long timestamp;
     };
 
-    typedef IPlugin *(*APluginCreator)(UMonitor *);
-    typedef void (*APluginDestroyer)(IPlugin *);
+    typedef IPluginBase *(*APluginCreator)(UMonitor *);
+    typedef void (*APluginDestroyer)(IPluginBase *);
 
 protected:
     explicit UMonitor(UServer *server);
@@ -75,7 +75,7 @@ private:
 
     TConcurrentDeque<FCommandNode> mCommandQueue;
 
-    flat_hash_map<std::string, IPlugin *> mPluginMap;
+    flat_hash_map<std::string, IPluginBase *> mPluginMap;
 
     std::atomic_bool bHandling;
 

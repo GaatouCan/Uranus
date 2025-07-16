@@ -11,11 +11,11 @@
 
 
 class UServiceModule;
-class IPackage;
+class IPackageBase;
 class IProtoRoute;
 
 
-class BASE_API UContext final : public IContext {
+class BASE_API UContext final : public IContextBase {
 
     int32_t mServiceID;
 
@@ -38,55 +38,55 @@ enum class BASE_API EServiceState {
 };
 
 
-class BASE_API IService {
+class BASE_API IServiceBase {
 
 public:
-    IService();
-    virtual ~IService() = default;
+    IServiceBase();
+    virtual ~IServiceBase() = default;
 
-    DISABLE_COPY_MOVE(IService)
+    DISABLE_COPY_MOVE(IServiceBase)
 
-    void SetUpContext(IContext *context);
+    void SetUpContext(IContextBase *context);
 
     [[nodiscard]] int32_t GetServiceID() const;
     [[nodiscard]] virtual std::string GetServiceName() const;
 
-    [[nodiscard]] asio::io_context &GetIOContext() const;
+    [[nodiscard]] io_context &GetIOContext() const;
 
-    virtual bool Initial(const std::shared_ptr<IPackage> &pkg);
+    virtual bool Initial(const std::shared_ptr<IPackageBase> &pkg);
     virtual bool Start();
     virtual void Stop();
 
     /// Get An Unused Package From Package Pool
-    std::shared_ptr<IPackage> BuildPackage() const;
+    std::shared_ptr<IPackageBase> BuildPackage() const;
 
     /// Send To Other Service Use Target In Package
-    void PostPackage(const std::shared_ptr<IPackage> &pkg) const;
+    void PostPackage(const std::shared_ptr<IPackageBase> &pkg) const;
 
     /// Send To Other Service Use Service Name
-    void PostPackage(const std::string &name, const std::shared_ptr<IPackage> &pkg) const;
+    void PostPackage(const std::string &name, const std::shared_ptr<IPackageBase> &pkg) const;
 
-    void PostTask(int32_t target, const std::function<void(IService *)> &task) const;
-    void PostTask(const std::string &name, const std::function<void(IService *)> &task) const;
+    void PostTask(int32_t target, const std::function<void(IServiceBase *)> &task) const;
+    void PostTask(const std::string &name, const std::function<void(IServiceBase *)> &task) const;
 
     template<class Type, class Callback, class... Args>
-    requires std::derived_from<Type, IService>
+    requires std::derived_from<Type, IServiceBase>
     void PostTaskT(int32_t target, Callback &&func, Args &&... args);
 
     template<class Type, class Callback, class... Args>
-    requires std::derived_from<Type, IService>
+    requires std::derived_from<Type, IServiceBase>
     void PostTaskT(const std::string &name, Callback &&func, Args &&... args);
 
-    virtual void SendToPlayer(int64_t pid, const std::shared_ptr<IPackage> &pkg) const;
-    virtual void PostToPlayer(int64_t pid, const std::function<void(IService *)> &task) const;
+    virtual void SendToPlayer(int64_t pid, const std::shared_ptr<IPackageBase> &pkg) const;
+    virtual void PostToPlayer(int64_t pid, const std::function<void(IServiceBase *)> &task) const;
 
     template<class Type, class Callback, class... Args>
-    requires std::derived_from<Type, IService>
+    requires std::derived_from<Type, IServiceBase>
     void PostToPlayerT(int64_t pid, Callback &&func, Args &&... args);
 
-    virtual void SendToClient(int64_t pid, const std::shared_ptr<IPackage> &pkg) const;
+    virtual void SendToClient(int64_t pid, const std::shared_ptr<IPackageBase> &pkg) const;
 
-    virtual void OnPackage(const std::shared_ptr<IPackage> &pkg);
+    virtual void OnPackage(const std::shared_ptr<IPackageBase> &pkg);
     virtual void OnEvent(const std::shared_ptr<IEventParam> &event);
 
     virtual void CloseSelf();
@@ -109,7 +109,7 @@ public:
     template<CEventType Event, class... Args>
     void DispatchEventT(Args && ... args);
 
-    virtual int64_t SetTimer(const std::function<void(IService *)> &task, int delay, int rate) const;
+    virtual int64_t SetTimer(const std::function<void(IServiceBase *)> &task, int delay, int rate) const;
     virtual void CancelTimer(int64_t timerID);
 
     [[nodiscard]] UServer *GetServer() const;
@@ -117,7 +117,7 @@ public:
     template<CModuleType Module>
     Module *GetModule() const;
 
-    IModule *GetModuleByName(const std::string &name) const;
+    IModuleBase *GetModule(const std::string &name) const;
 
     [[nodiscard]] std::optional<nlohmann::json> FindConfig(const std::string &path) const;
 
@@ -130,7 +130,7 @@ public:
     std::shared_ptr<spdlog::logger> GetLogger(const std::string &name) const;
 
 protected:
-    IContext *mContext;
+    IContextBase *mContext;
 
     /** Record That Which Logger Is For This Service */
     absl::flat_hash_set<std::string> mLoggerSet;
@@ -140,9 +140,9 @@ protected:
 
 
 template<class Type, class Callback, class ... Args>
-requires std::derived_from<Type, IService>
-inline void IService::PostTaskT(int32_t target, Callback &&func, Args &&...args) {
-    auto task = [func = std::forward<Callback>(func), ...args = std::forward<Args>(args)](IService *ser) {
+requires std::derived_from<Type, IServiceBase>
+inline void IServiceBase::PostTaskT(int32_t target, Callback &&func, Args &&...args) {
+    auto task = [func = std::forward<Callback>(func), ...args = std::forward<Args>(args)](IServiceBase *ser) {
         auto *ptr = dynamic_cast<Type *>(ser);
         if (ptr == nullptr)
             return;
@@ -152,9 +152,9 @@ inline void IService::PostTaskT(int32_t target, Callback &&func, Args &&...args)
     this->PostTask(target, task);
 }
 
-template<class Type, class Callback, class ... Args> requires std::derived_from<Type, IService>
-inline void IService::PostTaskT(const std::string &name, Callback &&func, Args &&...args) {
-    auto task = [func = std::forward<Callback>(func), ...args = std::forward<Args>(args)](IService *ser) {
+template<class Type, class Callback, class ... Args> requires std::derived_from<Type, IServiceBase>
+inline void IServiceBase::PostTaskT(const std::string &name, Callback &&func, Args &&...args) {
+    auto task = [func = std::forward<Callback>(func), ...args = std::forward<Args>(args)](IServiceBase *ser) {
         auto *ptr = dynamic_cast<Type *>(ser);
         if (ptr == nullptr)
             return;
@@ -164,9 +164,9 @@ inline void IService::PostTaskT(const std::string &name, Callback &&func, Args &
     this->PostTask(name, task);
 }
 
-template<class Type, class Callback, class ... Args> requires std::derived_from<Type, IService>
-inline void IService::PostToPlayerT(int64_t pid, Callback &&func, Args &&...args) {
-    auto task = [func = std::forward<Callback>(func), ...args = std::forward<Args>(args)](IService *ser) {
+template<class Type, class Callback, class ... Args> requires std::derived_from<Type, IServiceBase>
+inline void IServiceBase::PostToPlayerT(int64_t pid, Callback &&func, Args &&...args) {
+    auto task = [func = std::forward<Callback>(func), ...args = std::forward<Args>(args)](IServiceBase *ser) {
         auto *ptr = dynamic_cast<Type *>(ser);
         if (ptr == nullptr)
             return;
@@ -177,18 +177,18 @@ inline void IService::PostToPlayerT(int64_t pid, Callback &&func, Args &&...args
 }
 
 template<CEventType Event>
-inline std::shared_ptr<Event> IService::CreateEventParam() {
+inline std::shared_ptr<Event> IServiceBase::CreateEventParam() {
     return std::make_shared<Event>();
 }
 
 template<CEventType Event, class ... Args>
-inline void IService::DispatchEventT(Args &&...args) {
+inline void IServiceBase::DispatchEventT(Args &&...args) {
     auto event = std::make_shared<Event>(std::forward<Args>(args)...);
     this->DispatchEvent(event);
 }
 
 template<CModuleType Module>
-Module *IService::GetModule() const {
+Module *IServiceBase::GetModule() const {
     if (mContext == nullptr)
         return nullptr;
     return mContext->GetModule<Module>();

@@ -9,9 +9,9 @@
 #include <asio.hpp>
 
 
-class IPackage;
+class IPackageBase;
 
-class BASE_API ULoginAuth final : public IModule {
+class BASE_API ULoginAuth final : public IModuleBase {
 
     DECLARE_MODULE(ULoginAuth)
 
@@ -34,7 +34,7 @@ public:
     void SetLoginHandler(Args && ... args);
 
     bool VerifyAddress(const asio::ip::tcp::endpoint &endpoint);
-    void OnPlayerLogin(int64_t cid, const std::shared_ptr<IPackage> &pkg);
+    void OnPlayerLogin(int64_t cid, const std::shared_ptr<IPackageBase> &pkg);
 
 private:
     void OnLoginSuccess(int64_t cid, int64_t pid);

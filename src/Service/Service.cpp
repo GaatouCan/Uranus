@@ -27,28 +27,28 @@ UServiceModule *UContext::GetServiceModule() const {
     return dynamic_cast<UServiceModule *>(GetOwner());
 }
 
-IService::IService()
+IServiceBase::IServiceBase()
     : mContext(nullptr),
       mState(EServiceState::CREATED) {
 }
 
-void IService::SetUpContext(IContext *context) {
+void IServiceBase::SetUpContext(IContextBase *context) {
     if (mState != EServiceState::CREATED)
         return;
     mContext = context;
 }
 
-int32_t IService::GetServiceID() const {
+int32_t IServiceBase::GetServiceID() const {
     if (mContext == nullptr)
         return INVALID_SERVICE_ID;
     return mContext->GetServiceID();
 }
 
-std::string IService::GetServiceName() const {
+std::string IServiceBase::GetServiceName() const {
     return {};
 }
 
-std::shared_ptr<spdlog::logger> IService::CreateLogger(const std::string &name, const std::string &path) {
+std::shared_ptr<spdlog::logger> IServiceBase::CreateLogger(const std::string &name, const std::string &path) {
     if (mState == EServiceState::TERMINATED)
         return nullptr;
 
@@ -78,7 +78,7 @@ std::shared_ptr<spdlog::logger> IService::CreateLogger(const std::string &name, 
     return logger;
 }
 
-void IService::CreateLogger(const std::map<std::string, std::string> &loggers) {
+void IServiceBase::CreateLogger(const std::map<std::string, std::string> &loggers) {
     if (mState == EServiceState::TERMINATED)
         return;
 
@@ -113,7 +113,7 @@ void IService::CreateLogger(const std::map<std::string, std::string> &loggers) {
     }
 }
 
-std::shared_ptr<spdlog::logger> IService::GetLogger(const std::string &name) const {
+std::shared_ptr<spdlog::logger> IServiceBase::GetLogger(const std::string &name) const {
     if (mState == EServiceState::TERMINATED)
         return nullptr;
 
@@ -130,12 +130,12 @@ std::shared_ptr<spdlog::logger> IService::GetLogger(const std::string &name) con
     return result;
 }
 
-asio::io_context &IService::GetIOContext() const {
+asio::io_context &IServiceBase::GetIOContext() const {
     // assert(context_ != nullptr);
     return mContext->GetServer()->GetIOContext();
 }
 
-bool IService::Initial(const std::shared_ptr<IPackage> &pkg) {
+bool IServiceBase::Initial(const std::shared_ptr<IPackageBase> &pkg) {
     if (mState != EServiceState::CREATED)
         return false;
 
@@ -147,12 +147,12 @@ bool IService::Initial(const std::shared_ptr<IPackage> &pkg) {
     return true;
 }
 
-bool IService::Start() {
+bool IServiceBase::Start() {
     mState = EServiceState::RUNNING;
     return true;
 }
 
-void IService::Stop() {
+void IServiceBase::Stop() {
     if (mState == EServiceState::TERMINATED)
         return;
 
@@ -167,7 +167,7 @@ void IService::Stop() {
     }
 }
 
-std::shared_ptr<IPackage> IService::BuildPackage() const {
+std::shared_ptr<IPackageBase> IServiceBase::BuildPackage() const {
     if (mState != EServiceState::RUNNING)
         return nullptr;
 
@@ -182,7 +182,7 @@ std::shared_ptr<IPackage> IService::BuildPackage() const {
     return nullptr;
 }
 
-void IService::PostPackage(const std::shared_ptr<IPackage> &pkg) const {
+void IServiceBase::PostPackage(const std::shared_ptr<IPackageBase> &pkg) const {
     if (mState != EServiceState::RUNNING)
         return;
 
@@ -207,7 +207,7 @@ void IService::PostPackage(const std::shared_ptr<IPackage> &pkg) const {
     }
 }
 
-void IService::PostPackage(const std::string &name, const std::shared_ptr<IPackage> &pkg) const {
+void IServiceBase::PostPackage(const std::string &name, const std::shared_ptr<IPackageBase> &pkg) const {
     if (mState != EServiceState::RUNNING)
         return;
 
@@ -230,7 +230,7 @@ void IService::PostPackage(const std::string &name, const std::shared_ptr<IPacka
     }
 }
 
-void IService::PostTask(const int32_t target, const std::function<void(IService *)> &task) const {
+void IServiceBase::PostTask(const int32_t target, const std::function<void(IServiceBase *)> &task) const {
     if (mState != EServiceState::RUNNING)
         return;
 
@@ -250,7 +250,7 @@ void IService::PostTask(const int32_t target, const std::function<void(IService 
     }
 }
 
-void IService::PostTask(const std::string &name, const std::function<void(IService *)> &task) const {
+void IServiceBase::PostTask(const std::string &name, const std::function<void(IServiceBase *)> &task) const {
     if (mState != EServiceState::RUNNING)
         return;
 
@@ -270,7 +270,7 @@ void IService::PostTask(const std::string &name, const std::function<void(IServi
     }
 }
 
-void IService::SendToPlayer(const int64_t pid, const std::shared_ptr<IPackage> &pkg) const {
+void IServiceBase::SendToPlayer(const int64_t pid, const std::shared_ptr<IPackageBase> &pkg) const {
     if (mState != EServiceState::RUNNING)
         return;
 
@@ -288,7 +288,7 @@ void IService::SendToPlayer(const int64_t pid, const std::shared_ptr<IPackage> &
     }
 }
 
-void IService::PostToPlayer(int64_t pid, const std::function<void(IService *)> &task) const {
+void IServiceBase::PostToPlayer(int64_t pid, const std::function<void(IServiceBase *)> &task) const {
     if (mState != EServiceState::RUNNING)
         return;
 
@@ -303,7 +303,7 @@ void IService::PostToPlayer(int64_t pid, const std::function<void(IService *)> &
     }
 }
 
-void IService::SendToClient(const int64_t pid, const std::shared_ptr<IPackage> &pkg) const {
+void IServiceBase::SendToClient(const int64_t pid, const std::shared_ptr<IPackageBase> &pkg) const {
     if (mState != EServiceState::RUNNING)
         return;
 
@@ -321,73 +321,73 @@ void IService::SendToClient(const int64_t pid, const std::shared_ptr<IPackage> &
     }
 }
 
-void IService::OnPackage(const std::shared_ptr<IPackage> &pkg) {
+void IServiceBase::OnPackage(const std::shared_ptr<IPackageBase> &pkg) {
 }
 
-void IService::OnEvent(const std::shared_ptr<IEventParam> &event) {
+void IServiceBase::OnEvent(const std::shared_ptr<IEventParam> &event) {
 }
 
-void IService::CloseSelf() {
+void IServiceBase::CloseSelf() {
     if (mState != EServiceState::RUNNING)
         return;
 
     SendCommand("SHUTDOWN", std::to_string(GetServiceID()), "It Is Time ToClose");
 }
 
-void IService::SendCommand(const std::string &type, const std::string &args, const std::string &comment) const {
+void IServiceBase::SendCommand(const std::string &type, const std::string &args, const std::string &comment) const {
     if (mState != EServiceState::RUNNING)
         return;
 
     mContext->SendCommand(type, args, comment);
 }
 
-EServiceState IService::GetState() const {
+EServiceState IServiceBase::GetState() const {
     return mState;
 }
 
-UServer *IService::GetServer() const {
+UServer *IServiceBase::GetServer() const {
     if (mContext == nullptr)
         return nullptr;
     return mContext->GetServer();
 }
 
-std::map<std::string, int32_t> IService::GetServiceList() const {
+std::map<std::string, int32_t> IServiceBase::GetServiceList() const {
     return mContext->GetServiceList();
 }
 
-int32_t IService::GetOtherServiceID(const std::string &name) const {
+int32_t IServiceBase::GetOtherServiceID(const std::string &name) const {
     // if (name.empty() || name == GetServiceName())
     //     return -11;
 
     return mContext->GetOtherServiceID(name);
 }
 
-void IService::ListenEvent(const int event) const {
+void IServiceBase::ListenEvent(const int event) const {
     if (auto *eventModule = GetModule<UEventModule>()) {
         eventModule->ListenEvent(event, GetServiceID());
     }
 }
 
-void IService::RemoveListener(const int event) const {
+void IServiceBase::RemoveListener(const int event) const {
     if (auto *eventModule = GetModule<UEventModule>()) {
         eventModule->RemoveListener(event, GetServiceID());
     }
 }
 
-void IService::DispatchEvent(const std::shared_ptr<IEventParam> &event) const {
+void IServiceBase::DispatchEvent(const std::shared_ptr<IEventParam> &event) const {
     if (const auto *eventModule = GetModule<UEventModule>()) {
         eventModule->Dispatch(event);
     }
 }
 
-int64_t IService::SetTimer(const std::function<void(IService *)> &task, const int delay, const int rate) const {
+int64_t IServiceBase::SetTimer(const std::function<void(IServiceBase *)> &task, const int delay, const int rate) const {
     if (auto *timer = GetModule<UTimerModule>()) {
         return timer->SetTimer(GetServiceID(), -1, task, delay, rate);
     }
     return -1;
 }
 
-void IService::CancelTimer(const int64_t timerID) {
+void IServiceBase::CancelTimer(const int64_t timerID) {
     auto *timerModule = GetModule<UTimerModule>();
     if (timerModule == nullptr)
         return;
@@ -399,13 +399,13 @@ void IService::CancelTimer(const int64_t timerID) {
     }
 }
 
-IModule *IService::GetModuleByName(const std::string &name) const {
+IModuleBase *IServiceBase::GetModule(const std::string &name) const {
     if (mContext == nullptr)
         return nullptr;
-    return mContext->GetModuleByName(name);
+    return mContext->GetModule(name);
 }
 
-std::optional<nlohmann::json> IService::FindConfig(const std::string &path) const {
+std::optional<nlohmann::json> IServiceBase::FindConfig(const std::string &path) const {
     if (const auto *config = GetModule<UConfig>()) {
         return config->Find(path);
     }

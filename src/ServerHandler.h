@@ -7,7 +7,7 @@
 
 class ULoginAuth;
 class UConnection;
-class IRecycler;
+class IRecyclerBase;
 
 class BASE_API IServerHandler {
 public:
@@ -23,5 +23,5 @@ public:
     virtual void InitLoginAuth(ULoginAuth *auth) const = 0;
     virtual void InitConnection(const std::shared_ptr<UConnection> &conn) const = 0;
 
-    virtual std::shared_ptr<IRecycler> CreatePackagePool(asio::io_context &ctx) = 0;
+    virtual std::shared_ptr<IRecyclerBase> CreatePackagePool(asio::io_context &ctx) = 0;
 };

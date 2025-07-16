@@ -9,7 +9,7 @@
 
 class UClazz;
 
-class BASE_API UClazzFactory final : public IModule {
+class BASE_API UClazzFactory final : public IModuleBase {
 
     DECLARE_MODULE(UClazzFactory)
 

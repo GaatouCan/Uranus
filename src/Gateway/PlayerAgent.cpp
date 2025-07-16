@@ -36,7 +36,7 @@ int64_t UAgentContext::GetConnectionID() const {
     return mConnectionID;
 }
 
-void UAgentContext::OnHeartBeat(const std::shared_ptr<IPackage> &pkg) const {
+void UAgentContext::OnHeartBeat(const std::shared_ptr<IPackageBase> &pkg) const {
     if (mState != EContextState::IDLE && mState != EContextState::RUNNING)
         return;
 
@@ -72,7 +72,7 @@ int64_t IPlayerAgent::GetPlayerID() const {
     return dynamic_cast<UAgentContext *>(mContext)->GetPlayerID();
 }
 
-void IPlayerAgent::SendToPlayer(const int64_t pid, const std::shared_ptr<IPackage> &pkg) const {
+void IPlayerAgent::SendToPlayer(const int64_t pid, const std::shared_ptr<IPackageBase> &pkg) const {
     if (mState != EServiceState::RUNNING)
         return;
 
@@ -90,7 +90,7 @@ void IPlayerAgent::SendToPlayer(const int64_t pid, const std::shared_ptr<IPackag
     }
 }
 
-void IPlayerAgent::PostToPlayer(const int64_t pid, const std::function<void(IService *)> &task) const {
+void IPlayerAgent::PostToPlayer(const int64_t pid, const std::function<void(IServiceBase *)> &task) const {
     if (mState != EServiceState::RUNNING)
         return;
 
@@ -104,7 +104,7 @@ void IPlayerAgent::PostToPlayer(const int64_t pid, const std::function<void(ISer
     }
 }
 
-void IPlayerAgent::SendToClient(const std::shared_ptr<IPackage> &pkg) const {
+void IPlayerAgent::SendToClient(const std::shared_ptr<IPackageBase> &pkg) const {
     if (mState != EServiceState::RUNNING)
         return;
 
@@ -121,7 +121,7 @@ void IPlayerAgent::SendToClient(const std::shared_ptr<IPackage> &pkg) const {
     }
 }
 
-int64_t IPlayerAgent::SetTimer(const std::function<void(IService *)> &task, const int delay, const int rate) const {
+int64_t IPlayerAgent::SetTimer(const std::function<void(IServiceBase *)> &task, const int delay, const int rate) const {
     if (auto *timer = GetModule<UTimerModule>()) {
         return timer->SetTimer(PLAYER_AGENT_ID, GetPlayerID(), task, delay, rate);
     }
@@ -140,7 +140,7 @@ void IPlayerAgent::CancelTimer(const int64_t timerID) {
     }
 }
 
-void IPlayerAgent::OnHeartBeat(const std::shared_ptr<IPackage> &pkg) {
+void IPlayerAgent::OnHeartBeat(const std::shared_ptr<IPackageBase> &pkg) {
 }
 
 void IPlayerAgent::ListenEvent(const int event) const {
@@ -155,6 +155,6 @@ void IPlayerAgent::RemoveListener(const int event) const {
     }
 }
 
-void IPlayerAgent::SendToClient(const int64_t, const std::shared_ptr<IPackage> &) const {
+void IPlayerAgent::SendToClient(const int64_t, const std::shared_ptr<IPackageBase> &) const {
     // Hide This Function In Player Agent, Do Nothing
 }

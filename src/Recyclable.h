@@ -13,7 +13,7 @@
  */
 class BASE_API IRecyclable {
 
-    friend class IRecycler;
+    friend class IRecyclerBase;
 
 protected:
     /** Called When It Created By Recycler */

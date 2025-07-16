@@ -8,8 +8,8 @@
 
 
 class UConnection;
-class IPackage;
-class IRecycler;
+class IPackageBase;
+class IRecyclerBase;
 
 using absl::flat_hash_map;
 
@@ -18,7 +18,7 @@ using absl::flat_hash_map;
  * With Independent asio::io_context To Handle I/O Event;
  * Manage All Client Connection
  */
-class BASE_API UNetwork final : public IModule {
+class BASE_API UNetwork final : public IModuleBase {
 
     DECLARE_MODULE(UNetwork)
 
@@ -43,14 +43,14 @@ public:
     shared_ptr<UConnection> FindConnection(int64_t cid) const;
     void RemoveConnection(int64_t cid, int64_t pid);
 
-    void OnLoginSuccess(int64_t cid, int64_t pid, const shared_ptr<IPackage> &pkg) const;
-    void OnLoginFailure(int64_t cid, const shared_ptr<IPackage> &pkg);
+    void OnLoginSuccess(int64_t cid, int64_t pid, const shared_ptr<IPackageBase> &pkg) const;
+    void OnLoginFailure(int64_t cid, const shared_ptr<IPackageBase> &pkg);
 
     /** Send The Package To The Client */
-    void SendToClient(int64_t cid, const shared_ptr<IPackage> &pkg) const;
+    void SendToClient(int64_t cid, const shared_ptr<IPackageBase> &pkg) const;
 
     /** Acquire One Package From The Internal Package Pool */
-    shared_ptr<IPackage> BuildPackage() const;
+    shared_ptr<IPackageBase> BuildPackage() const;
 
 private:
     awaitable<void> WaitForClient(uint16_t port);
@@ -63,7 +63,7 @@ private:
     std::thread mThread;
 
     /** Package Pool For I/O Data */
-    shared_ptr<IRecycler> mPool;
+    shared_ptr<IRecyclerBase> mPool;
 
     flat_hash_map<int64_t, shared_ptr<UConnection>> mConnectionMap;
     mutable std::shared_mutex mMutex;

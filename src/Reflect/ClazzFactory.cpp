@@ -2,7 +2,7 @@
 #include "Clazz.h"
 
 UClazzFactory::UClazzFactory(UServer *server)
-    : IModule(server) {
+    : IModuleBase(server) {
 }
 
 void UClazzFactory::Initial() {

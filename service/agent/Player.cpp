@@ -14,7 +14,7 @@ UPlayer::UPlayer()
 UPlayer::~UPlayer() {
 }
 
-bool UPlayer::Initial(const std::shared_ptr<IPackage> &pkg) {
+bool UPlayer::Initial(const std::shared_ptr<IPackageBase> &pkg) {
     if (!Super::Initial(pkg))
         return false;
 
@@ -41,7 +41,7 @@ void UPlayer::Stop() {
     Super::Stop();
 }
 
-void UPlayer::OnPackage(const std::shared_ptr<IPackage> &pkg) {
+void UPlayer::OnPackage(const std::shared_ptr<IPackageBase> &pkg) {
     if (const auto pkt = std::dynamic_pointer_cast<FPacket>(pkg)) {
         mRoute.OnReceivePacket(pkt);
     }
@@ -90,7 +90,7 @@ extern "C" {
         return new UPlayer();
     }
 
-    SERVICE_API void DestroyInstance(IService *service) {
+    SERVICE_API void DestroyInstance(IServiceBase *service) {
         delete service;
     }
 }

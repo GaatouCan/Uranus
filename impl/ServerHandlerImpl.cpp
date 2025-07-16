@@ -16,6 +16,6 @@ void UServerHandler::InitConnection(const std::shared_ptr<UConnection> &conn) co
 
 }
 
-std::shared_ptr<IRecycler> UServerHandler::CreatePackagePool(asio::io_context &ctx) {
+std::shared_ptr<IRecyclerBase> UServerHandler::CreatePackagePool(asio::io_context &ctx) {
     return nullptr;
 }

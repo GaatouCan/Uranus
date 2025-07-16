@@ -13,7 +13,7 @@ using absl::flat_hash_map;
 using absl::flat_hash_set;
 
 
-class BASE_API UEventModule final : public IModule {
+class BASE_API UEventModule final : public IModuleBase {
 
     DECLARE_MODULE(UEventModule)
 

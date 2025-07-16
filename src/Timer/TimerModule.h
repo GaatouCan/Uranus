@@ -10,13 +10,18 @@
 #include <shared_mutex>
 
 
-class IService;
+class IServiceBase;
 
-class BASE_API UTimerModule final : public IModule {
+struct BASE_API FTimerHandle {
+    int64_t id;
+    bool bSteady;
+};
+
+class BASE_API UTimerModule final : public IModuleBase {
 
     DECLARE_MODULE(UTimerModule)
 
-    using ATimerTask = std::function<void(IService *)>;
+    using ATimerTask = std::function<void(IServiceBase *)>;
 
     struct FTimerNode final {
         int32_t sid;

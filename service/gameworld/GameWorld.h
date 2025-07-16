@@ -11,9 +11,9 @@
 #include "Manager.h"
 
 
-class UGameWorld final : public IService {
+class UGameWorld final : public IServiceBase {
 
-    DECLARE_SERVICE(UGameWorld, IService)
+    DECLARE_SERVICE(UGameWorld, IServiceBase)
 
 public:
     UGameWorld();
@@ -23,7 +23,7 @@ public:
         return "Game World";
     }
 
-    bool Initial(const std::shared_ptr<IPackage> &pkg) override;
+    bool Initial(const std::shared_ptr<IPackageBase> &pkg) override;
     bool Start() override;
     void Stop() override;
 
@@ -54,7 +54,7 @@ public:
         return iter == mManagerMap.end() ? nullptr : dynamic_cast<Type *>(iter->second.get());
     }
 
-    void OnPackage(const std::shared_ptr<IPackage> &pkg) override;
+    void OnPackage(const std::shared_ptr<IPackageBase> &pkg) override;
 
 private:
     UProtoRoute mRoute;

@@ -10,69 +10,69 @@
 #include <spdlog/spdlog.h>
 
 
-typedef IService *(*AServiceCreator)();
-typedef void (*AServiceDestroyer)(IService *);
+typedef IServiceBase *(*AServiceCreator)();
+typedef void (*AServiceDestroyer)(IServiceBase *);
 
 
-IContext::IChannelNode::IChannelNode(IService *service)
+IContextBase::INodeBase::INodeBase(IServiceBase *service)
     : mService(service) {
 }
 
-IService *IContext::IChannelNode::GetService() const {
+IServiceBase *IContextBase::INodeBase::GetService() const {
     return mService;
 }
 
-IContext::UPackageNode::UPackageNode(IService *service)
-    : IChannelNode(service),
+IContextBase::UPackageNode::UPackageNode(IServiceBase *service)
+    : INodeBase(service),
       mPackage(nullptr) {
 }
 
-void IContext::UPackageNode::SetPackage(const shared_ptr<IPackage> &pkg) {
+void IContextBase::UPackageNode::SetPackage(const shared_ptr<IPackageBase> &pkg) {
     mPackage = pkg;
 }
 
-void IContext::UPackageNode::Execute() {
+void IContextBase::UPackageNode::Execute() {
     if (mService && mPackage) {
         mService->OnPackage(mPackage);
     }
 }
 
-IContext::UTaskNode::UTaskNode(IService *service)
-    : IChannelNode(service) {
+IContextBase::UTaskNode::UTaskNode(IServiceBase *service)
+    : INodeBase(service) {
 }
 
-void IContext::UTaskNode::SetTask(const std::function<void(IService *)> &task) {
+void IContextBase::UTaskNode::SetTask(const std::function<void(IServiceBase *)> &task) {
     mTask = task;
 }
 
-void IContext::UTaskNode::Execute() {
+void IContextBase::UTaskNode::Execute() {
     if (mService && mTask) {
         std::invoke(mTask, mService);
     }
 }
 
-IContext::UEventNode::UEventNode(IService *service)
-    : IChannelNode(service) {
+IContextBase::UEventNode::UEventNode(IServiceBase *service)
+    : INodeBase(service) {
 }
 
-void IContext::UEventNode::SetEventParam(const shared_ptr<IEventParam> &event) {
+void IContextBase::UEventNode::SetEventParam(const shared_ptr<IEventParam> &event) {
     mEvent = event;
 }
 
-void IContext::UEventNode::Execute() {
+void IContextBase::UEventNode::Execute() {
     if (mService && mEvent) {
         mService->OnEvent(mEvent);
     }
 }
 
-IContext::IContext()
+IContextBase::IContextBase()
     : mModule(nullptr),
       mService(nullptr),
       mHandle(nullptr),
       mState(EContextState::CREATED) {
 }
 
-IContext::~IContext() {
+IContextBase::~IContextBase() {
     if (mTimer) {
         mTimer->cancel();
         ForceShutdown();
@@ -83,40 +83,40 @@ IContext::~IContext() {
     }
 }
 
-void IContext::SetUpModule(IModule *module) {
+void IContextBase::SetUpModule(IModuleBase *module) {
     if (mState != EContextState::CREATED)
         return;
     mModule = module;
 }
 
-void IContext::SetUpHandle(FLibraryHandle *handle) {
+void IContextBase::SetUpHandle(FLibraryHandle *handle) {
     if (mState != EContextState::CREATED)
         return;
     mHandle = handle;
 }
 
-std::string IContext::GetLibraryPath() const {
+std::string IContextBase::GetLibraryPath() const {
     if (mHandle == nullptr)
         return {};
     return mHandle->GetPath();
 }
 
-std::string IContext::GetServiceName() const {
+std::string IContextBase::GetServiceName() const {
     if (mState >= EContextState::INITIALIZED) {
         return mService->GetServiceName();
     }
     return "UNKNOWN";
 }
 
-IModule *IContext::GetOwner() const {
+IModuleBase *IContextBase::GetOwner() const {
     return mModule;
 }
 
-IService *IContext::GetService() const {
+IServiceBase *IContextBase::GetService() const {
     return mService;
 }
 
-void IContext::PushNode(const shared_ptr<IChannelNode> &node) {
+void IContextBase::PushNode(const shared_ptr<INodeBase> &node) {
     if (mState < EContextState::INITIALIZED || mState >= EContextState::WAITING)
         return;
 
@@ -128,7 +128,7 @@ void IContext::PushNode(const shared_ptr<IChannelNode> &node) {
     }, detached);
 }
 
-awaitable<void> IContext::ProcessChannel() {
+awaitable<void> IContextBase::ProcessChannel() {
     if (mState <= EContextState::INITIALIZED || mState >= EContextState::WAITING) {
         co_return;
     }
@@ -161,7 +161,7 @@ awaitable<void> IContext::ProcessChannel() {
 }
 
 
-bool IContext::Initial(const std::shared_ptr<IPackage> &pkg) {
+bool IContextBase::Initial(const std::shared_ptr<IPackageBase> &pkg) {
     if (mState != EContextState::CREATED)
         return false;
 
@@ -206,7 +206,7 @@ bool IContext::Initial(const std::shared_ptr<IPackage> &pkg) {
     return true;
 }
 
-int IContext::Shutdown(const bool bForce, const int second, const std::function<void(IContext *)> &cb) {
+int IContextBase::Shutdown(const bool bForce, const int second, const std::function<void(IContextBase *)> &cb) {
     // State Maybe WAITING While If Not Force To Shut Down
     if (bForce ? mState >= EContextState::SHUTTING_DOWN : mState >= EContextState::WAITING)
         return -1;
@@ -273,12 +273,12 @@ int IContext::Shutdown(const bool bForce, const int second, const std::function<
     return 1;
 }
 
-int IContext::ForceShutdown() {
+int IContextBase::ForceShutdown() {
     return Shutdown(true, 0, nullptr);
 }
 
 
-bool IContext::BootService() {
+bool IContextBase::BootService() {
     if (mState != EContextState::INITIALIZED || mService == nullptr)
         return false;
 
@@ -302,16 +302,16 @@ bool IContext::BootService() {
     return true;
 }
 
-EContextState IContext::GetState() const {
+EContextState IContextBase::GetState() const {
     return mState;
 }
 
 
-UServer *IContext::GetServer() const {
+UServer *IContextBase::GetServer() const {
     return mModule->GetServer();
 }
 
-void IContext::PushPackage(const std::shared_ptr<IPackage> &pkg) {
+void IContextBase::PushPackage(const std::shared_ptr<IPackageBase> &pkg) {
     // Could Receive Package After Initialized And Before Waiting
     if (mState < EContextState::INITIALIZED || mState >= EContextState::WAITING)
         return;
@@ -328,7 +328,7 @@ void IContext::PushPackage(const std::shared_ptr<IPackage> &pkg) {
     PushNode(node);
 }
 
-void IContext::PushTask(const std::function<void(IService *)> &task) {
+void IContextBase::PushTask(const std::function<void(IServiceBase *)> &task) {
     // As Same As ::PushPackage()
     if (mState < EContextState::INITIALIZED || mState >= EContextState::WAITING)
         return;
@@ -345,7 +345,7 @@ void IContext::PushTask(const std::function<void(IService *)> &task) {
     PushNode(node);
 }
 
-void IContext::PushEvent(const std::shared_ptr<IEventParam> &event) {
+void IContextBase::PushEvent(const std::shared_ptr<IEventParam> &event) {
     // As Same As ::PushPackage()
     if (mState < EContextState::INITIALIZED || mState >= EContextState::WAITING)
         return;
@@ -362,7 +362,7 @@ void IContext::PushEvent(const std::shared_ptr<IEventParam> &event) {
     PushNode(node);
 }
 
-void IContext::SendCommand(const std::string &type, const std::string &args, const std::string &comment) const {
+void IContextBase::SendCommand(const std::string &type, const std::string &args, const std::string &comment) const {
     if (mState < EContextState::INITIALIZED)
         return;
 
@@ -374,24 +374,24 @@ void IContext::SendCommand(const std::string &type, const std::string &args, con
 }
 
 
-std::shared_ptr<IPackage> IContext::BuildPackage() const {
+std::shared_ptr<IPackageBase> IContextBase::BuildPackage() const {
     if (mState != EContextState::IDLE || mState != EContextState::RUNNING)
         return nullptr;
 
     if (const auto pkg = mPool->Acquire())
-        return std::dynamic_pointer_cast<IPackage>(pkg);
+        return std::dynamic_pointer_cast<IPackageBase>(pkg);
 
     return nullptr;
 }
 
-std::map<std::string, int32_t> IContext::GetServiceList() const {
+std::map<std::string, int32_t> IContextBase::GetServiceList() const {
     if (const auto *service = GetModule<UServiceModule>()) {
         return service->GetServiceList();
     }
     return {};
 }
 
-int32_t IContext::GetOtherServiceID(const std::string &name) const {
+int32_t IContextBase::GetOtherServiceID(const std::string &name) const {
     if (mState < EContextState::INITIALIZED)
         return -10;
 
@@ -408,6 +408,6 @@ int32_t IContext::GetOtherServiceID(const std::string &name) const {
     return -13;
 }
 
-IModule *IContext::GetModuleByName(const std::string &name) const {
-    return GetServer()->GetModuleByName(name);
+IModuleBase *IContextBase::GetModule(const std::string &name) const {
+    return GetServer()->GetModule(name);
 }

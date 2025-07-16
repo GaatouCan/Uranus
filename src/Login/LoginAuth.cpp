@@ -9,7 +9,7 @@
 
 
 ULoginAuth::ULoginAuth(UServer *server)
-    : IModule(server) {
+    : IModuleBase(server) {
 }
 
 ULoginAuth::~ULoginAuth() {
@@ -44,7 +44,7 @@ bool ULoginAuth::VerifyAddress(const asio::ip::tcp::endpoint &endpoint) {
     return true;
 }
 
-void ULoginAuth::OnPlayerLogin(const int64_t cid, const std::shared_ptr<IPackage> &pkg) {
+void ULoginAuth::OnPlayerLogin(const int64_t cid, const std::shared_ptr<IPackageBase> &pkg) {
     if (mState != EModuleState::RUNNING)
         return; {
         std::unique_lock lock(mMutex);

@@ -16,12 +16,12 @@ enum class BASE_API EModuleState {
 /**
  * The Base Class Of Server Module
  */
-class BASE_API IModule {
+class BASE_API IModuleBase {
 
     friend class UServer;
 
 protected:
-    explicit IModule(UServer *server);
+    explicit IModuleBase(UServer *server);
 
     virtual void Initial();
 
@@ -29,10 +29,10 @@ protected:
     virtual void Stop();
 
 public:
-    IModule() = delete;
-    virtual ~IModule() = default;
+    IModuleBase() = delete;
+    virtual ~IModuleBase() = default;
 
-    DISABLE_COPY_MOVE(IModule)
+    DISABLE_COPY_MOVE(IModuleBase)
 
     virtual const char *GetModuleName() const = 0;
 
@@ -50,12 +50,12 @@ protected:
 };
 
 template<typename T>
-concept CModuleType = std::derived_from<T, IModule> && !std::is_same_v<T, IModule>;
+concept CModuleType = std::derived_from<T, IModuleBase> && !std::is_same_v<T, IModuleBase>;
 
 #define DECLARE_MODULE(module) \
 private: \
     friend class UServer; \
-    using Super = IModule; \
+    using Super = IModuleBase; \
 public: \
     DISABLE_COPY_MOVE(module) \
 private:

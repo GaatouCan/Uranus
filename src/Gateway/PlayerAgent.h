@@ -8,7 +8,7 @@ class IPlayerAgent;
 class UGateway;
 
 
-class BASE_API UAgentContext final : public IContext {
+class BASE_API UAgentContext final : public IContextBase {
 
     int64_t mPlayerID;
     int64_t mConnectionID;
@@ -25,15 +25,15 @@ public:
     void SetConnectionID(int64_t cid);
     [[nodiscard]] int64_t GetConnectionID() const;
 
-    void OnHeartBeat(const std::shared_ptr<IPackage> &pkg) const;
+    void OnHeartBeat(const std::shared_ptr<IPackageBase> &pkg) const;
 
     UGateway *GetGateway() const;
 };
 
 
-class BASE_API IPlayerAgent : public IService {
+class BASE_API IPlayerAgent : public IServiceBase {
 
-    using Super = IService;
+    using Super = IServiceBase;
 
 public:
     IPlayerAgent();
@@ -43,19 +43,19 @@ public:
 
     [[nodiscard]] int64_t GetPlayerID() const;
 
-    void SendToPlayer(int64_t pid, const std::shared_ptr<IPackage> &pkg) const final;
-    void PostToPlayer(int64_t pid, const std::function<void(IService *)> &task) const final;
+    void SendToPlayer(int64_t pid, const std::shared_ptr<IPackageBase> &pkg) const final;
+    void PostToPlayer(int64_t pid, const std::function<void(IServiceBase *)> &task) const final;
 
-    void SendToClient(const std::shared_ptr<IPackage> &pkg) const;
+    void SendToClient(const std::shared_ptr<IPackageBase> &pkg) const;
 
-    int64_t SetTimer(const std::function<void(IService *)> &task, int delay, int rate) const final;
+    int64_t SetTimer(const std::function<void(IServiceBase *)> &task, int delay, int rate) const final;
     void CancelTimer(int64_t timerID) final;
 
-    virtual void OnHeartBeat(const std::shared_ptr<IPackage> &pkg);
+    virtual void OnHeartBeat(const std::shared_ptr<IPackageBase> &pkg);
 
     void ListenEvent(int event) const final;
     void RemoveListener(int event) const final;
 
 private:
-    void SendToClient(int64_t pid, const std::shared_ptr<IPackage> &pkg) const final;
+    void SendToClient(int64_t pid, const std::shared_ptr<IPackageBase> &pkg) const final;
 };

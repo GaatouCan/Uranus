@@ -32,7 +32,7 @@ asio::io_context &UServer::GetIOContext() {
     return mContext;
 }
 
-IModule *UServer::GetModuleByName(const std::string &name) const {
+IModuleBase *UServer::GetModule(const std::string &name) const {
     const auto iter = mNameToType.find(name);
     if (iter == mNameToType.end()) {
         return nullptr;
@@ -46,7 +46,7 @@ IServerHandler *UServer::GetServerHandler() const {
     return mHandler.get();
 }
 
-std::shared_ptr<IRecycler> UServer::CreatePackagePool(asio::io_context &ctx) const {
+std::shared_ptr<IRecyclerBase> UServer::CreatePackagePool(asio::io_context &ctx) const {
     if (mHandler != nullptr && !mHandler->IsUseCustomPackage()) {}
         return mHandler->CreatePackagePool(ctx);
 

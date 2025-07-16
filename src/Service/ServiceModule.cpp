@@ -184,7 +184,7 @@ void UServiceModule::Stop() {
     SPDLOG_INFO("Free All Service Library Successfully");
 }
 
-std::shared_ptr<UContext> UServiceModule::BootExtendService(const std::string &filename, const std::shared_ptr<IPackage> &pkg) {
+std::shared_ptr<UContext> UServiceModule::BootExtendService(const std::string &filename, const std::shared_ptr<IPackageBase> &pkg) {
     if (mState != EModuleState::RUNNING)
         return nullptr;
 
@@ -281,7 +281,7 @@ void UServiceModule::ShutdownService(const int32_t id) {
             return;
         }
 
-        auto func = [this, id, filename = info.filename](IContext *) {
+        auto func = [this, id, filename = info.filename](IContextBase *) {
             if (mState != EModuleState::RUNNING)
                 return;
             OnServiceShutdown(filename, id, false);
@@ -417,7 +417,7 @@ void UServiceModule::UnloadLibrary(const std::string &filename, const bool bCore
                 }
             }
 
-            auto func = [this, filename, sid](IContext *ptr) {
+            auto func = [this, filename, sid](IContextBase *ptr) {
                 if (mState != EModuleState::RUNNING)
                     return;
 

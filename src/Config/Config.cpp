@@ -6,7 +6,7 @@
 
 
 UConfig::UConfig(UServer *server)
-    : IModule(server) {
+    : IModuleBase(server) {
 }
 
 UConfig::~UConfig() {

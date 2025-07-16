@@ -4,18 +4,18 @@
 #include "Types.h"
 
 
-class BASE_API IPackageCodec {
+class BASE_API IPackageCodecBase {
 
 protected:
-    explicit IPackageCodec(ATcpSocket &socket);
+    explicit IPackageCodecBase(ATcpSocket &socket);
 
 public:
-    virtual ~IPackageCodec() = default;
+    virtual ~IPackageCodecBase() = default;
 
-    DISABLE_COPY_MOVE(IPackageCodec)
+    DISABLE_COPY_MOVE(IPackageCodecBase)
 
-    virtual awaitable<bool> Encode(const std::shared_ptr<IPackage> &pkg) = 0;
-    virtual awaitable<bool> Decode(const std::shared_ptr<IPackage> &pkg) = 0;
+    virtual awaitable<bool> Encode(const std::shared_ptr<IPackageBase> &pkg) = 0;
+    virtual awaitable<bool> Decode(const std::shared_ptr<IPackageBase> &pkg) = 0;
 
     [[nodiscard]] ATcpSocket &GetSocket() const;
 
@@ -24,11 +24,11 @@ private:
 };
 
 template<CPackageType Type>
-class TPackageCodec : public IPackageCodec {
+class TPackageCodec : public IPackageCodecBase {
 
 protected:
     explicit TPackageCodec(ATcpSocket &socket)
-        : IPackageCodec(socket) {
+        : IPackageCodecBase(socket) {
     }
 
 public:
@@ -36,7 +36,7 @@ public:
 
     ~TPackageCodec() override = default;
 
-    awaitable<bool> Encode(const std::shared_ptr<IPackage> &pkg) override {
+    awaitable<bool> Encode(const std::shared_ptr<IPackageBase> &pkg) override {
         if (auto temp = std::dynamic_pointer_cast<Type>(pkg); temp != nullptr) {
             const auto ret = co_await this->EncodeT(temp);
             co_return ret;
@@ -44,7 +44,7 @@ public:
         co_return false;
     }
 
-    awaitable<bool> Decode(const std::shared_ptr<IPackage> &pkg) override {
+    awaitable<bool> Decode(const std::shared_ptr<IPackageBase> &pkg) override {
         if (auto temp = std::dynamic_pointer_cast<Type>(pkg); temp != nullptr) {
             const auto ret = co_await this->DecodeT(temp);
             co_return ret;

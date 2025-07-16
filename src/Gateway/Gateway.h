@@ -7,8 +7,8 @@
 #include <absl/container/flat_hash_map.h>
 
 
-class IPackage;
-class IService;
+class IPackageBase;
+class IServiceBase;
 class IPlayerAgent;
 class UAgentContext;
 class FLibraryHandle;
@@ -16,7 +16,7 @@ class FLibraryHandle;
 using absl::flat_hash_map;
 
 
-class BASE_API UGateway final : public IModule {
+class BASE_API UGateway final : public IModuleBase {
 
     DECLARE_MODULE(UGateway)
 
@@ -39,13 +39,13 @@ public:
     int64_t GetConnectionID(int64_t pid) const;
     std::shared_ptr<UAgentContext> FindPlayerAgent(int64_t pid) const;
 
-    void SendToPlayer(int64_t pid, const std::shared_ptr<IPackage> &pkg) const;
-    void PostToPlayer(int64_t pid, const std::function<void(IService *)> &task) const;
+    void SendToPlayer(int64_t pid, const std::shared_ptr<IPackageBase> &pkg) const;
+    void PostToPlayer(int64_t pid, const std::function<void(IServiceBase *)> &task) const;
 
-    void OnClientPackage(int64_t pid, const std::shared_ptr<IPackage> &pkg) const;
-    void SendToClient(int64_t pid, const std::shared_ptr<IPackage> &pkg) const;
+    void OnClientPackage(int64_t pid, const std::shared_ptr<IPackageBase> &pkg) const;
+    void SendToClient(int64_t pid, const std::shared_ptr<IPackageBase> &pkg) const;
 
-    void OnHeartBeat(int64_t pid, const std::shared_ptr<IPackage> &pkg) const;
+    void OnHeartBeat(int64_t pid, const std::shared_ptr<IPackageBase> &pkg) const;
 
 private:
     FLibraryHandle *mLibrary;

@@ -1,10 +1,10 @@
 #include "PackageCodec.h"
 
 
-IPackageCodec::IPackageCodec(ATcpSocket &socket)
+IPackageCodecBase::IPackageCodecBase(ATcpSocket &socket)
     : mSocket(socket) {
 }
 
-ATcpSocket &IPackageCodec::GetSocket() const {
+ATcpSocket &IPackageCodecBase::GetSocket() const {
     return mSocket;
 }

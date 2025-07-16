@@ -11,7 +11,7 @@ constexpr auto SERVER_CONFIG_FILE = "/server.yaml";
 constexpr auto SERVER_CONFIG_JSON = "/json";
 
 
-class BASE_API UConfig final : public IModule {
+class BASE_API UConfig final : public IModuleBase {
 
     DECLARE_MODULE(UConfig)
 
