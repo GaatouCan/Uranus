@@ -27,7 +27,7 @@ UPackageNode::UPackageNode(IService *service)
       mPackage(nullptr) {
 }
 
-void UPackageNode::SetPackage(const std::shared_ptr<IPackage> &pkg) {
+void UPackageNode::SetPackage(const shared_ptr<IPackage> &pkg) {
     mPackage = pkg;
 }
 
@@ -55,7 +55,7 @@ UEventNode::UEventNode(IService *service)
     : IScheduleNode(service) {
 }
 
-void UEventNode::SetEventParam(const std::shared_ptr<IEventParam> &event) {
+void UEventNode::SetEventParam(const shared_ptr<IEventParam> &event) {
     mEvent = event;
 }
 
@@ -73,13 +73,14 @@ IContext::IContext()
 }
 
 IContext::~IContext() {
-    if (mShutdownTimer) {
-        mShutdownTimer->cancel();
+    if (mTimer) {
+        mTimer->cancel();
         ForceShutdown();
     }
 
-    // if (mQueue != nullptr && !mQueue->IsEmpty())
-    //     mQueue->Clear();
+    if (mChannel) {
+        mChannel->close();
+    }
 }
 
 void IContext::SetUpModule(IModule *module) {
@@ -115,7 +116,7 @@ IService *IContext::GetService() const {
     return mService;
 }
 
-void IContext::PushNode(const std::shared_ptr<IScheduleNode> &node) {
+void IContext::PushNode(const shared_ptr<IScheduleNode> &node) {
     if (mState < EContextState::INITIALIZED || mState >= EContextState::WAITING)
         return;
 
@@ -134,7 +135,10 @@ awaitable<void> IContext::DoSchedule() {
 
     while (mState == EContextState::IDLE || mState == EContextState::RUNNING) {
         const auto [ec, node] = co_await mChannel->async_receive();
-        if (ec || node == nullptr)
+        if (ec)
+            co_return;
+
+        if (node == nullptr)
             continue;
 
         if (mState >= EContextState::WAITING)
@@ -184,8 +188,7 @@ bool IContext::Initial(const std::shared_ptr<IPackage> &pkg) {
     }
 
     // Create Node Queue For Schedule
-    // mQueue = std::make_unique<AScheduleQueue>();
-    mChannel = make_unique<AContextChannel>(GetServer()->GetIOContext());
+    mChannel = make_unique<AContextChannel>(GetServer()->GetIOContext(), 1024);
 
     // Create Package Pool For Data Exchange
     mPool = GetServer()->CreatePackagePool(GetServer()->GetIOContext());
@@ -212,14 +215,14 @@ int IContext::Shutdown(const bool bForce, const int second, const std::function<
     if (!bForce && mState == EContextState::RUNNING) {
         mState = EContextState::WAITING;
 
-        mShutdownTimer = make_unique<ASteadyTimer>(GetServer()->GetIOContext());
+        mTimer = make_unique<ASteadyTimer>(GetServer()->GetIOContext());
         if (cb != nullptr)
-            mShutdownCallback = cb;
+            mCallback = cb;
 
         // Spawn Coroutine For Waiting To Force Shut Down
         co_spawn(GetServer()->GetIOContext(), [self = shared_from_this(), second]() -> awaitable<void> {
-            self->mShutdownTimer->expires_after(std::chrono::seconds(second));
-            if (const auto [ec] = co_await self->mShutdownTimer->async_wait(); ec)
+            self->mTimer->expires_after(std::chrono::seconds(second));
+            if (const auto [ec] = co_await self->mTimer->async_wait(); ec)
                 co_return;
 
             if (self->GetState() == EContextState::WAITING) {
@@ -232,7 +235,7 @@ int IContext::Shutdown(const bool bForce, const int second, const std::function<
 
     mState = EContextState::SHUTTING_DOWN;
 
-    mShutdownTimer->cancel();
+    mTimer->cancel();
     mChannel->close();
 
     const std::string name = GetServiceName();
@@ -263,8 +266,8 @@ int IContext::Shutdown(const bool bForce, const int second, const std::function<
     SPDLOG_TRACE("{:<20} - Context[{:p}] Service[{}] Shut Down Successfully",
         __FUNCTION__, static_cast<void *>(this), name);
 
-    if (mShutdownCallback) {
-        std::invoke(mShutdownCallback, this);
+    if (mCallback) {
+        std::invoke(mCallback, this);
     }
 
     return 1;

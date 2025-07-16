@@ -43,13 +43,13 @@ public:
  */
 class BASE_API UPackageNode final : public IScheduleNode {
 
-    std::shared_ptr<IPackage> mPackage;
+    shared_ptr<IPackage> mPackage;
 
 public:
     explicit UPackageNode(IService *service);
     ~UPackageNode() override = default;
 
-    void SetPackage(const std::shared_ptr<IPackage> &pkg);
+    void SetPackage(const shared_ptr<IPackage> &pkg);
     void Execute() override;
 };
 
@@ -75,13 +75,13 @@ public:
  */
 class BASE_API UEventNode final : public IScheduleNode {
 
-    std::shared_ptr<IEventParam> mEvent;
+    shared_ptr<IEventParam> mEvent;
 
 public:
     explicit UEventNode(IService *service);
     ~UEventNode() override = default;
 
-    void SetEventParam(const std::shared_ptr<IEventParam> &event);
+    void SetEventParam(const shared_ptr<IEventParam> &event);
     void Execute() override;
 };
 
@@ -115,16 +115,16 @@ class BASE_API IContext : public std::enable_shared_from_this<IContext> {
     FLibraryHandle *mHandle;
 
     /** Internal Package Pool */
-    std::shared_ptr<IRecycler> mPool;
+    shared_ptr<IRecycler> mPool;
 
-    /** Internal Schedule Queue */
-    std::unique_ptr<AContextChannel> mChannel;
+    /** Internal Node Channel */
+    unique_ptr<AContextChannel> mChannel;
 
     /** When Timeout, Force Shut Down This Context */
-    unique_ptr<ASteadyTimer> mShutdownTimer;
+    unique_ptr<ASteadyTimer> mTimer;
 
-    /** Called While This Context Stopped */
-    std::function<void(IContext *)> mShutdownCallback;
+    /** Invoked While This Context Stopped */
+    std::function<void(IContext *)> mCallback;
 
 protected:
     /** Current Context State */
@@ -133,6 +133,8 @@ protected:
 public:
     IContext();
     virtual ~IContext();
+
+    DISABLE_COPY_MOVE(IContext)
 
     void SetUpModule(IModule *module);
     void SetUpHandle(FLibraryHandle *handle);
@@ -144,7 +146,7 @@ public:
     [[nodiscard]] virtual int32_t GetServiceID() const = 0;
 
     /** Create The Service Ant Initial It, And Other Resource It Needs */
-    virtual bool Initial(const std::shared_ptr<IPackage> &pkg);
+    virtual bool Initial(const shared_ptr<IPackage> &pkg);
 
     /** Shutdown And Delete The Service, Release The Resource */
     virtual int Shutdown(bool bForce, int second, const std::function<void(IContext *)> &cb);
@@ -157,14 +159,14 @@ public:
     [[nodiscard]] EContextState GetState() const;
     [[nodiscard]] UServer *GetServer() const;
 
-    void PushPackage(const std::shared_ptr<IPackage> &pkg);
+    void PushPackage(const shared_ptr<IPackage> &pkg);
     void PushTask(const std::function<void(IService *)> &task);
-    void PushEvent(const std::shared_ptr<IEventParam> &event);
+    void PushEvent(const shared_ptr<IEventParam> &event);
 
     void SendCommand(const std::string &type, const std::string &args, const std::string &comment = "") const;
 
     /** Acquire One Package From Internal Package Pool */
-    std::shared_ptr<IPackage> BuildPackage() const;
+    shared_ptr<IPackage> BuildPackage() const;
 
     [[nodiscard]] std::map<std::string, int32_t> GetServiceList() const;
     [[nodiscard]] int32_t GetOtherServiceID(const std::string &name) const;
