@@ -9,15 +9,15 @@
 IRecycler::IRecycler(io_context &ctx)
     : mContext(ctx),
       mUsage(-1),
-      mShrinkTimer(nullptr),
+      mTimer(nullptr),
       bExpanding(false) {
 
     static_assert(RECYCLER_SHRINK_RATE > RECYCLER_SHRINK_THRESHOLD);
 }
 
 IRecycler::~IRecycler() {
-    if (mShrinkTimer != nullptr) {
-        mShrinkTimer->cancel();
+    if (mTimer != nullptr) {
+        mTimer->cancel();
     }
 }
 
@@ -105,7 +105,7 @@ size_t IRecycler::GetCapacity() const {
 
 void IRecycler::Shrink() {
     if (bExpanding) {
-        mShrinkTimer.reset();
+        mTimer.reset();
         return;
     }
 
@@ -124,7 +124,7 @@ void IRecycler::Shrink() {
 
             const auto rest = total - num;
             if (rest <= 0) {
-                mShrinkTimer.reset();
+                mTimer.reset();
                 return;
             }
 
@@ -149,7 +149,7 @@ void IRecycler::Shrink() {
             __FUNCTION__, static_cast<void *>(this));
     }
 
-    mShrinkTimer.reset();
+    mTimer.reset();
 }
 
 void IRecycler::Recycle(IRecyclable *elem) {
@@ -169,13 +169,13 @@ void IRecycler::Recycle(IRecyclable *elem) {
             __FUNCTION__, static_cast<void *>(this), static_cast<void *>(elem));
     }
 
-    if (mShrinkTimer != nullptr || bExpanding)
+    if (mTimer != nullptr || bExpanding)
         return;
 
     // Do Shrink Later
-    mShrinkTimer = make_shared<ASteadyTimer>(mContext);
+    mTimer = make_shared<ASteadyTimer>(mContext);
 
-    co_spawn(mContext, [weak = weak_from_this(), timer = mShrinkTimer]() mutable -> awaitable<void> {
+    co_spawn(mContext, [weak = weak_from_this(), timer = mTimer]() mutable -> awaitable<void> {
         timer->expires_after(std::chrono::seconds(RECYCLER_SHRINK_DELAY));
 
         // If Shrink Timer Be Canceled, It Will Not Shrink
@@ -189,8 +189,8 @@ void IRecycler::Recycle(IRecyclable *elem) {
 
 void IRecycler::Expand() {
     // Cancel The Shrink Timer
-    if (mShrinkTimer != nullptr) {
-        mShrinkTimer->cancel();
+    if (mTimer != nullptr) {
+        mTimer->cancel();
     }
 
     size_t num = 0;

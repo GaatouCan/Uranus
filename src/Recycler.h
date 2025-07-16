@@ -18,16 +18,16 @@ class BASE_API IRecycler : public std::enable_shared_from_this<IRecycler> {
     io_context &mContext;
 
     /** Internal Container */
-    std::queue<std::unique_ptr<IRecyclable>>    mQueue;
-    mutable std::shared_mutex                   mMutex;
+    std::queue<unique_ptr<IRecyclable>> mQueue;
+    mutable std::shared_mutex  mMutex;
 
-    std::atomic_int64_t                         mUsage;
+    std::atomic_int64_t  mUsage;
 
     /** Shrink Timer */
-    shared_ptr<ASteadyTimer>                    mShrinkTimer;
+    shared_ptr<ASteadyTimer> mTimer;
 
     /** Expand Flag */
-    std::atomic_bool                            bExpanding;
+    std::atomic_bool bExpanding;
 
     static constexpr float      RECYCLER_EXPAND_THRESHOLD   = 0.75f;
     static constexpr float      RECYCLER_EXPAND_RATE        = 1.f;
@@ -75,11 +75,11 @@ protected:
     }
 
 public:
-    explicit TRecycler(asio::io_context &ctx)
+    explicit TRecycler(io_context &ctx)
         : IRecycler(ctx) {
     }
 
-    std::shared_ptr<Type> AcquireT() {
+    shared_ptr<Type> AcquireT() {
         auto res = this->Acquire();
         if (res == nullptr)
             return nullptr;
