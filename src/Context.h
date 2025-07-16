@@ -1,8 +1,7 @@
 #pragma once
 
-#include "ConcurrentDeque.h"
 #include "Server.h"
-#include "Utils.h"
+#include "Types.h"
 
 #include <memory>
 
@@ -104,7 +103,7 @@ enum class BASE_API EContextState {
  */
 class BASE_API IContext : public std::enable_shared_from_this<IContext> {
 
-    using AScheduleQueue = TConcurrentDeque<std::unique_ptr<IScheduleNode>>;
+    using AContextChannel = DefaultToken::as_default_on_t<asio::experimental::channel<void(std::error_code, shared_ptr<IScheduleNode>)>>;
 
     /** The Owner Module */
     IModule *mModule;
@@ -119,10 +118,10 @@ class BASE_API IContext : public std::enable_shared_from_this<IContext> {
     std::shared_ptr<IRecycler> mPool;
 
     /** Internal Schedule Queue */
-    std::unique_ptr<AScheduleQueue> mQueue;
+    std::unique_ptr<AContextChannel> mChannel;
 
     /** When Timeout, Force Shut Down This Context */
-    shared_ptr<ASteadyTimer> mShutdownTimer;
+    unique_ptr<ASteadyTimer> mShutdownTimer;
 
     /** Called While This Context Stopped */
     std::function<void(IContext *)> mShutdownCallback;
@@ -148,7 +147,7 @@ public:
     virtual bool Initial(const std::shared_ptr<IPackage> &pkg);
 
     /** Shutdown And Delete The Service, Release The Resource */
-    virtual int Shutdown(bool bFource, int second, const std::function<void(IContext *)> &cb);
+    virtual int Shutdown(bool bForce, int second, const std::function<void(IContext *)> &cb);
 
     /** Equal Shutdown(true, 5, nullptr) */
     int ForceShutdown();
@@ -179,8 +178,8 @@ protected:
     IService *GetService() const;
 
 private:
-    void PushNode(std::unique_ptr<IScheduleNode> &&node);
-    void DoSchedule();
+    void PushNode(const std::shared_ptr<IScheduleNode> &node);
+    awaitable<void> DoSchedule();
 };
 
 

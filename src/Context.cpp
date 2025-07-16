@@ -78,8 +78,8 @@ IContext::~IContext() {
         ForceShutdown();
     }
 
-    if (mQueue != nullptr && !mQueue->IsEmpty())
-        mQueue->Clear();
+    // if (mQueue != nullptr && !mQueue->IsEmpty())
+    //     mQueue->Clear();
 }
 
 void IContext::SetUpModule(IModule *module) {
@@ -115,96 +115,44 @@ IService *IContext::GetService() const {
     return mService;
 }
 
-void IContext::PushNode(std::unique_ptr<IScheduleNode> &&node) {
+void IContext::PushNode(const std::shared_ptr<IScheduleNode> &node) {
     if (mState < EContextState::INITIALIZED || mState >= EContextState::WAITING)
         return;
 
-    if (mQueue->Size() >= MAX_CONTEXT_QUEUE_LENGTH) {
-        SPDLOG_WARN("{:<20} - Context[{:p}], Service[{}] - Schedule Queue Too Long",
-            __FUNCTION__, static_cast<void *>(this), GetServiceName());
+    if (node == nullptr)
         return;
-    }
 
-    const auto bEmpty = mQueue->IsEmpty();
-    mQueue->PushBack(std::move(node));
-
-    if (bEmpty && mState == EContextState::IDLE) {
-        mState = EContextState::RUNNING;
-        co_spawn(GetServer()->GetIOContext(), [weak = weak_from_this()]() -> awaitable<void> {
-            if (const auto self = weak.lock()) {
-                self->DoSchedule();
-            }
-            co_return;
-        }, detached);
-    }
+    co_spawn(GetServer()->GetIOContext(), [self = shared_from_this(), node]() -> awaitable<void> {
+        co_await self->mChannel->async_send(std::error_code{}, node);
+    }, detached);
 }
 
-void IContext::DoSchedule() {
-
-    auto shutdown = [this] {
-        if (mShutdownTimer) {
-            mShutdownTimer->cancel();
-        }
-        ForceShutdown();
-    };
-
-    // If Already Call ::Shutdown() To Wait Before Schedule
-    if (mState == EContextState::WAITING) {
-        shutdown();
-        return;
+awaitable<void> IContext::DoSchedule() {
+    if (mState <= EContextState::INITIALIZED || mState >= EContextState::WAITING) {
+        co_return;
     }
 
-    if (mState != EContextState::RUNNING && mState != EContextState::IDLE)
-        return;
+    while (mState == EContextState::IDLE || mState == EContextState::RUNNING) {
+        const auto [ec, node] = co_await mChannel->async_receive();
+        if (ec || node == nullptr)
+            continue;
 
-    if (mState == EContextState::IDLE)
+        if (mState >= EContextState::WAITING)
+            co_return;
+
         mState = EContextState::RUNNING;
-
-    std::queue<std::unique_ptr<IScheduleNode>> queue;
-    mQueue->SwapTo(queue);
-
-    SPDLOG_TRACE("{:<20} - Context[{:p}], Service[{}] - Begin Schedule, Length[{}]",
-        __FUNCTION__, static_cast<void *>(this), GetServiceName(), queue.size());
-
-    // Schedule Loop
-    while (!queue.empty() && mState < EContextState::WAITING) {
-        const auto node = std::move(queue.front());
-        queue.pop();
-
-        // Check Waiting To Shut Down Again
-        if (mState >= EContextState::WAITING) {
-            shutdown();
-            return;
-        }
-
         try {
             node->Execute();
         } catch (const std::exception &e) {
             SPDLOG_ERROR("{:<20} - {}", __FUNCTION__, e.what());
         }
-    }
 
-    // Do The Same Check Likes In The Loop
-    if (mState >= EContextState::WAITING) {
-        shutdown();
-        return;
-    }
-
-    // Schedule The New Nodes In Other Coroutine
-    if (!mQueue->IsEmpty()) {
-        co_spawn(GetServer()->GetIOContext(), [weak = weak_from_this()]() -> awaitable<void> {
-            if (const auto self = weak.lock()) {
-                self->DoSchedule();
-            }
+        if (mState >= EContextState::WAITING) {
+            ForceShutdown();
             co_return;
-        }, detached);
+        }
 
-        SPDLOG_TRACE("{:<20} - Context[{:p}], Service[{}] - Schedule Again",
-            __FUNCTION__, static_cast<void *>(this), GetServiceName());
-    } else {
         mState = EContextState::IDLE;
-        SPDLOG_TRACE("{:<20} - Context[{:p}], Service[Name: {}] - End Schedule",
-            __FUNCTION__, static_cast<void *>(this), GetServiceName());
     }
 }
 
@@ -236,7 +184,8 @@ bool IContext::Initial(const std::shared_ptr<IPackage> &pkg) {
     }
 
     // Create Node Queue For Schedule
-    mQueue = std::make_unique<AScheduleQueue>();
+    // mQueue = std::make_unique<AScheduleQueue>();
+    mChannel = make_unique<AContextChannel>(GetServer()->GetIOContext());
 
     // Create Package Pool For Data Exchange
     mPool = GetServer()->CreatePackagePool(GetServer()->GetIOContext());
@@ -254,29 +203,27 @@ bool IContext::Initial(const std::shared_ptr<IPackage> &pkg) {
     return true;
 }
 
-int IContext::Shutdown(const bool bFource, const int second, const std::function<void(IContext *)> &cb) {
+int IContext::Shutdown(const bool bForce, const int second, const std::function<void(IContext *)> &cb) {
     // State Maybe WAITING While If Not Force To Shut Down
-    if (bFource ? mState >= EContextState::SHUTTING_DOWN : mState >= EContextState::WAITING)
+    if (bForce ? mState >= EContextState::SHUTTING_DOWN : mState >= EContextState::WAITING)
         return -1;
 
     // If Not Force To Shut Down, Turn To Waiting Current Schedule Node Execute Complete
-    if (!bFource && mState == EContextState::RUNNING) {
+    if (!bForce && mState == EContextState::RUNNING) {
         mState = EContextState::WAITING;
 
-        mShutdownTimer = make_shared<ASteadyTimer>(GetServer()->GetIOContext());
+        mShutdownTimer = make_unique<ASteadyTimer>(GetServer()->GetIOContext());
         if (cb != nullptr)
             mShutdownCallback = cb;
 
         // Spawn Coroutine For Waiting To Force Shut Down
-        co_spawn(GetServer()->GetIOContext(), [weak = weak_from_this(), timer = mShutdownTimer, second]() -> awaitable<void> {
-            timer->expires_after(std::chrono::seconds(second));
-            if (const auto [ec] = co_await timer->async_wait(); ec)
+        co_spawn(GetServer()->GetIOContext(), [self = shared_from_this(), second]() -> awaitable<void> {
+            self->mShutdownTimer->expires_after(std::chrono::seconds(second));
+            if (const auto [ec] = co_await self->mShutdownTimer->async_wait(); ec)
                 co_return;
 
-            if (const auto self = weak.lock()) {
-                if (self->GetState() == EContextState::WAITING) {
-                    self->ForceShutdown();
-                }
+            if (self->GetState() == EContextState::WAITING) {
+                self->ForceShutdown();
             }
         }, detached);
 
@@ -284,16 +231,15 @@ int IContext::Shutdown(const bool bFource, const int second, const std::function
     }
 
     mState = EContextState::SHUTTING_DOWN;
-    mShutdownTimer.reset();
+
+    mShutdownTimer->cancel();
+    mChannel->close();
 
     const std::string name = GetServiceName();
 
     if (mService && mService->GetState() != EServiceState::TERMINATED) {
         mService->Stop();
     }
-
-    if (mQueue != nullptr && !mQueue->IsEmpty())
-        mQueue->Clear();
 
     if (mHandle == nullptr) {
         SPDLOG_ERROR("{:<20} - Library Node Is Null", __FUNCTION__);
@@ -346,16 +292,9 @@ bool IContext::BootService() {
     SPDLOG_TRACE("{:<20} - Context[{:p}], Service[{} - {}] Started.",
         __FUNCTION__, static_cast<const void *>(this), GetServiceID(), GetServiceName());
 
-    // Handle The Package Received Before Starting
-    if (!mQueue->IsEmpty()) {
-        mState = EContextState::RUNNING;
-        co_spawn(GetServer()->GetIOContext(), [weak = weak_from_this()]() -> awaitable<void> {
-            if (const auto self = weak.lock()) {
-                self->DoSchedule();
-            }
-            co_return;
-        }, detached);
-    }
+    co_spawn(GetServer()->GetIOContext(), [self = shared_from_this()] -> awaitable<void> {
+        co_await self->DoSchedule();
+    }, detached);
 
     return true;
 }
@@ -380,10 +319,10 @@ void IContext::PushPackage(const std::shared_ptr<IPackage> &pkg) {
     SPDLOG_TRACE("{:<20} - Context[{:p}], Service[{}] - Package From {}",
         __FUNCTION__, static_cast<const void *>(this), GetServiceName(), pkg->GetSource());
 
-    auto node = std::make_unique<UPackageNode>(mService);
+    const auto node = make_shared<UPackageNode>(mService);
     node->SetPackage(pkg);
 
-    PushNode(std::move(node));
+    PushNode(node);
 }
 
 void IContext::PushTask(const std::function<void(IService *)> &task) {
@@ -397,10 +336,10 @@ void IContext::PushTask(const std::function<void(IService *)> &task) {
     SPDLOG_TRACE("{:<20} - Context[{:p}], Service[{}]",
         __FUNCTION__, static_cast<const void *>(this), GetServiceName());
 
-    auto node = std::make_unique<UTaskNode>(mService);
+    const auto node = make_shared<UTaskNode>(mService);
     node->SetTask(task);
 
-    PushNode(std::move(node));
+    PushNode(node);
 }
 
 void IContext::PushEvent(const std::shared_ptr<IEventParam> &event) {
@@ -414,10 +353,10 @@ void IContext::PushEvent(const std::shared_ptr<IEventParam> &event) {
     SPDLOG_TRACE("{:<20} - Context[{:p}], Service[{}] - Event Type {}",
         __FUNCTION__, static_cast<const void *>(this), GetServiceName(), event->GetEventType());
 
-    auto node = std::make_unique<UEventNode>(mService);
+    const auto node = make_shared<UEventNode>(mService);
     node->SetEventParam(event);
 
-    PushNode(std::move(node));
+    PushNode(node);
 }
 
 void IContext::SendCommand(const std::string &type, const std::string &args, const std::string &comment) const {
