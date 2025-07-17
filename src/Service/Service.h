@@ -12,7 +12,7 @@
 
 class UServiceModule;
 class IPackageBase;
-class IProtoRoute;
+struct FTimerHandle;
 
 
 class BASE_API UContext final : public IContextBase {
@@ -109,8 +109,9 @@ public:
     template<CEventType Event, class... Args>
     void DispatchEventT(Args && ... args);
 
-    virtual int64_t SetTimer(const std::function<void(IServiceBase *)> &task, int delay, int rate) const;
-    virtual void CancelTimer(int64_t timerID);
+    virtual FTimerHandle SetSteadyTimer(const std::function<void(IServiceBase *)> &task, int delay, int rate) const;
+    virtual FTimerHandle SetSystemTimer(const std::function<void(IServiceBase *)> &task, int delay, int rate) const;
+    virtual void CancelTimer(const FTimerHandle &handle);
 
     [[nodiscard]] UServer *GetServer() const;
 

@@ -121,20 +121,27 @@ void IPlayerAgent::SendToClient(const std::shared_ptr<IPackageBase> &pkg) const 
     }
 }
 
-int64_t IPlayerAgent::SetTimer(const std::function<void(IServiceBase *)> &task, const int delay, const int rate) const {
+FTimerHandle IPlayerAgent::SetSteadyTimer(const std::function<void(IServiceBase *)> &task, const int delay, const int rate) const {
     if (auto *timer = GetModule<UTimerModule>()) {
         return timer->SetSteadyTimer(PLAYER_AGENT_ID, GetPlayerID(), task, delay, rate);
     }
-    return -1;
+    return { -1, true };
 }
 
-void IPlayerAgent::CancelTimer(const int64_t timerID) {
+FTimerHandle IPlayerAgent::SetSystemTimer(const std::function<void(IServiceBase *)> &task, int delay, int rate) const {
+    if (auto *timer = GetModule<UTimerModule>()) {
+        return timer->SetSystemTimer(PLAYER_AGENT_ID, GetPlayerID(), task, delay, rate);
+    }
+    return { -1, false };
+}
+
+void IPlayerAgent::CancelTimer(const FTimerHandle &handle) {
     auto *timerModule = GetModule<UTimerModule>();
     if (timerModule == nullptr)
         return;
 
-    if (timerID > 0) {
-        timerModule->CancelTimer(timerID);
+    if (handle.id > 0) {
+        timerModule->CancelTimer(handle);
     } else {
         timerModule->CancelPlayerTimer(GetPlayerID());
     }

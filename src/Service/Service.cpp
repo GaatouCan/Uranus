@@ -380,20 +380,27 @@ void IServiceBase::DispatchEvent(const std::shared_ptr<IEventParam> &event) cons
     }
 }
 
-int64_t IServiceBase::SetTimer(const std::function<void(IServiceBase *)> &task, const int delay, const int rate) const {
+FTimerHandle IServiceBase::SetSteadyTimer(const std::function<void(IServiceBase *)> &task, const int delay, const int rate) const {
     if (auto *timer = GetModule<UTimerModule>()) {
         return timer->SetSteadyTimer(GetServiceID(), -1, task, delay, rate);
     }
-    return -1;
+    return { -1, true };
 }
 
-void IServiceBase::CancelTimer(const int64_t timerID) {
+FTimerHandle IServiceBase::SetSystemTimer(const std::function<void(IServiceBase *)> &task, int delay, int rate) const {
+    if (auto *timer = GetModule<UTimerModule>()) {
+        return timer->SetSystemTimer(GetServiceID(), -1, task, delay, rate);
+    }
+    return { -1, false };
+}
+
+void IServiceBase::CancelTimer(const FTimerHandle &handle) {
     auto *timerModule = GetModule<UTimerModule>();
     if (timerModule == nullptr)
         return;
 
-    if (timerID > 0) {
-        timerModule->CancelTimer(timerID);
+    if (handle.id > 0) {
+        timerModule->CancelTimer(handle);
     } else {
         timerModule->CancelServiceTimer(GetServiceID());
     }
