@@ -129,11 +129,10 @@ void IContextBase::PushNode(const shared_ptr<INodeBase> &node) {
 }
 
 awaitable<void> IContextBase::ProcessChannel() {
-    if (mState <= EContextState::INITIALIZED || mState >= EContextState::WAITING) {
+    if (mState <= EContextState::INITIALIZED || mState >= EContextState::WAITING)
         co_return;
-    }
 
-    while (mState == EContextState::IDLE || mState == EContextState::RUNNING) {
+    while (mChannel->is_open()) {
         const auto [ec, node] = co_await mChannel->async_receive();
         if (ec)
             co_return;

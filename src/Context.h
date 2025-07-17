@@ -99,7 +99,7 @@ class BASE_API IContextBase : public std::enable_shared_from_this<IContextBase> 
         void Execute() override;
     };
 
-    using AContextChannel = DefaultToken::as_default_on_t<asio::experimental::channel<void(std::error_code, shared_ptr<INodeBase>)>>;
+    using AContextChannel = DefaultToken::as_default_on_t<asio::experimental::concurrent_channel<void(std::error_code, shared_ptr<INodeBase>)>>;
 
     /** The Owner Module */
     IModuleBase *mModule;

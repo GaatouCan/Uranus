@@ -53,12 +53,12 @@ public:
     [[nodiscard]] std::byte operator[](size_t pos) const noexcept;
 
     template<typename T>
-    static constexpr bool kPODType = std::is_pointer_v<T>
+    static constexpr bool kCheckPODType = std::is_pointer_v<T>
         ? std::is_trivial_v<std::remove_pointer_t<T> > && std::is_standard_layout_v<std::remove_pointer_t<T> >
         : std::is_trivial_v<T> && std::is_standard_layout_v<T>;
 
     template<typename T>
-    requires kPODType<T>
+    requires kCheckPODType<T>
     void CastFrom(const T &source) {
         constexpr auto size = std::is_pointer_v<T> ? sizeof(std::remove_pointer_t<T>) : sizeof(T);
         mBytes.resize(size);
@@ -76,7 +76,7 @@ public:
     }
 
     template<typename T>
-    requires kPODType<T>
+    requires kCheckPODType<T>
     void CastFromVector(const std::vector<T> &source) {
         constexpr auto size = std::is_pointer_v<T> ? sizeof(std::remove_pointer_t<T>) : sizeof(T);
         mBytes.resize(size * source.size());
@@ -91,21 +91,21 @@ public:
     }
 
     template<typename T>
-    requires kPODType<T>
+    requires kCheckPODType<T>
     FByteArray &operator <<(const T &source) {
         this->CastFrom(source);
         return *this;
     }
 
     template<typename T>
-    requires kPODType<T>
+    requires kCheckPODType<T>
     FByteArray &operator <<(const std::vector<T> &source) {
         this->CastFromVector(source);
         return *this;
     }
 
     template<typename T>
-    requires kPODType<T>
+    requires kCheckPODType<T>
     void CastTo(T &target) const {
         constexpr auto size = std::is_pointer_v<T> ? sizeof(std::remove_pointer_t<T>) : sizeof(T);
         if (size > mBytes.size()) {
@@ -141,7 +141,7 @@ public:
     }
 
     template<typename T>
-    requires kPODType<T>
+    requires kCheckPODType<T>
     FByteArray &operator >>(T *target) {
         this->CastTo(target);
         return *this;
@@ -155,7 +155,7 @@ public:
     }
 
     template<typename T>
-    requires kPODType<T>
+    requires kCheckPODType<T>
     static FByteArray From(T &&data) {
         FByteArray bytes;
         bytes.CastFrom(std::forward<T>(data));
@@ -164,7 +164,7 @@ public:
 };
 
 template<typename T>
-requires FByteArray::kPODType<T>
+requires FByteArray::kCheckPODType<T>
 std::vector<std::byte> DataToByteArray(T data) {
     std::vector<std::byte> bytes;
 
@@ -186,7 +186,7 @@ std::vector<std::byte> DataToByteArray(T data) {
 }
 
 template<typename T>
-requires FByteArray::kPODType<T>
+requires FByteArray::kCheckPODType<T>
 void ByteArrayToData(const std::vector<std::byte> &bytes, T &target) {
     constexpr auto size = std::is_pointer_v<T> ? sizeof(std::remove_pointer_t<T>) : sizeof(T);
     if (size > bytes.size()) {
@@ -205,7 +205,7 @@ void ByteArrayToData(const std::vector<std::byte> &bytes, T &target) {
 }
 
 template<typename T>
-requires FByteArray::kPODType<T>
+requires FByteArray::kCheckPODType<T>
 std::vector<std::byte> VectorToByteArray(const std::vector<T> &list) {
     std::vector<std::byte> bytes;
 

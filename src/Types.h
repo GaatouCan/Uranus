@@ -1,7 +1,7 @@
 #pragma once
 
 #include <asio.hpp>
-#include <asio/experimental/channel.hpp>
+#include <asio/experimental/concurrent_channel.hpp>
 #include <chrono>
 #include <memory>
 
@@ -25,7 +25,7 @@ using ATcpSocket = DefaultToken::as_default_on_t<asio::ip::tcp::socket>;
 
 using ASteadyTimer = DefaultToken::as_default_on_t<asio::steady_timer>;
 
-using APackageChannel = DefaultToken::as_default_on_t<asio::experimental::channel<void(std::error_code, shared_ptr<IPackageBase>)>>;
+using APackageChannel = DefaultToken::as_default_on_t<asio::experimental::concurrent_channel<void(std::error_code, shared_ptr<IPackageBase>)>>;
 
 using ASteadyTimePoint = std::chrono::steady_clock::time_point;
 using ASteadyDuration = std::chrono::steady_clock::duration;
