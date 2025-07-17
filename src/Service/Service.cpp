@@ -382,7 +382,7 @@ void IServiceBase::DispatchEvent(const std::shared_ptr<IEventParam> &event) cons
 
 int64_t IServiceBase::SetTimer(const std::function<void(IServiceBase *)> &task, const int delay, const int rate) const {
     if (auto *timer = GetModule<UTimerModule>()) {
-        return timer->SetTimer(GetServiceID(), -1, task, delay, rate);
+        return timer->SetSteadyTimer(GetServiceID(), -1, task, delay, rate);
     }
     return -1;
 }

@@ -123,7 +123,7 @@ void IPlayerAgent::SendToClient(const std::shared_ptr<IPackageBase> &pkg) const 
 
 int64_t IPlayerAgent::SetTimer(const std::function<void(IServiceBase *)> &task, const int delay, const int rate) const {
     if (auto *timer = GetModule<UTimerModule>()) {
-        return timer->SetTimer(PLAYER_AGENT_ID, GetPlayerID(), task, delay, rate);
+        return timer->SetSteadyTimer(PLAYER_AGENT_ID, GetPlayerID(), task, delay, rate);
     }
     return -1;
 }

@@ -22,11 +22,19 @@ class BASE_API UTimerModule final : public IModuleBase {
     DECLARE_MODULE(UTimerModule)
 
     using ATimerTask = std::function<void(IServiceBase *)>;
+    using AServiceToTimerMap = absl::flat_hash_map<int32_t, absl::flat_hash_set<int64_t>>;
+    using APlayerToTimerMap = absl::flat_hash_map<int64_t, absl::flat_hash_set<int64_t>>;
 
-    struct FTimerNode final {
+    struct FSteadyTimerNode final {
         int32_t sid;
         int64_t pid;
         shared_ptr<ASteadyTimer> timer;
+    };
+
+    struct FSystemTimerNode final {
+        int32_t sid;
+        int64_t pid;
+        shared_ptr<ASystemTimer> timer;
     };
 
 protected:
@@ -41,9 +49,10 @@ public:
         return "Timer Module";
     }
 
-    int64_t SetTimer(int32_t sid, int64_t pid, const ATimerTask &task, int delay, int rate = -1);
+    FTimerHandle SetSteadyTimer(int32_t sid, int64_t pid, const ATimerTask &task, int delay, int rate = -1);
+    FTimerHandle SetSystemTimer(int32_t sid, int64_t pid, const ATimerTask &task, int delay, int rate = -1);
 
-    void CancelTimer(int64_t id);
+    void CancelTimer(const FTimerHandle &handle);
 
     void CancelServiceTimer(int32_t sid);
     void CancelPlayerTimer(int64_t pid);
@@ -52,17 +61,22 @@ private:
     int64_t AllocateTimerID();
     void RecycleTimerID(int64_t id);
 
-    void RemoveTimer(int64_t id);
+    void RemoveSteadyTimer(int64_t id);
+    void RemoveSystemTimer(int64_t id);
 
 private:
     std::queue<int64_t> mRecycledID;
     int64_t mNextID;
     mutable std::shared_mutex mIDMutex;
 
-    absl::flat_hash_map<int64_t, FTimerNode> mTimerMap;
+    absl::flat_hash_map<int64_t, FSteadyTimerNode> mSteadyTimerMap;
+    absl::flat_hash_map<int64_t, FSystemTimerNode> mSystemTimerMap;
 
-    absl::flat_hash_map<int32_t, absl::flat_hash_set<int64_t>> mServiceToTimer;
-    absl::flat_hash_map<int64_t, absl::flat_hash_set<int64_t>> mPlayerToTimer;
+    AServiceToTimerMap mServiceToSteadyTimer;
+    AServiceToTimerMap mServiceToSystemTimer;
+
+    APlayerToTimerMap mPlayerToSteadyTimer;
+    APlayerToTimerMap mPlayerToSystemTimer;
 
     mutable std::shared_mutex mTimerMutex;
 };
