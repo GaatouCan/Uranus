@@ -57,15 +57,20 @@ public:
     virtual bool Start();
     virtual void Stop();
 
+    [[nodiscard]] EServiceState GetState() const;
+
     /// Get An Unused Package From Package Pool
     std::shared_ptr<IPackageBase> BuildPackage() const;
 
+#pragma region Package
     /// Send To Other Service Use Target In Package
     void PostPackage(const std::shared_ptr<IPackageBase> &pkg) const;
 
     /// Send To Other Service Use Service Name
     void PostPackage(const std::string &name, const std::shared_ptr<IPackageBase> &pkg) const;
+#pragma endregion
 
+#pragma region Task
     void PostTask(int32_t target, const std::function<void(IServiceBase *)> &task) const;
     void PostTask(const std::string &name, const std::function<void(IServiceBase *)> &task) const;
 
@@ -76,13 +81,16 @@ public:
     template<class Type, class Callback, class... Args>
     requires std::derived_from<Type, IServiceBase>
     void PostTaskT(const std::string &name, Callback &&func, Args &&... args);
+#pragma endregion
 
+#pragma region ToPlayer
     virtual void SendToPlayer(int64_t pid, const std::shared_ptr<IPackageBase> &pkg) const;
     virtual void PostToPlayer(int64_t pid, const std::function<void(IServiceBase *)> &task) const;
 
     template<class Type, class Callback, class... Args>
     requires std::derived_from<Type, IServiceBase>
     void PostToPlayerT(int64_t pid, Callback &&func, Args &&... args);
+#pragma endregion
 
     virtual void SendToClient(int64_t pid, const std::shared_ptr<IPackageBase> &pkg) const;
 
@@ -93,11 +101,10 @@ public:
 
     void SendCommand(const std::string &type, const std::string &args, const std::string &comment = "") const;
 
-    [[nodiscard]] EServiceState GetState() const;
-
     [[nodiscard]] std::map<std::string, int32_t> GetServiceList() const;
     [[nodiscard]] int32_t GetOtherServiceID(const std::string &name) const;
 
+#pragma region Event
     virtual void ListenEvent(int event) const;
     virtual void RemoveListener(int event) const;
 
@@ -108,10 +115,13 @@ public:
 
     template<CEventType Event, class... Args>
     void DispatchEventT(Args && ... args);
+#pragma endregion
 
+#pragma region Timer
     virtual FTimerHandle SetSteadyTimer(const std::function<void(IServiceBase *)> &task, int delay, int rate) const;
     virtual FTimerHandle SetSystemTimer(const std::function<void(IServiceBase *)> &task, int delay, int rate) const;
     virtual void CancelTimer(const FTimerHandle &handle);
+#pragma endregion
 
     [[nodiscard]] UServer *GetServer() const;
 
@@ -122,6 +132,7 @@ public:
 
     [[nodiscard]] std::optional<nlohmann::json> FindConfig(const std::string &path) const;
 
+#pragma region Logger
     /** Create Logger For This Service */
     std::shared_ptr<spdlog::logger> CreateLogger(const std::string &name, const std::string &path);
 
@@ -129,6 +140,7 @@ public:
 
     /** Get Logger Pointer Which Registered To This Service */
     std::shared_ptr<spdlog::logger> GetLogger(const std::string &name) const;
+#pragma endregion
 
 protected:
     IContextBase *mContext;
