@@ -15,16 +15,17 @@ class UConnection;
 
 class BASE_API UServer final {
 
-    // Module Define Here
+#pragma region Module Define
     absl::flat_hash_map<std::type_index, std::unique_ptr<IModuleBase>> mModuleMap;
     absl::flat_hash_map<std::string, std::type_index> mNameToType;
     std::vector<std::type_index> mModuleOrder;
+#pragma endregion
 
-    // Service Define
+#pragma region Worker
     asio::io_context mContext;
     asio::executor_work_guard<asio::io_context::executor_type> mGuard;
-
     std::vector<std::thread> mWorkerList;
+#pragma endregion
 
     std::unique_ptr<IServerHandler> mHandler;
 
