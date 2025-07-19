@@ -63,7 +63,7 @@ public:
     requires kCheckPODType<T>
     void CastFrom(const T &source) {
         constexpr auto size = std::is_pointer_v<T> ? sizeof(std::remove_pointer_t<T>) : sizeof(T);
-        mBytes.resize(size);
+        mBytes.reserve(size);
 
         const void *src = nullptr;
 
@@ -81,7 +81,7 @@ public:
     requires kCheckPODType<T>
     void CastFromVector(const std::vector<T> &source) {
         constexpr auto size = std::is_pointer_v<T> ? sizeof(std::remove_pointer_t<T>) : sizeof(T);
-        mBytes.resize(size * source.size());
+        mBytes.reserve(size * source.size());
 
         if constexpr (std::is_pointer_v<T>) {
             for (size_t idx = 0; idx < size; idx++) {
@@ -136,7 +136,7 @@ public:
         if (count == 0)
             return;
 
-        dist.resize(count);
+        dist.reserve(count);
 
         std::memset(dist.data(), 0, length);
         std::memcpy(dist.data(), mBytes.data(), length);
@@ -171,7 +171,7 @@ std::vector<std::byte> DataToByteArray(T data) {
     std::vector<std::byte> bytes;
 
     constexpr auto size = std::is_pointer_v<T> ? sizeof(std::remove_pointer_t<T>) : sizeof(T);
-    bytes.resize(size);
+    bytes.reserve(size);
 
     const void *src = nullptr;
 
@@ -212,7 +212,7 @@ std::vector<std::byte> VectorToByteArray(const std::vector<T> &list) {
     std::vector<std::byte> bytes;
 
     constexpr auto size = std::is_pointer_v<T> ? sizeof(std::remove_pointer_t<T>) : sizeof(T);
-    bytes.resize(size * list.size());
+    bytes.reserve(size * list.size());
 
     if constexpr (std::is_pointer_v<T>) {
         for (size_t idx = 0; idx < size; idx++) {
@@ -235,7 +235,7 @@ void ByteArrayToVector(const std::vector<std::byte> &src, std::vector<T> &dist) 
     if (count == 0)
         return;
 
-    dist.resize(count);
+    dist.reserve(count);
 
     std::memset(dist.data(), 0, length);
     std::memcpy(dist.data(), static_cast<const void *>(src.data()), length);

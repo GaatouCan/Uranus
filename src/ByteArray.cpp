@@ -47,7 +47,7 @@ std::vector<std::byte> &FByteArray::RawRef() {
 }
 
 void FByteArray::FromString(const std::string_view sv) {
-    mBytes.resize(sv.size());
+    mBytes.reserve(sv.size());
     std::memcpy(mBytes.data(), sv.data(), sv.size());
 }
 
