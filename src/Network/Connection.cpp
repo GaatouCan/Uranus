@@ -31,7 +31,7 @@ ATcpSocket &UConnection::GetSocket() {
     return mSocket;
 }
 
-APackageChannel &UConnection::GetChannel() {
+TConcurrentChannel<void(std::error_code, shared_ptr<IPackageBase>)> &UConnection::GetChannel() {
     return mChannel;
 }
 
