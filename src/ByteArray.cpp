@@ -30,6 +30,10 @@ void FByteArray::Resize(const size_t size) {
     mBytes.resize(size);
 }
 
+void FByteArray::Reserve(size_t capacity) {
+    mBytes.reserve(capacity);
+}
+
 std::byte *FByteArray::Data() {
     return mBytes.data();
 }

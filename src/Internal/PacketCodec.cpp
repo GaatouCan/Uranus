@@ -93,7 +93,7 @@ awaitable<bool> UPacketCodec::DecodeT(const std::shared_ptr<FPacket> &pkt) {
     if (pkt->mHeader.length == 0)
         co_return true;
 
-    pkt->mPayload.Resize(pkt->mHeader.length);
+    pkt->mPayload.Reserve(pkt->mHeader.length);
 
     const auto [payload_ec, payload_length] = co_await async_read(GetSocket(), asio::buffer(pkt->RawRef()));
 

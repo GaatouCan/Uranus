@@ -37,6 +37,8 @@ public:
     [[nodiscard]] size_t Size() const;
     void Resize(size_t size);
 
+    void Reserve(size_t capacity);
+
     [[nodiscard]] std::byte *Data();
     [[nodiscard]] const std::byte *Data() const;
     std::vector<std::byte> &RawRef();
