@@ -30,6 +30,10 @@ void FByteArray::Resize(const size_t size) {
     mBytes.resize(size);
 }
 
+void FByteArray::Reserve(size_t capacity) {
+    mBytes.reserve(capacity);
+}
+
 std::byte *FByteArray::Data() {
     return mBytes.data();
 }
@@ -43,7 +47,7 @@ std::vector<std::byte> &FByteArray::RawRef() {
 }
 
 void FByteArray::FromString(const std::string_view sv) {
-    mBytes.resize(sv.size());
+    mBytes.reserve(sv.size());
     std::memcpy(mBytes.data(), sv.data(), sv.size());
 }
 
