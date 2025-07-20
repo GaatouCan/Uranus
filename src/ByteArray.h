@@ -15,7 +15,7 @@
  */
 class BASE_API FByteArray final {
 
-    std::vector<std::byte> mBytes;
+    std::vector<std::byte> Bytes;
 
 public:
     FByteArray() = default;
@@ -46,11 +46,11 @@ public:
     void FromString(std::string_view sv);
     [[nodiscard]] std::string ToString() const;
 
-    auto Begin() -> decltype(mBytes)::iterator;
-    auto End() -> decltype(mBytes)::iterator;
+    auto Begin() -> decltype(Bytes)::iterator;
+    auto End() -> decltype(Bytes)::iterator;
 
-    [[nodiscard]] auto Begin() const -> decltype(mBytes)::const_iterator;
-    [[nodiscard]] auto End() const -> decltype(mBytes)::const_iterator;
+    [[nodiscard]] auto Begin() const -> decltype(Bytes)::const_iterator;
+    [[nodiscard]] auto End() const -> decltype(Bytes)::const_iterator;
 
     [[nodiscard]] std::byte operator[](size_t pos) const noexcept;
 
@@ -63,7 +63,7 @@ public:
     requires kCheckPODType<T>
     void CastFrom(const T &source) {
         constexpr auto size = std::is_pointer_v<T> ? sizeof(std::remove_pointer_t<T>) : sizeof(T);
-        mBytes.reserve(size);
+        Bytes.reserve(size);
 
         const void *src = nullptr;
 
@@ -74,21 +74,21 @@ public:
             src = static_cast<const void *>(&source);
         }
 
-        std::memcpy(mBytes.data(), src, size);
+        std::memcpy(Bytes.data(), src, size);
     }
 
     template<typename T>
     requires kCheckPODType<T>
     void CastFromVector(const std::vector<T> &source) {
         constexpr auto size = std::is_pointer_v<T> ? sizeof(std::remove_pointer_t<T>) : sizeof(T);
-        mBytes.reserve(size * source.size());
+        Bytes.reserve(size * source.size());
 
         if constexpr (std::is_pointer_v<T>) {
             for (size_t idx = 0; idx < size; idx++) {
-                std::memcpy(mBytes.data() + idx * size, static_cast<const void *>(source[idx]), size);
+                std::memcpy(Bytes.data() + idx * size, static_cast<const void *>(source[idx]), size);
             }
         } else {
-            std::memcpy(mBytes.data(), static_cast<const void *>(source.data()), size * size);
+            std::memcpy(Bytes.data(), static_cast<const void *>(source.data()), size * size);
         }
     }
 
@@ -110,7 +110,7 @@ public:
     requires kCheckPODType<T>
     void CastTo(T &target) const {
         constexpr auto size = std::is_pointer_v<T> ? sizeof(std::remove_pointer_t<T>) : sizeof(T);
-        if (size > mBytes.size()) {
+        if (size > Bytes.size()) {
             throw std::runtime_error("FByteArray::CastTo - Overflow.");
         }
 
@@ -123,14 +123,14 @@ public:
             dist = static_cast<void *>(&target);
         }
 
-        std::memcpy(dist, mBytes.data(), size);
+        std::memcpy(dist, Bytes.data(), size);
     }
 
     template<typename T>
     requires (!std::is_pointer_v<T>) && std::is_trivial_v<T> && std::is_standard_layout_v<T>
     void CastToVector(std::vector<T> &dist) {
         constexpr auto size = sizeof(T);
-        const size_t count = mBytes.size() / size;
+        const size_t count = Bytes.size() / size;
         const size_t length = size * count;
 
         if (count == 0)
@@ -139,7 +139,7 @@ public:
         dist.reserve(count);
 
         std::memset(dist.data(), 0, length);
-        std::memcpy(dist.data(), mBytes.data(), length);
+        std::memcpy(dist.data(), Bytes.data(), length);
     }
 
     template<typename T>
