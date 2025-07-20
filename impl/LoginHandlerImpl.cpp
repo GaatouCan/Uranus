@@ -52,7 +52,7 @@ void ULoginHandler::OnLoginSuccess(const int64_t pid, const std::shared_ptr<IPac
         val->set_sid(id);
     }
 
-    pkt->SetID(1003);
+    pkt->SetPackageID(1003);
     pkt->SetData(res.SerializeAsString());
 }
 
@@ -66,6 +66,6 @@ void ULoginHandler::OnRepeatLogin(const int64_t pid, const std::string &addr, co
     response.set_player_id(pid);
     response.set_address(addr);
 
-    pkt->SetID(1004);
+    pkt->SetPackageID(1004);
     pkt->SetData(response.SerializeAsString());
 }

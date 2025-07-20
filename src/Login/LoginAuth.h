@@ -49,7 +49,7 @@ private:
 template<class Type, class ... Args>
 requires std::derived_from<Type, ILoginHandler>
 inline void ULoginAuth::SetLoginHandler(Args &&...args) {
-    if (mState != EModuleState::CREATED)
+    if (State != EModuleState::CREATED)
         return;
 
     mHandler = std::unique_ptr<ILoginHandler>(new Type(this, std::forward<Args>(args)...));

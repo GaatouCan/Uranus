@@ -1,6 +1,6 @@
 ﻿#pragma once
 
-#include "Recyclable.h"
+#include "RecycleInterface.h"
 #include "Types.h"
 
 #include <queue>
@@ -15,16 +15,16 @@
 class BASE_API IRecyclerBase : public std::enable_shared_from_this<IRecyclerBase> {
 
     /** asio::io_context Reference For Shrink Timer */
-    io_context &mContext;
+    io_context &IOContext;
 
     /** Internal Container */
-    std::queue<unique_ptr<IRecyclable>> mQueue;
-    mutable std::shared_mutex  mMutex;
+    std::queue<unique_ptr<IRecycleInterface>> InnerQueue;
+    mutable std::shared_mutex Mutex;
 
-    std::atomic_int64_t  mUsage;
+    std::atomic_int64_t Usage;
 
     /** Shrink Timer */
-    shared_ptr<ASteadyTimer> mTimer;
+    shared_ptr<ASteadyTimer> ShrinkTimer;
 
     /** Expand Flag */
     std::atomic_bool bExpanding;
@@ -40,7 +40,7 @@ class BASE_API IRecyclerBase : public std::enable_shared_from_this<IRecyclerBase
 protected:
     explicit IRecyclerBase(io_context &ctx);
 
-    [[nodiscard]] virtual IRecyclable *Create() const = 0;
+    [[nodiscard]] virtual IRecycleInterface *Create() const = 0;
 
 public:
     IRecyclerBase() = delete;
@@ -51,14 +51,14 @@ public:
     void Initial(size_t capacity = 64);
 
     /** Pop The Element Of The Front Of The Internal Queue */
-    std::shared_ptr<IRecyclable> Acquire();
+    std::shared_ptr<IRecycleInterface> Acquire();
 
     [[nodiscard]] size_t GetUsage() const;
     [[nodiscard]] size_t GetIdle() const;
     [[nodiscard]] size_t GetCapacity() const;
 
 private:
-    void Recycle(IRecyclable *elem);
+    void Recycle(IRecycleInterface *elem);
 
     void Expand();
     void Shrink();
@@ -66,11 +66,11 @@ private:
 
 
 template<class Type>
-requires std::derived_from<Type, IRecyclable> && (!std::is_same_v<Type, IRecyclable>)
+requires std::derived_from<Type, IRecycleInterface> && (!std::is_same_v<Type, IRecycleInterface>)
 class TRecycler final : public IRecyclerBase {
 
 protected:
-    IRecyclable *Create() const override {
+    IRecycleInterface *Create() const override {
         return new Type();
     }
 

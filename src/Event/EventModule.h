@@ -46,7 +46,7 @@ private:
 
 template<CEventType Type>
 inline std::shared_ptr<Type> UEventModule::CreateEventParam() const {
-    if (mState != EModuleState::RUNNING)
+    if (State != EModuleState::RUNNING)
         return nullptr;
 
     auto result = std::make_shared<Type>();
@@ -55,7 +55,7 @@ inline std::shared_ptr<Type> UEventModule::CreateEventParam() const {
 
 template<CEventType Type, class ... Args>
 inline void UEventModule::DispatchT(Args &&...args) {
-    if (mState != EModuleState::RUNNING)
+    if (State != EModuleState::RUNNING)
         return;
 
     auto res = std::make_shared<Type>(std::forward<Args>(args)...);

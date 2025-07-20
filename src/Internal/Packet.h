@@ -48,11 +48,11 @@ public:
     [[nodiscard]] bool IsUnused() const override;
     [[nodiscard]] bool IsAvailable() const override;
 
-    void SetID(uint32_t id) override;
+    void SetPackageID(uint32_t id) override;
     [[nodiscard]] uint32_t GetID() const override;
 
-    bool CopyFrom(IRecyclable *other) override;
-    bool CopyFrom(const std::shared_ptr<IRecyclable> &other) override;
+    bool CopyFrom(IRecycleInterface *other) override;
+    bool CopyFrom(const std::shared_ptr<IRecycleInterface> &other) override;
 
     FPacket &SetData(std::string_view str);
     FPacket &SetData(const std::stringstream &ss);

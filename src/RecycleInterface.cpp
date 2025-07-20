@@ -1,13 +1,13 @@
-#include "Recyclable.h"
+#include "RecycleInterface.h"
 
-bool IRecyclable::CopyFrom(IRecyclable *other) {
+bool IRecycleInterface::CopyFrom(IRecycleInterface *other) {
     if (other != nullptr && other != this) {
         return true;
     }
     return false;
 }
 
-bool IRecyclable::CopyFrom(const std::shared_ptr<IRecyclable> &other) {
+bool IRecycleInterface::CopyFrom(const std::shared_ptr<IRecycleInterface> &other) {
     if (other != nullptr && other.get() != this) {
         return true;
     }

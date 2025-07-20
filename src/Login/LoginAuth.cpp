@@ -17,26 +17,26 @@ ULoginAuth::~ULoginAuth() {
 }
 
 void ULoginAuth::Initial() {
-    if (mState != EModuleState::CREATED)
+    if (State != EModuleState::CREATED)
         return;
 
     GetServer()->GetServerHandler()->InitLoginAuth(this);
 
-    mState = EModuleState::INITIALIZED;
+    State = EModuleState::INITIALIZED;
 }
 
 void ULoginAuth::Start() {
-    if (mState != EModuleState::INITIALIZED)
+    if (State != EModuleState::INITIALIZED)
         return;
 
-    mState = EModuleState::RUNNING;
+    State = EModuleState::RUNNING;
 }
 
 void ULoginAuth::Stop() {
-    if (mState == EModuleState::STOPPED)
+    if (State == EModuleState::STOPPED)
         return;
 
-    mState = EModuleState::STOPPED;
+    State = EModuleState::STOPPED;
 }
 
 bool ULoginAuth::VerifyAddress(const asio::ip::tcp::endpoint &endpoint) {
@@ -45,7 +45,7 @@ bool ULoginAuth::VerifyAddress(const asio::ip::tcp::endpoint &endpoint) {
 }
 
 void ULoginAuth::OnPlayerLogin(const int64_t cid, const std::shared_ptr<IPackageBase> &pkg) {
-    if (mState != EModuleState::RUNNING)
+    if (State != EModuleState::RUNNING)
         return; {
         std::unique_lock lock(mMutex);
         if (const auto iter = mLoginMap.find(cid); iter != mLoginMap.end()) {

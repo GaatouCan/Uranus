@@ -1,18 +1,18 @@
 ﻿#pragma once
 
-#include "Recyclable.h"
+#include "RecycleInterface.h"
 
 #include <concepts>
 
 /**
  * Abstract Base Class Of Internal Data Exchange With The Server
  */
-class BASE_API IPackageBase : public IRecyclable {
+class BASE_API IPackageBase : public IRecycleInterface {
 
 public:
     IPackageBase() = default;
 
-    virtual void SetID(uint32_t id) = 0;
+    virtual void SetPackageID(uint32_t id) = 0;
     virtual void SetSource(int32_t source) = 0;
     virtual void SetTarget(int32_t target) = 0;
 

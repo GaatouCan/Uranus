@@ -49,7 +49,7 @@ void UPlayer::OnPackage(const std::shared_ptr<IPackageBase> &pkg) {
 
 void UPlayer::SendToClient(const uint32_t id, const std::string &data) const {
     if (const auto pkt = std::dynamic_pointer_cast<FPacket>(BuildPackage())) {
-        pkt->SetID(id);
+        pkt->SetPackageID(id);
         pkt->SetData(data);
         Super::SendToClient(pkt);
     }
@@ -58,7 +58,7 @@ void UPlayer::SendToClient(const uint32_t id, const std::string &data) const {
 void UPlayer::SendToService(const int32_t sid, const uint32_t id, const std::string &data) const {
     if (const auto pkt = std::dynamic_pointer_cast<FPacket>(BuildPackage())) {
         pkt->SetTarget(sid);
-        pkt->SetID(id);
+        pkt->SetPackageID(id);
         pkt->SetData(data);
         PostPackage(pkt);
     }
@@ -66,7 +66,7 @@ void UPlayer::SendToService(const int32_t sid, const uint32_t id, const std::str
 
 void UPlayer::SendToService(const std::string &name, const uint32_t id, const std::string &data) const {
     if (const auto pkt = std::dynamic_pointer_cast<FPacket>(BuildPackage())) {
-        pkt->SetID(id);
+        pkt->SetPackageID(id);
         pkt->SetData(data);
         PostPackage(name, pkt);
     }
@@ -74,7 +74,7 @@ void UPlayer::SendToService(const std::string &name, const uint32_t id, const st
 
 void UPlayer::SendToPlayer(const int64_t pid, const uint32_t id, const std::string &data) const {
     if (const auto pkt = std::dynamic_pointer_cast<FPacket>(BuildPackage())) {
-        pkt->SetID(id);
+        pkt->SetPackageID(id);
         pkt->SetData(data);
         Super::SendToPlayer(pid, pkt);
     }

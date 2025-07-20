@@ -16,18 +16,18 @@ class UConnection;
 class BASE_API UServer final {
 
 #pragma region Module Define
-    absl::flat_hash_map<std::type_index, std::unique_ptr<IModuleBase>> mModuleMap;
-    absl::flat_hash_map<std::string, std::type_index> mNameToType;
-    std::vector<std::type_index> mModuleOrder;
+    absl::flat_hash_map<std::type_index, std::unique_ptr<IModuleBase>> ModuleMap;
+    absl::flat_hash_map<std::string, std::type_index> NameToType;
+    std::vector<std::type_index> ModuleOrdered;
 #pragma endregion
 
 #pragma region Worker
-    asio::io_context mContext;
-    asio::executor_work_guard<asio::io_context::executor_type> mGuard;
-    std::vector<std::thread> mWorkerList;
+    asio::io_context IOContext;
+    asio::executor_work_guard<asio::io_context::executor_type> ExecutorWorkGuard;
+    std::vector<std::thread> WorkerList;
 #pragma endregion
 
-    std::unique_ptr<IServerHandler> mHandler;
+    std::unique_ptr<IServerHandler> Handler;
 
     std::atomic_bool bInitialized;
     std::atomic_bool bRunning;
@@ -75,29 +75,31 @@ inline Module *UServer::CreateModule(Args &&...args) {
         return nullptr;
     }
 
-    if (mModuleMap.contains(typeid(Module))) {
-        return dynamic_cast<Module *>(mModuleMap[typeid(Module)].get());
+    if (ModuleMap.contains(typeid(Module))) {
+        return dynamic_cast<Module *>(ModuleMap[typeid(Module)].get());
     }
 
-    auto module = new Module(this, std::forward<Args>(args)...);
+    auto module = new Module(std::forward<Args>(args)...);
     auto ptr = std::unique_ptr<IModuleBase>(module);
 
-    mNameToType.emplace(ptr->GetModuleName(), typeid(Module));
-    mModuleOrder.emplace_back(typeid(Module));
+    ptr->SetUpServer(this);
 
-    mModuleMap.emplace(typeid(Module), std::move(ptr));
+    NameToType.emplace(ptr->GetModuleName(), typeid(Module));
+    ModuleOrdered.emplace_back(typeid(Module));
+
+    ModuleMap.emplace(typeid(Module), std::move(ptr));
 
     return module;
 }
 
 template<CModuleType Module>
 inline Module *UServer::GetModule() const {
-    const auto iter = mModuleMap.find(typeid(Module));
-    return iter != mModuleMap.end() ? dynamic_cast<Module *>(iter->second.get()) : nullptr;
+    const auto iter = ModuleMap.find(typeid(Module));
+    return iter != ModuleMap.end() ? dynamic_cast<Module *>(iter->second.get()) : nullptr;
 }
 
 template<class Type>
 requires std::derived_from<Type, IServerHandler>
 inline void UServer::SetServerHandler() {
-    mHandler = std::make_unique<Type>();
+    Handler = std::make_unique<Type>();
 }

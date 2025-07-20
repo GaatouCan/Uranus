@@ -11,7 +11,7 @@
  * The Base Class Of Recyclable Object,
  * The Element Managed By Recycler
  */
-class BASE_API IRecyclable {
+class BASE_API IRecycleInterface {
 
     friend class IRecyclerBase;
 
@@ -26,16 +26,16 @@ protected:
     virtual void Reset() = 0;
 
 public:
-    IRecyclable() = default;
-    virtual ~IRecyclable() = default;
+    IRecycleInterface() = default;
+    virtual ~IRecycleInterface() = default;
 
-    DISABLE_COPY_MOVE(IRecyclable)
-
-    /** Depth Copy Object Data */
-    virtual bool CopyFrom(IRecyclable *other);
+    DISABLE_COPY_MOVE(IRecycleInterface)
 
     /** Depth Copy Object Data */
-    virtual bool CopyFrom(const std::shared_ptr<IRecyclable> &other);
+    virtual bool CopyFrom(IRecycleInterface *other);
+
+    /** Depth Copy Object Data */
+    virtual bool CopyFrom(const std::shared_ptr<IRecycleInterface> &other);
 
     /** After Acquiring And Before Assigning Return True */
     [[nodiscard]] virtual bool IsUnused() const = 0;

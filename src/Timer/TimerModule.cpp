@@ -65,7 +65,7 @@ FTimerHandle UTimerModule::SetSteadyTimer(const int32_t sid, const int64_t pid, 
                     }
                 }
 
-            } while (rate > 0 && mState == EModuleState::RUNNING);
+            } while (rate > 0 && State == EModuleState::RUNNING);
         } catch (const std::exception &e) {
             SPDLOG_ERROR("{:<20} - Exception: {}", "UTimerModule::SetTimer", e.what());
         }
@@ -126,7 +126,7 @@ FTimerHandle UTimerModule::SetSystemTimer(int32_t sid, int64_t pid, const ATimer
                     }
                 }
 
-            } while (rate > 0 && mState == EModuleState::RUNNING);
+            } while (rate > 0 && State == EModuleState::RUNNING);
         } catch (const std::exception &e) {
             SPDLOG_ERROR("{:<20} - Exception: {}", "UTimerModule::SetTimer", e.what());
         }
@@ -139,7 +139,7 @@ FTimerHandle UTimerModule::SetSystemTimer(int32_t sid, int64_t pid, const ATimer
 }
 
 void UTimerModule::CancelTimer(const FTimerHandle &handle) {
-    if (mState != EModuleState::RUNNING)
+    if (State != EModuleState::RUNNING)
         return;
 
     std::unique_lock lock(mTimerMutex);
@@ -179,7 +179,7 @@ void UTimerModule::CancelTimer(const FTimerHandle &handle) {
 }
 
 void UTimerModule::CancelServiceTimer(const int32_t sid) {
-    if (mState != EModuleState::RUNNING)
+    if (State != EModuleState::RUNNING)
         return;
 
     std::unique_lock lock(mTimerMutex);
@@ -214,7 +214,7 @@ void UTimerModule::CancelServiceTimer(const int32_t sid) {
 }
 
 void UTimerModule::CancelPlayerTimer(const int64_t pid) {
-    if (mState != EModuleState::RUNNING)
+    if (State != EModuleState::RUNNING)
         return;
 
     std::unique_lock lock(mTimerMutex);
@@ -249,10 +249,10 @@ void UTimerModule::CancelPlayerTimer(const int64_t pid) {
 }
 
 void UTimerModule::Stop() {
-    if (mState == EModuleState::STOPPED)
+    if (State == EModuleState::STOPPED)
         return;
 
-    mState = EModuleState::STOPPED;
+    State = EModuleState::STOPPED;
 
     for (const auto &val : mSteadyTimerMap | std::views::values) {
         val.timer->cancel();
@@ -260,7 +260,7 @@ void UTimerModule::Stop() {
 }
 
 int64_t UTimerModule::AllocateTimerID() {
-    if (mState != EModuleState::RUNNING)
+    if (State != EModuleState::RUNNING)
         return -1;
 
     std::unique_lock lock(mIDMutex);

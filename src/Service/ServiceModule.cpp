@@ -17,7 +17,7 @@ UServiceModule::~UServiceModule() {
 }
 
 void UServiceModule::Initial() {
-    if (mState != EModuleState::CREATED)
+    if (State != EModuleState::CREATED)
         return;
 
     const auto *configModule = GetServer()->GetModule<UConfig>();
@@ -142,11 +142,11 @@ void UServiceModule::Initial() {
         }
     }
 
-    mState = EModuleState::INITIALIZED;
+    State = EModuleState::INITIALIZED;
 }
 
 void UServiceModule::Start() {
-    if (mState != EModuleState::INITIALIZED)
+    if (State != EModuleState::INITIALIZED)
         return;
 
     for (const auto &context: mServiceMap | std::views::values) {
@@ -159,14 +159,14 @@ void UServiceModule::Start() {
         }
     }
 
-    mState = EModuleState::RUNNING;
+    State = EModuleState::RUNNING;
 }
 
 void UServiceModule::Stop() {
-    if (mState == EModuleState::STOPPED)
+    if (State == EModuleState::STOPPED)
         return;
 
-    mState = EModuleState::STOPPED;
+    State = EModuleState::STOPPED;
 
     SPDLOG_INFO("Unloading All Service...");
     for (const auto &context : mServiceMap | std::views::values) {
@@ -185,7 +185,7 @@ void UServiceModule::Stop() {
 }
 
 std::shared_ptr<UContext> UServiceModule::BootExtendService(const std::string &filename, const std::shared_ptr<IPackageBase> &pkg) {
-    if (mState != EModuleState::RUNNING)
+    if (State != EModuleState::RUNNING)
         return nullptr;
 
     const auto handle = FindServiceHandle(filename);
@@ -252,7 +252,7 @@ std::shared_ptr<UContext> UServiceModule::BootExtendService(const std::string &f
 }
 
 void UServiceModule::ShutdownService(const int32_t id) {
-    if (mState != EModuleState::RUNNING)
+    if (State != EModuleState::RUNNING)
         return;
 
     std::shared_ptr<UContext> context;
@@ -282,7 +282,7 @@ void UServiceModule::ShutdownService(const int32_t id) {
         }
 
         auto func = [this, id, filename = info.filename](IContextBase *) {
-            if (mState != EModuleState::RUNNING)
+            if (State != EModuleState::RUNNING)
                 return;
             OnServiceShutdown(filename, id, false);
             RecycleServiceID(id);
@@ -293,7 +293,7 @@ void UServiceModule::ShutdownService(const int32_t id) {
 }
 
 std::shared_ptr<UContext> UServiceModule::FindService(const int32_t id) const {
-    if (mState != EModuleState::RUNNING)
+    if (State != EModuleState::RUNNING)
         return nullptr;
 
     std::shared_lock lock(mServiceMutex);
@@ -302,7 +302,7 @@ std::shared_ptr<UContext> UServiceModule::FindService(const int32_t id) const {
 }
 
 std::shared_ptr<UContext> UServiceModule::FindService(const std::string &name) const {
-    if (mState != EModuleState::RUNNING)
+    if (State != EModuleState::RUNNING)
         return nullptr;
 
     int32_t sid;
@@ -322,7 +322,7 @@ std::shared_ptr<UContext> UServiceModule::FindService(const std::string &name) c
 }
 
 std::map<std::string, int32_t> UServiceModule::GetServiceList() const {
-    if (mState != EModuleState::RUNNING)
+    if (State != EModuleState::RUNNING)
         return {};
 
     std::shared_lock lock(mNameMutex);
@@ -334,7 +334,7 @@ std::map<std::string, int32_t> UServiceModule::GetServiceList() const {
 }
 
 int32_t UServiceModule::GetServiceID(const std::string &name) const {
-    if (mState != EModuleState::INITIALIZED || mState != EModuleState::RUNNING)
+    if (State != EModuleState::INITIALIZED || State != EModuleState::RUNNING)
         return -10;
 
     std::shared_lock lock(mNameMutex);
@@ -343,7 +343,7 @@ int32_t UServiceModule::GetServiceID(const std::string &name) const {
 }
 
 void UServiceModule::LoadLibraryFrom(const std::string &filename, const bool bCore) {
-    if (mState != EModuleState::RUNNING)
+    if (State != EModuleState::RUNNING)
         return;
 
 #ifdef __linux__
@@ -377,7 +377,7 @@ void UServiceModule::LoadLibraryFrom(const std::string &filename, const bool bCo
 }
 
 void UServiceModule::UnloadLibrary(const std::string &filename, const bool bCore) {
-    if (mState != EModuleState::RUNNING)
+    if (State != EModuleState::RUNNING)
         return;
 
     if (bCore) {
@@ -418,7 +418,7 @@ void UServiceModule::UnloadLibrary(const std::string &filename, const bool bCore
             }
 
             auto func = [this, filename, sid](IContextBase *ptr) {
-                if (mState != EModuleState::RUNNING)
+                if (State != EModuleState::RUNNING)
                     return;
 
                 const bool bCanDelete = OnServiceShutdown(filename, sid, false);

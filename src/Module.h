@@ -21,15 +21,15 @@ class BASE_API IModuleBase {
     friend class UServer;
 
 protected:
-    explicit IModuleBase(UServer *server);
+    IModuleBase();
+
+    void SetUpServer(UServer *server);
 
     virtual void Initial();
-
     virtual void Start();
     virtual void Stop();
 
 public:
-    IModuleBase() = delete;
     virtual ~IModuleBase() = default;
 
     DISABLE_COPY_MOVE(IModuleBase)
@@ -37,16 +37,15 @@ public:
     virtual const char *GetModuleName() const = 0;
 
     [[nodiscard]] UServer *GetServer() const;
-
     [[nodiscard]] EModuleState GetState() const;
 
 private:
     /** The Owner Server Pointer */
-    UServer *mServer;
+    UServer *Server;
 
 protected:
     /** Module Current State */
-    std::atomic<EModuleState> mState;
+    std::atomic<EModuleState> State;
 };
 
 template<typename T>

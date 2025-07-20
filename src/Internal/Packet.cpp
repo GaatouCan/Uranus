@@ -29,8 +29,8 @@ void FPacket::Initial() {
     mHeader.target = -1;
 }
 
-bool FPacket::CopyFrom(IRecyclable *other) {
-    if (IRecyclable::CopyFrom(other)) {
+bool FPacket::CopyFrom(IRecycleInterface *other) {
+    if (IRecycleInterface::CopyFrom(other)) {
         if (const auto temp = dynamic_cast<FPacket *>(other); temp != nullptr) {
             memcpy(&mHeader, &temp->mHeader, sizeof(mHeader));
             mPayload = temp->mPayload;
@@ -41,8 +41,8 @@ bool FPacket::CopyFrom(IRecyclable *other) {
     return false;
 }
 
-bool FPacket::CopyFrom(const std::shared_ptr<IRecyclable> &other) {
-    if (IRecyclable::CopyFrom(other)) {
+bool FPacket::CopyFrom(const std::shared_ptr<IRecycleInterface> &other) {
+    if (IRecycleInterface::CopyFrom(other)) {
         if (const auto temp = std::dynamic_pointer_cast<FPacket>(other); temp != nullptr) {
             memcpy(&mHeader, &temp->mHeader, sizeof(mHeader));
             mPayload = temp->mPayload;
@@ -65,7 +65,7 @@ bool FPacket::IsAvailable() const {
     return mHeader.id >= MINIMUM_PACKAGE_ID && mHeader.id <= MAXIMUM_PACKAGE_ID;
 }
 
-void FPacket::SetID(const uint32_t id) {
+void FPacket::SetPackageID(const uint32_t id) {
     mHeader.id = id;
 }
 
