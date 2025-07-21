@@ -6,71 +6,71 @@
 
 
 FByteArray::FByteArray(const size_t size)
-    : Bytes(size) {
+    : bytes_(size) {
 }
 
 FByteArray::FByteArray(const std::vector<std::byte> &bytes)
-    : Bytes(bytes) {
+    : bytes_(bytes) {
 }
 
 FByteArray::operator std::vector<std::byte>() const {
-    return Bytes;
+    return bytes_;
 }
 
 void FByteArray::Reset() {
-    Bytes.clear();
-    Bytes.shrink_to_fit();
+    bytes_.clear();
+    bytes_.shrink_to_fit();
 }
 
 size_t FByteArray::Size() const {
-    return Bytes.size();
+    return bytes_.size();
 }
 
 void FByteArray::Resize(const size_t size) {
-    Bytes.resize(size);
+    bytes_.resize(size);
 }
 
 void FByteArray::Reserve(size_t capacity) {
-    Bytes.reserve(capacity);
+    bytes_.reserve(capacity);
 }
 
 std::byte *FByteArray::Data() {
-    return Bytes.data();
+    return bytes_.data();
 }
 
 const std::byte *FByteArray::Data() const {
-    return Bytes.data();
+    return bytes_.data();
 }
 
 std::vector<std::byte> &FByteArray::RawRef() {
-    return Bytes;
+    return bytes_;
 }
 
 void FByteArray::FromString(const std::string_view sv) {
-    Bytes.reserve(sv.size());
-    std::memcpy(Bytes.data(), sv.data(), sv.size());
+    bytes_.reserve(sv.size());
+    std::memcpy(bytes_.data(), sv.data(), sv.size());
 }
 
 std::string FByteArray::ToString() const {
-    return { reinterpret_cast<const char*>(Bytes.data()), Bytes.size() };
+    return { reinterpret_cast<const char*>(bytes_.data()), bytes_.size() };
 }
 
-auto FByteArray::Begin() -> decltype(Bytes)::iterator {
-    return Bytes.begin();
+auto FByteArray::Begin() -> decltype(bytes_)::iterator {
+    return bytes_.begin();
 }
 
-auto FByteArray::End() -> decltype(Bytes)::iterator {
-    return Bytes.end();
+auto FByteArray::End() -> decltype(bytes_)::iterator {
+    return bytes_.end();
 }
 
-auto FByteArray::Begin() const -> decltype(Bytes)::const_iterator {
-    return Bytes.begin();
+auto FByteArray::Begin() const -> decltype(bytes_)::const_iterator {
+    return bytes_.begin();
 }
 
-auto FByteArray::End() const -> decltype(Bytes)::const_iterator {
-    return Bytes.end();
+auto FByteArray::End() const -> decltype(bytes_)::const_iterator {
+    return bytes_.end();
 }
 
 std::byte FByteArray::operator[](const size_t pos) const noexcept {
-    return Bytes[pos];
+    return bytes_[pos];
 }
