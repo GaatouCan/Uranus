@@ -31,7 +31,7 @@ class BASE_API UMonitor final : public IModuleBase {
     typedef void (*APluginDestroyer)(IPluginBase *);
 
 protected:
-    explicit UMonitor(UServer *server);
+    UMonitor();
 
     void Initial() override;
     void Start() override;

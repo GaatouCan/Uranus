@@ -19,11 +19,11 @@ public:
 
     template<class ... Args>
     void OnReceivePackage(const std::shared_ptr<Package> &pkg, Args ... args) const {
-        const auto iter = mProtocolMap.find(pkg->GetID());
+        const auto iter = mProtocolMap.find(pkg->GetPackageID());
         if (iter == mProtocolMap.end())
             return;
 
-        std::invoke(iter->second, pkg->GetID(), pkg, std::forward<Args>(args)...);
+        std::invoke(iter->second, pkg->GetPackageID(), pkg, std::forward<Args>(args)...);
     }
 
 protected:

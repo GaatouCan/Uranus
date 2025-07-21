@@ -15,16 +15,16 @@
 class BASE_API IRecyclerBase : public std::enable_shared_from_this<IRecyclerBase> {
 
     /** asio::io_context Reference For Shrink Timer */
-    io_context &IOContext;
+    io_context &ctx_;
 
     /** Internal Container */
-    std::queue<unique_ptr<IRecycleInterface>> InnerQueue;
-    mutable std::shared_mutex Mutex;
+    std::queue<unique_ptr<IRecycleInterface>> queue_;
+    mutable std::shared_mutex mutex_;
 
-    std::atomic_int64_t Usage;
+    std::atomic_int64_t usage_;
 
     /** Shrink Timer */
-    shared_ptr<ASteadyTimer> ShrinkTimer;
+    shared_ptr<ASteadyTimer> timer_;
 
     /** Expand Flag */
     std::atomic_bool bExpanding;

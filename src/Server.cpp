@@ -10,14 +10,14 @@
 
 
 UServer::UServer()
-    : ExecutorWorkGuard(asio::make_work_guard(IOContext)),
+    : guard_(asio::make_work_guard(context_)),
       bInitialized(false),
       bRunning(false),
       bShutdown(false) {
 }
 
 UServer::~UServer() {
-    for (auto &th: WorkerList) {
+    for (auto &th: workerList_) {
         if (th.joinable()) {
             th.join();
         }
@@ -29,39 +29,39 @@ UServer::~UServer() {
 }
 
 asio::io_context &UServer::GetIOContext() {
-    return IOContext;
+    return context_;
 }
 
 IModuleBase *UServer::GetModule(const std::string &name) const {
-    const auto iter = NameToType.find(name);
-    if (iter == NameToType.end()) {
+    const auto iter = nameToType_.find(name);
+    if (iter == nameToType_.end()) {
         return nullptr;
     }
 
-    const auto module_iter = ModuleMap.find(iter->second);
-    return module_iter != ModuleMap.end() ? module_iter->second.get() : nullptr;
+    const auto module_iter = moduleMap_.find(iter->second);
+    return module_iter != moduleMap_.end() ? module_iter->second.get() : nullptr;
 }
 
 IServerHandler *UServer::GetServerHandler() const {
-    return Handler.get();
+    return handler_.get();
 }
 
 std::shared_ptr<IRecyclerBase> UServer::CreatePackagePool(io_context &ctx) const {
-    if (Handler != nullptr && !Handler->IsUseCustomPackage()) {
-        return Handler->CreatePackagePool(ctx);
+    if (handler_ != nullptr && !handler_->IsUseCustomPackage()) {
+        return handler_->CreatePackagePool(ctx);
     }
 
     return std::make_shared<TRecycler<FPacket>>(ctx);
 }
 
 void UServer::InitLoginAuth(ULoginAuth *auth) const {
-    if (Handler != nullptr)
-        Handler->InitLoginAuth(auth);
+    if (handler_ != nullptr)
+        handler_->InitLoginAuth(auth);
 }
 
 void UServer::InitConnection(const std::shared_ptr<UConnection> &conn) const {
-    if (Handler != nullptr && !Handler->IsUseCustomPackage()) {
-        Handler->InitConnection(conn);
+    if (handler_ != nullptr && !handler_->IsUseCustomPackage()) {
+        handler_->InitConnection(conn);
         return;
     }
 
@@ -105,8 +105,8 @@ void UServer::Initial() {
     }
 
     SPDLOG_INFO("Initializing Modules...");
-    for (const auto &type : ModuleOrdered) {
-        if (auto *module = ModuleMap[type].get()) {
+    for (const auto &type : moduleOrdered_) {
+        if (auto *module = moduleMap_[type].get()) {
             module->Initial();
             SPDLOG_INFO("{} Initialized.", module->GetModuleName());
         }
@@ -122,11 +122,11 @@ void UServer::Initial() {
 
     const int count = config->GetServerConfig()["server"]["worker"].as<int>();
     for (int idx = 1; idx < count; ++idx) {
-        WorkerList.emplace_back([this, idx] {
+        workerList_.emplace_back([this, idx] {
             const int64_t tid = utils::ThreadIDToInt(std::this_thread::get_id());
 
             SPDLOG_INFO("Worker[{}] Is Running In Thread: {}", idx, tid);
-            IOContext.run();
+            context_.run();
         });
     }
     SPDLOG_INFO("Server Run With {} Worker(s)", count);
@@ -139,14 +139,14 @@ void UServer::Run() {
     if (bRunning)
         return;
 
-    for (const auto &type : ModuleOrdered) {
-        if (auto *module = ModuleMap[type].get()) {
+    for (const auto &type : moduleOrdered_) {
+        if (auto *module = moduleMap_[type].get()) {
             module->Start();
             SPDLOG_INFO("{} Started.", module->GetModuleName());
         }
     }
 
-    asio::signal_set signals(IOContext, SIGINT, SIGTERM);
+    asio::signal_set signals(context_, SIGINT, SIGTERM);
     signals.async_wait([this](auto, auto) {
         Shutdown();
     });
@@ -154,7 +154,7 @@ void UServer::Run() {
     bRunning = true;
     SPDLOG_INFO("Server Is Running...");
 
-    IOContext.run();
+    context_.run();
 }
 
 void UServer::Shutdown() {
@@ -164,15 +164,15 @@ void UServer::Shutdown() {
     bShutdown = true;
     SPDLOG_INFO("Shutting Down...");
 
-    for (auto iter = ModuleOrdered.rbegin(); iter != ModuleOrdered.rend(); ++iter) {
-        if (auto *module = ModuleMap[*iter].get()) {
+    for (auto iter = moduleOrdered_.rbegin(); iter != moduleOrdered_.rend(); ++iter) {
+        if (auto *module = moduleMap_[*iter].get()) {
             module->Stop();
             SPDLOG_INFO("{} Stopped.", module->GetModuleName());
         }
     }
 
-    ExecutorWorkGuard.reset();
-    IOContext.stop();
+    guard_.reset();
+    context_.stop();
 
     SPDLOG_INFO("Server Shutdown Completed!");
 }

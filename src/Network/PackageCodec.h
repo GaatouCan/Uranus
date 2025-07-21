@@ -20,7 +20,7 @@ public:
     [[nodiscard]] ATcpSocket &GetSocket() const;
 
 private:
-    ATcpSocket &mSocket;
+    ATcpSocket &socket_;
 };
 
 template<CPackageType Type>

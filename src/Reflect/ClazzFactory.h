@@ -15,7 +15,7 @@ class BASE_API UClazzFactory final : public IModuleBase {
 
 
 protected:
-    explicit UClazzFactory(UServer *server);
+    UClazzFactory();
 
     void Initial() override;
 

@@ -11,18 +11,18 @@ class BASE_API UConnection final : public std::enable_shared_from_this<UConnecti
 
     using APackageChannel = TConcurrentChannel<void(std::error_code, shared_ptr<IPackageInterface>)>;
 
-    UNetwork *mModule;
-    ATcpSocket mSocket;
+    UNetwork *module_;
+    ATcpSocket socket_;
 
-    unique_ptr<IPackageCodecBase> mCodec;
-    APackageChannel mChannel;
+    unique_ptr<IPackageCodecBase> codec_;
+    APackageChannel channel_;
 
-    ASteadyTimer mWatchdog;
-    ASteadyTimePoint mReceiveTime;
-    ASteadyDuration mExpiration;
+    ASteadyTimer watchdog_;
+    ASteadyTimePoint receiveTime_;
+    ASteadyDuration expiration_;
 
-    int64_t mID;
-    std::atomic_int64_t mPlayerID;
+    int64_t id_;
+    std::atomic_int64_t playerId_;
 
 public:
     UConnection() = delete;
@@ -65,5 +65,5 @@ private:
 template<class Type, class ... Args>
 requires std::derived_from<Type, IPackageCodecBase>
 inline void UConnection::SetPackageCodec(Args && ... args) {
-    mCodec = make_unique<Type>(mSocket, std::forward<Args>(args)...);
+    codec_ = make_unique<Type>(socket_, std::forward<Args>(args)...);
 }

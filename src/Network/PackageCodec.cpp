@@ -2,9 +2,9 @@
 
 
 IPackageCodecBase::IPackageCodecBase(ATcpSocket &socket)
-    : mSocket(socket) {
+    : socket_(socket) {
 }
 
 ATcpSocket &IPackageCodecBase::GetSocket() const {
-    return mSocket;
+    return socket_;
 }

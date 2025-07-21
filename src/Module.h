@@ -41,11 +41,11 @@ public:
 
 private:
     /** The Owner Server Pointer */
-    UServer *Server;
+    UServer *server_;
 
 protected:
     /** Module Current State */
-    std::atomic<EModuleState> State;
+    std::atomic<EModuleState> state_;
 };
 
 template<typename T>

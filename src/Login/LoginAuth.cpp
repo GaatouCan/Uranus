@@ -8,8 +8,7 @@
 #include <spdlog/spdlog.h>
 
 
-ULoginAuth::ULoginAuth(UServer *server)
-    : IModuleBase(server) {
+ULoginAuth::ULoginAuth() {
 }
 
 ULoginAuth::~ULoginAuth() {
@@ -17,26 +16,26 @@ ULoginAuth::~ULoginAuth() {
 }
 
 void ULoginAuth::Initial() {
-    if (State != EModuleState::CREATED)
+    if (state_ != EModuleState::CREATED)
         return;
 
     GetServer()->GetServerHandler()->InitLoginAuth(this);
 
-    State = EModuleState::INITIALIZED;
+    state_ = EModuleState::INITIALIZED;
 }
 
 void ULoginAuth::Start() {
-    if (State != EModuleState::INITIALIZED)
+    if (state_ != EModuleState::INITIALIZED)
         return;
 
-    State = EModuleState::RUNNING;
+    state_ = EModuleState::RUNNING;
 }
 
 void ULoginAuth::Stop() {
-    if (State == EModuleState::STOPPED)
+    if (state_ == EModuleState::STOPPED)
         return;
 
-    State = EModuleState::STOPPED;
+    state_ = EModuleState::STOPPED;
 }
 
 bool ULoginAuth::VerifyAddress(const asio::ip::tcp::endpoint &endpoint) {
@@ -45,7 +44,7 @@ bool ULoginAuth::VerifyAddress(const asio::ip::tcp::endpoint &endpoint) {
 }
 
 void ULoginAuth::OnPlayerLogin(const int64_t cid, const std::shared_ptr<IPackageInterface> &pkg) {
-    if (State != EModuleState::RUNNING)
+    if (state_ != EModuleState::RUNNING)
         return; {
         std::unique_lock lock(mMutex);
         if (const auto iter = mLoginMap.find(cid); iter != mLoginMap.end()) {

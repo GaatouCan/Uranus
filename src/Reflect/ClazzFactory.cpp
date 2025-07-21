@@ -1,15 +1,14 @@
 #include "ClazzFactory.h"
 #include "Clazz.h"
 
-UClazzFactory::UClazzFactory(UServer *server)
-    : IModuleBase(server) {
+UClazzFactory::UClazzFactory() {
 }
 
 void UClazzFactory::Initial() {
-    if (State != EModuleState::CREATED)
+    if (state_ != EModuleState::CREATED)
         return;
 
-    State = EModuleState::INITIALIZED;
+    state_ = EModuleState::INITIALIZED;
 }
 
 UClazzFactory::~UClazzFactory() {
@@ -27,7 +26,7 @@ void UClazzFactory::RemoveClazz(const std::string &name) {
 }
 
 void UClazzFactory::RegisterClazz(UClazz *clazz) {
-    if (State >= EModuleState::RUNNING)
+    if (state_ >= EModuleState::RUNNING)
         return;
 
     if (clazz == nullptr)

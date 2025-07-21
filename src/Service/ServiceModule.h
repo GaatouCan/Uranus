@@ -30,7 +30,7 @@ class BASE_API UServiceModule final : public IModuleBase {
     };
 
 protected:
-    explicit UServiceModule(UServer *server);
+    UServiceModule();
 
     void Initial() override;
     void Start() override;

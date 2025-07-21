@@ -21,7 +21,7 @@ ILoginHandler::FLoginToken ULoginHandler::ParseLoginRequest(const std::shared_pt
     if (pkt == nullptr)
         return {};
 
-    if (pkt->GetID() != 1002)
+    if (pkt->GetPackageID() != 1002)
         return {};
 
     Login::LoginRequest request;

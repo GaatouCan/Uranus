@@ -7,12 +7,11 @@
 #include <spdlog/spdlog.h>
 
 
-UEventModule::UEventModule(UServer *server)
-    : IModuleBase(server) {
+UEventModule::UEventModule() {
 }
 
 void UEventModule::Dispatch(const std::shared_ptr<IEventParam> &event) const {
-    if (State != EModuleState::RUNNING)
+    if (state_ != EModuleState::RUNNING)
         return;
 
     absl::flat_hash_set<int32_t> serviceSet;
@@ -50,7 +49,7 @@ void UEventModule::Dispatch(const std::shared_ptr<IEventParam> &event) const {
 }
 
 void UEventModule::ListenEvent(const int event, const int32_t sid, const int64_t pid) {
-    if (State != EModuleState::RUNNING)
+    if (state_ != EModuleState::RUNNING)
         return;
 
     std::unique_lock lock(mMutex);
@@ -62,7 +61,7 @@ void UEventModule::ListenEvent(const int event, const int32_t sid, const int64_t
 }
 
 void UEventModule::RemoveListener(const int event, const int32_t sid, const int64_t pid) {
-    if (State != EModuleState::RUNNING)
+    if (state_ != EModuleState::RUNNING)
         return;
 
     std::unique_lock lock(mMutex);

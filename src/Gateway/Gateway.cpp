@@ -9,9 +9,8 @@
 #include <spdlog/spdlog.h>
 
 
-UGateway::UGateway(UServer *server)
-    : IModuleBase(server),
-      mLibrary(nullptr) {
+UGateway::UGateway()
+    : mLibrary(nullptr) {
 }
 
 UGateway::~UGateway() {
@@ -19,7 +18,7 @@ UGateway::~UGateway() {
 }
 
 void UGateway::OnPlayerLogin(const int64_t pid, const int64_t cid) {
-    if (State != EModuleState::RUNNING)
+    if (state_ != EModuleState::RUNNING)
         return;
 
     const auto agent = std::make_shared<UAgentContext>();
@@ -43,7 +42,7 @@ void UGateway::OnPlayerLogin(const int64_t pid, const int64_t cid) {
 }
 
 void UGateway::OnPlayerLogout(const int64_t pid) {
-    if (State != EModuleState::RUNNING)
+    if (state_ != EModuleState::RUNNING)
         return;
 
     std::shared_ptr<UAgentContext> agent;
@@ -69,7 +68,7 @@ void UGateway::OnPlayerLogout(const int64_t pid) {
 }
 
 int64_t UGateway::GetConnectionID(const int64_t pid) const {
-    if (State != EModuleState::RUNNING)
+    if (state_ != EModuleState::RUNNING)
         return -1;
 
     std::shared_lock lock(mMutex);
@@ -86,7 +85,7 @@ int64_t UGateway::GetConnectionID(const int64_t pid) const {
 }
 
 std::shared_ptr<UAgentContext> UGateway::FindPlayerAgent(const int64_t pid) const {
-    if (State != EModuleState::RUNNING)
+    if (state_ != EModuleState::RUNNING)
         return nullptr;
 
     std::shared_lock lock(mMutex);
@@ -95,7 +94,7 @@ std::shared_ptr<UAgentContext> UGateway::FindPlayerAgent(const int64_t pid) cons
 }
 
 void UGateway::Initial() {
-    if (State != EModuleState::CREATED)
+    if (state_ != EModuleState::CREATED)
         return;
 
     std::string agent = PLAYER_AGENT_DIRECTORY;
@@ -114,14 +113,14 @@ void UGateway::Initial() {
     }
 
     SPDLOG_INFO("Loaded Player Agent From {}", agent);
-    State = EModuleState::INITIALIZED;
+    state_ = EModuleState::INITIALIZED;
 }
 
 void UGateway::Stop() {
-    if (State == EModuleState::STOPPED)
+    if (state_ == EModuleState::STOPPED)
         return;
 
-    State = EModuleState::STOPPED;
+    state_ = EModuleState::STOPPED;
 
     for (const auto &agent : mPlayerMap | std::views::values) {
         agent->Shutdown(false, 0, nullptr);
@@ -131,7 +130,7 @@ void UGateway::Stop() {
 }
 
 void UGateway::SendToPlayer(const int64_t pid, const std::shared_ptr<IPackageInterface> &pkg) const {
-    if (State != EModuleState::RUNNING)
+    if (state_ != EModuleState::RUNNING)
         return;
 
     if (pkg == nullptr)
@@ -142,7 +141,7 @@ void UGateway::SendToPlayer(const int64_t pid, const std::shared_ptr<IPackageInt
 }
 
 void UGateway::PostToPlayer(const int64_t pid, const std::function<void(IServiceBase *)> &task) const {
-    if (State != EModuleState::RUNNING)
+    if (state_ != EModuleState::RUNNING)
         return;
 
     if (task == nullptr)
@@ -153,7 +152,7 @@ void UGateway::PostToPlayer(const int64_t pid, const std::function<void(IService
 }
 
 void UGateway::OnClientPackage(const int64_t pid, const std::shared_ptr<IPackageInterface> &pkg) const {
-    if (State != EModuleState::RUNNING)
+    if (state_ != EModuleState::RUNNING)
         return;
 
     if (pkg == nullptr)
@@ -173,7 +172,7 @@ void UGateway::OnClientPackage(const int64_t pid, const std::shared_ptr<IPackage
 }
 
 void UGateway::SendToClient(const int64_t pid, const std::shared_ptr<IPackageInterface> &pkg) const {
-    if (State != EModuleState::RUNNING)
+    if (state_ != EModuleState::RUNNING)
         return;
 
     if (pkg == nullptr || pid < 0)
@@ -188,7 +187,7 @@ void UGateway::SendToClient(const int64_t pid, const std::shared_ptr<IPackageInt
 }
 
 void UGateway::OnHeartBeat(const int64_t pid, const std::shared_ptr<IPackageInterface> &pkg) const {
-    if (State != EModuleState::RUNNING)
+    if (state_ != EModuleState::RUNNING)
         return;
 
     if (pkg == nullptr)

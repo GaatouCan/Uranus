@@ -377,8 +377,8 @@ std::shared_ptr<IPackageInterface> IContextBase::BuildPackage() const {
     if (mState != EContextState::IDLE || mState != EContextState::RUNNING)
         return nullptr;
 
-    if (const auto pkg = mPool->Acquire())
-        return std::dynamic_pointer_cast<IPackageInterface>(pkg);
+    if (const auto elem = mPool->Acquire())
+        return std::dynamic_pointer_cast<IPackageInterface>(elem);
 
     return nullptr;
 }

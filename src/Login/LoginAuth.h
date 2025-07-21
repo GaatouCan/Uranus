@@ -16,7 +16,7 @@ class BASE_API ULoginAuth final : public IModuleBase {
     DECLARE_MODULE(ULoginAuth)
 
 protected:
-    explicit ULoginAuth(UServer *server);
+    ULoginAuth();
 
     void Initial() override;
     void Start() override;
@@ -49,7 +49,7 @@ private:
 template<class Type, class ... Args>
 requires std::derived_from<Type, ILoginHandler>
 inline void ULoginAuth::SetLoginHandler(Args &&...args) {
-    if (State != EModuleState::CREATED)
+    if (state_ != EModuleState::CREATED)
         return;
 
     mHandler = std::unique_ptr<ILoginHandler>(new Type(this, std::forward<Args>(args)...));

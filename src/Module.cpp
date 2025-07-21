@@ -1,30 +1,30 @@
 #include "Module.h"
 
 IModuleBase::IModuleBase()
-    : Server(nullptr),
-      State(EModuleState::CREATED) {
+    : server_(nullptr),
+      state_(EModuleState::CREATED) {
 }
 
 void IModuleBase::SetUpServer(UServer *server) {
-    Server = server;
+    server_ = server;
 }
 
 void IModuleBase::Initial() {
-    State = EModuleState::INITIALIZED;
+    state_ = EModuleState::INITIALIZED;
 }
 
 void IModuleBase::Start() {
-    State = EModuleState::RUNNING;
+    state_ = EModuleState::RUNNING;
 }
 
 void IModuleBase::Stop() {
-    State = EModuleState::STOPPED;
+    state_ = EModuleState::STOPPED;
 }
 
 UServer *IModuleBase::GetServer() const {
-    return Server;
+    return server_;
 }
 
 EModuleState IModuleBase::GetState() const {
-    return State;
+    return state_;
 }

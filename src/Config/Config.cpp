@@ -5,8 +5,8 @@
 #include <spdlog/spdlog.h>
 
 
-UConfig::UConfig(UServer *server)
-    : IModuleBase(server) {
+UConfig::UConfig() {
+
 }
 
 UConfig::~UConfig() {
@@ -26,14 +26,14 @@ const YAML::Node &UConfig::GetServerConfig() const {
 }
 
 int UConfig::GetServerID() const {
-    if (State >= EModuleState::INITIALIZED)
+    if (state_ >= EModuleState::INITIALIZED)
         return mConfig["server"]["id"].as<int>();
 
     return -1;
 }
 
 void UConfig::Initial() {
-    if (State != EModuleState::CREATED)
+    if (state_ != EModuleState::CREATED)
         return;
 
     SPDLOG_INFO("Using Server Configuration File: {}.", mYAMLPath + SERVER_CONFIG_FILE);
@@ -81,7 +81,7 @@ void UConfig::Initial() {
     });
 
     SPDLOG_INFO("JSON Files Loaded Successfully.");
-    State = EModuleState::INITIALIZED;
+    state_ = EModuleState::INITIALIZED;
 }
 
 std::optional<nlohmann::json> UConfig::Find(const std::string &path) const {

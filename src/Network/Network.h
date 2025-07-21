@@ -56,15 +56,15 @@ private:
     awaitable<void> WaitForClient(uint16_t port);
 
 private:
-    io_context mIOContext;
-    ATcpAcceptor mAcceptor;
+    io_context ctx_;
+    ATcpAcceptor acceptor_;
 
     /** Independent Thread To Run IO Context */
-    std::thread mThread;
+    std::thread thread_;
 
     /** Package Pool For I/O Data */
-    shared_ptr<IRecyclerBase> mPool;
+    shared_ptr<IRecyclerBase> pool_;
 
-    flat_hash_map<int64_t, shared_ptr<UConnection>> mConnectionMap;
-    mutable std::shared_mutex mMutex;
+    flat_hash_map<int64_t, shared_ptr<UConnection>> connectionMap_;
+    mutable std::shared_mutex mutex_;
 };

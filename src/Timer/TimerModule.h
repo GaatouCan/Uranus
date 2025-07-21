@@ -38,7 +38,7 @@ class BASE_API UTimerModule final : public IModuleBase {
     };
 
 protected:
-    explicit UTimerModule(UServer *server);
+    UTimerModule();
 
     void Stop() override;
 

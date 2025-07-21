@@ -88,7 +88,7 @@ uint32_t FPacket::GetMagic() const {
     return mHeader.magic;
 }
 
-uint32_t FPacket::GetID() const {
+uint32_t FPacket::GetPackageID() const {
     return mHeader.id;
 }
 

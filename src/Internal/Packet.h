@@ -50,7 +50,7 @@ public:
     [[nodiscard]] bool IsAvailable() const override;
 
     void SetPackageID(uint32_t id) override;
-    [[nodiscard]] uint32_t GetID() const override;
+    [[nodiscard]] uint32_t GetPackageID() const override;
 
     bool CopyFrom(IRecycleInterface *other) override;
     bool CopyFrom(const std::shared_ptr<IRecycleInterface> &other) override;

@@ -18,7 +18,7 @@ class BASE_API UEventModule final : public IModuleBase {
     DECLARE_MODULE(UEventModule)
 
 protected:
-    explicit UEventModule(UServer *server);
+    UEventModule();
 
 public:
     ~UEventModule() override = default;
@@ -46,7 +46,7 @@ private:
 
 template<CEventType Type>
 inline std::shared_ptr<Type> UEventModule::CreateEventParam() const {
-    if (State != EModuleState::RUNNING)
+    if (state_ != EModuleState::RUNNING)
         return nullptr;
 
     auto result = std::make_shared<Type>();
@@ -55,7 +55,7 @@ inline std::shared_ptr<Type> UEventModule::CreateEventParam() const {
 
 template<CEventType Type, class ... Args>
 inline void UEventModule::DispatchT(Args &&...args) {
-    if (State != EModuleState::RUNNING)
+    if (state_ != EModuleState::RUNNING)
         return;
 
     auto res = std::make_shared<Type>(std::forward<Args>(args)...);

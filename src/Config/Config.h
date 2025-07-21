@@ -16,7 +16,7 @@ class BASE_API UConfig final : public IModuleBase {
     DECLARE_MODULE(UConfig)
 
 protected:
-    explicit UConfig(UServer *server);
+    UConfig();
 
     void Initial() override;
 

@@ -21,7 +21,7 @@ class BASE_API UGateway final : public IModuleBase {
     DECLARE_MODULE(UGateway)
 
 protected:
-    explicit UGateway(UServer *server);
+    UGateway();
 
     void Initial() override;
     void Stop() override;

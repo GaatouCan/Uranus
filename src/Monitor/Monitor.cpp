@@ -7,14 +7,11 @@
 #include <spdlog/spdlog.h>
 
 
-UMonitor::UMonitor(UServer *server)
-    : Super(server),
-      mGuard(asio::make_work_guard(mIOContext)),
-
+UMonitor::UMonitor()
+    : mGuard(asio::make_work_guard(mIOContext)),
 #ifdef URANUS_WATCHDOG
       mLoopTimer(mIOContext),
 #endif
-
       bHandling(false) {
 }
 
@@ -27,7 +24,7 @@ UMonitor::~UMonitor() {
 }
 
 void UMonitor::Initial() {
-    if (State != EModuleState::CREATED)
+    if (state_ != EModuleState::CREATED)
         return;
 
     mThread = std::thread([this] {
@@ -40,25 +37,25 @@ void UMonitor::Initial() {
         mIOContext.run();
     });
 
-    State = EModuleState::INITIALIZED;
+    state_ = EModuleState::INITIALIZED;
 }
 
 void UMonitor::Start() {
-    if (State != EModuleState::INITIALIZED)
+    if (state_ != EModuleState::INITIALIZED)
         return;
 
 #ifdef URANUS_WATCHDOG
     co_spawn(mIOContext, WatchdogLooping(), detached);
 #endif
 
-    State = EModuleState::RUNNING;
+    state_ = EModuleState::RUNNING;
 }
 
 void UMonitor::Stop() {
-    if (State == EModuleState::STOPPED)
+    if (state_ == EModuleState::STOPPED)
         return;
 
-    State = EModuleState::STOPPED;
+    state_ = EModuleState::STOPPED;
 
     mGuard.reset();
 
@@ -83,7 +80,7 @@ void UMonitor::OnCommand(const std::string &sender, const std::string &type, con
     const auto bEmpty = mCommandQueue.IsEmpty();
     mCommandQueue.PushBack(node);
 
-    if (bEmpty && !bHandling && State == EModuleState::RUNNING) {
+    if (bEmpty && !bHandling && state_ == EModuleState::RUNNING) {
         bHandling = true;
         co_spawn(mIOContext, ScheduleCommand(), detached);
     }
@@ -91,7 +88,7 @@ void UMonitor::OnCommand(const std::string &sender, const std::string &type, con
 
 #ifdef URANUS_WATCHDOG
 void UMonitor::RegisterWatchdog(const std::weak_ptr<FWatchdog> &watchdog) {
-    if (State != EModuleState::INITIALIZED || State != EModuleState::RUNNING)
+    if (state_ != EModuleState::INITIALIZED || state_ != EModuleState::RUNNING)
         return;
 
     if (watchdog.expired())
@@ -160,7 +157,7 @@ awaitable<void> UMonitor::WatchdogLooping() {
     };
 
     try {
-        while (State == EModuleState::RUNNING) {
+        while (state_ == EModuleState::RUNNING) {
             mLoopTimer.expires_after(std::chrono::seconds(LOOPING_RATE));
             if (const auto [ec] = co_await mLoopTimer.async_wait(); ec) {
                 SPDLOG_DEBUG("{:<20} - Timer Cancel, Looping Exit.", __FUNCTION__);
@@ -197,22 +194,22 @@ awaitable<void> UMonitor::WatchdogLooping() {
 #endif
 
 awaitable<void> UMonitor::ScheduleCommand() {
-    if (State != EModuleState::RUNNING)
+    if (state_ != EModuleState::RUNNING)
         co_return;
 
     std::queue<FCommandNode> queue;
     mCommandQueue.SwapTo(queue);
 
-    while (!queue.empty() && State == EModuleState::RUNNING) {
+    while (!queue.empty() && state_ == EModuleState::RUNNING) {
         auto node = queue.front();
         queue.pop();
 
-        if (State == EModuleState::RUNNING) {
+        if (state_ == EModuleState::RUNNING) {
             HandleCommand(node);
         }
     }
 
-    if (!mCommandQueue.IsEmpty() && State == EModuleState::RUNNING) {
+    if (!mCommandQueue.IsEmpty() && state_ == EModuleState::RUNNING) {
         co_spawn(mIOContext, ScheduleCommand(), detached);
     } else {
         bHandling = false;
