@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Module.h"
-#include "EventParam.h"
+#include "EventInterface.h"
 
 #include <absl/container/flat_hash_map.h>
 #include <absl/container/flat_hash_set.h>
@@ -30,7 +30,7 @@ public:
     template<CEventType Type>
     std::shared_ptr<Type> CreateEventParam() const;
 
-    void Dispatch(const std::shared_ptr<IEventParam> &event) const;
+    void Dispatch(const std::shared_ptr<IEventInterface> &event) const;
 
     template<CEventType Type, class... Args>
     void DispatchT(Args && ... args);
@@ -39,8 +39,8 @@ public:
     void RemoveListener(int event, int32_t sid, int64_t pid = -1);
 
 private:
-    flat_hash_map<int, flat_hash_set<int32_t>> mServiceSet;
-    flat_hash_map<int, flat_hash_set<int64_t>> mPlayerSet;
+    flat_hash_map<int, flat_hash_set<int32_t>> serviceSet_;
+    flat_hash_map<int, flat_hash_set<int64_t>> playerSet_;
     mutable std::shared_mutex mMutex;
 };
 

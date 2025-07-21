@@ -65,19 +65,19 @@ private:
     void RemoveSystemTimer(int64_t id);
 
 private:
-    std::queue<int64_t> mRecycledID;
-    int64_t mNextID;
-    mutable std::shared_mutex mIDMutex;
+    std::queue<int64_t> recycledId_;
+    int64_t nextId_;
+    mutable std::shared_mutex idMutex_;
 
-    absl::flat_hash_map<int64_t, FSteadyTimerNode> mSteadyTimerMap;
-    absl::flat_hash_map<int64_t, FSystemTimerNode> mSystemTimerMap;
+    absl::flat_hash_map<int64_t, FSteadyTimerNode> steadyTimerMap_;
+    absl::flat_hash_map<int64_t, FSystemTimerNode> systemTimerMap_;
 
-    AServiceToTimerMap mServiceToSteadyTimer;
-    AServiceToTimerMap mServiceToSystemTimer;
+    AServiceToTimerMap serviceToSteadyTimer_;
+    AServiceToTimerMap serviceToSystemTimer_;
 
-    APlayerToTimerMap mPlayerToSteadyTimer;
-    APlayerToTimerMap mPlayerToSystemTimer;
+    APlayerToTimerMap playerToSteadyTimer_;
+    APlayerToTimerMap playerToSystemTimer_;
 
-    mutable std::shared_mutex mTimerMutex;
+    mutable std::shared_mutex timerMutex_;
 };
 

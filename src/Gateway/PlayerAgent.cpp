@@ -37,7 +37,7 @@ int64_t UAgentContext::GetConnectionID() const {
 }
 
 void UAgentContext::OnHeartBeat(const std::shared_ptr<IPackageInterface> &pkg) const {
-    if (mState != EContextState::IDLE && mState != EContextState::RUNNING)
+    if (state_ != EContextState::IDLE && state_ != EContextState::RUNNING)
         return;
 
     if (pkg == nullptr)

@@ -8,7 +8,7 @@
 
 class IServiceBase;
 class IModuleBase;
-class IEventParam;
+class IEventInterface;
 class UServer;
 class IPackageInterface;
 class FLibraryHandle;
@@ -36,7 +36,7 @@ class BASE_API IContextBase : public std::enable_shared_from_this<IContextBase> 
     class BASE_API INodeBase {
 
     protected:
-        IServiceBase *const mService;
+        IServiceBase *const service_;
 
     public:
         INodeBase() = delete;
@@ -57,7 +57,7 @@ class BASE_API IContextBase : public std::enable_shared_from_this<IContextBase> 
      */
     class BASE_API UPackageNode final : public INodeBase {
 
-        shared_ptr<IPackageInterface> mPackage;
+        shared_ptr<IPackageInterface> package_;
 
     public:
         explicit UPackageNode(IServiceBase *service);
@@ -73,7 +73,7 @@ class BASE_API IContextBase : public std::enable_shared_from_this<IContextBase> 
      */
     class BASE_API UTaskNode final : public INodeBase {
 
-        std::function<void(IServiceBase *)> mTask;
+        std::function<void(IServiceBase *)> task_;
 
     public:
         explicit UTaskNode(IServiceBase *service);
@@ -89,42 +89,42 @@ class BASE_API IContextBase : public std::enable_shared_from_this<IContextBase> 
      */
     class BASE_API UEventNode final : public INodeBase {
 
-        shared_ptr<IEventParam> mEvent;
+        shared_ptr<IEventInterface> event_;
 
     public:
         explicit UEventNode(IServiceBase *service);
         ~UEventNode() override = default;
 
-        void SetEventParam(const shared_ptr<IEventParam> &event);
+        void SetEventParam(const shared_ptr<IEventInterface> &event);
         void Execute() override;
     };
 
     using AContextChannel = DefaultToken::as_default_on_t<asio::experimental::concurrent_channel<void(std::error_code, shared_ptr<INodeBase>)>>;
 
     /** The Owner Module */
-    IModuleBase *mModule;
+    IModuleBase *module_;
 
     /** The Owned Service */
-    IServiceBase *mService;
+    IServiceBase *service_;
 
     /** Loaded Library With Creator And Destroyer Of Service */
-    FLibraryHandle *mHandle;
+    FLibraryHandle *handle_;
 
     /** Internal Package Pool */
-    shared_ptr<IRecyclerBase> mPool;
+    shared_ptr<IRecyclerBase> pool_;
 
     /** Internal Node Channel */
-    unique_ptr<AContextChannel> mChannel;
+    unique_ptr<AContextChannel> channel_;
 
     /** When Timeout, Force Shut Down This Context */
-    unique_ptr<ASteadyTimer> mTimer;
+    unique_ptr<ASteadyTimer> shutdownTimer_;
 
     /** Invoked While This Context Stopped */
-    std::function<void(IContextBase *)> mCallback;
+    std::function<void(IContextBase *)> shutdownCallback_;
 
 protected:
     /** Current Context State */
-    std::atomic<EContextState> mState;
+    std::atomic<EContextState> state_;
 
 public:
     IContextBase();
@@ -157,7 +157,7 @@ public:
 
     void PushPackage(const shared_ptr<IPackageInterface> &pkg);
     void PushTask(const std::function<void(IServiceBase *)> &task);
-    void PushEvent(const shared_ptr<IEventParam> &event);
+    void PushEvent(const shared_ptr<IEventInterface> &event);
 
     void SendCommand(const std::string &type, const std::string &args, const std::string &comment = "") const;
 

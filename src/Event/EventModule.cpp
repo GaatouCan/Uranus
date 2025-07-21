@@ -10,7 +10,7 @@
 UEventModule::UEventModule() {
 }
 
-void UEventModule::Dispatch(const std::shared_ptr<IEventParam> &event) const {
+void UEventModule::Dispatch(const std::shared_ptr<IEventInterface> &event) const {
     if (state_ != EModuleState::RUNNING)
         return;
 
@@ -19,10 +19,10 @@ void UEventModule::Dispatch(const std::shared_ptr<IEventParam> &event) const {
 
     {
         std::shared_lock lock(mMutex);
-        if (const auto iter = mServiceSet.find(event->GetEventType()); iter != mServiceSet.end()) {
+        if (const auto iter = serviceSet_.find(event->GetEventType()); iter != serviceSet_.end()) {
             serviceSet = iter->second;
         }
-        if (const auto iter = mPlayerSet.find(event->GetEventType()); iter != mPlayerSet.end()) {
+        if (const auto iter = playerSet_.find(event->GetEventType()); iter != playerSet_.end()) {
             playerSet = iter->second;
         }
     }
@@ -54,9 +54,9 @@ void UEventModule::ListenEvent(const int event, const int32_t sid, const int64_t
 
     std::unique_lock lock(mMutex);
     if (sid > 0) {
-        mServiceSet[event].insert(sid);
+        serviceSet_[event].insert(sid);
     } else if (pid > 0) {
-        mPlayerSet[event].insert(pid);
+        playerSet_[event].insert(pid);
     }
 }
 
@@ -66,11 +66,11 @@ void UEventModule::RemoveListener(const int event, const int32_t sid, const int6
 
     std::unique_lock lock(mMutex);
     if (sid > 0) {
-        if (const auto iter = mServiceSet.find(event); iter != mServiceSet.end()) {
+        if (const auto iter = serviceSet_.find(event); iter != serviceSet_.end()) {
             iter->second.erase(sid);
         }
     } else if (pid > 0) {
-        if (const auto iter = mPlayerSet.find(event); iter != mPlayerSet.end()) {
+        if (const auto iter = playerSet_.find(event); iter != playerSet_.end()) {
             iter->second.erase(pid);
         }
     }

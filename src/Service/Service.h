@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Context.h"
-#include "Event/EventParam.h"
+#include "Event/EventInterface.h"
 
 #include <functional>
 #include <memory>
@@ -95,7 +95,7 @@ public:
     virtual void SendToClient(int64_t pid, const std::shared_ptr<IPackageInterface> &pkg) const;
 
     virtual void OnPackage(const std::shared_ptr<IPackageInterface> &pkg);
-    virtual void OnEvent(const std::shared_ptr<IEventParam> &event);
+    virtual void OnEvent(const std::shared_ptr<IEventInterface> &event);
 
     virtual void CloseSelf();
 
@@ -111,7 +111,7 @@ public:
     template<CEventType Event>
     std::shared_ptr<Event> CreateEventParam();
 
-    void DispatchEvent(const std::shared_ptr<IEventParam> &event) const;
+    void DispatchEvent(const std::shared_ptr<IEventInterface> &event) const;
 
     template<CEventType Event, class... Args>
     void DispatchEventT(Args && ... args);

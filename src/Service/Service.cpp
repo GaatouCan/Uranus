@@ -324,7 +324,7 @@ void IServiceBase::SendToClient(const int64_t pid, const std::shared_ptr<IPackag
 void IServiceBase::OnPackage(const std::shared_ptr<IPackageInterface> &pkg) {
 }
 
-void IServiceBase::OnEvent(const std::shared_ptr<IEventParam> &event) {
+void IServiceBase::OnEvent(const std::shared_ptr<IEventInterface> &event) {
 }
 
 void IServiceBase::CloseSelf() {
@@ -374,7 +374,7 @@ void IServiceBase::RemoveListener(const int event) const {
     }
 }
 
-void IServiceBase::DispatchEvent(const std::shared_ptr<IEventParam> &event) const {
+void IServiceBase::DispatchEvent(const std::shared_ptr<IEventInterface> &event) const {
     if (const auto *eventModule = GetModule<UEventModule>()) {
         eventModule->Dispatch(event);
     }
