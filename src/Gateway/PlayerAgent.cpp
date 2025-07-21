@@ -67,13 +67,13 @@ std::string IPlayerAgent::GetServiceName() const {
 }
 
 int64_t IPlayerAgent::GetPlayerID() const {
-    if (context_ == nullptr)
+    if (mContext == nullptr)
         return 0;
-    return dynamic_cast<UAgentContext *>(context_)->GetPlayerID();
+    return dynamic_cast<UAgentContext *>(mContext)->GetPlayerID();
 }
 
 void IPlayerAgent::SendToPlayer(const int64_t pid, const std::shared_ptr<IPackageInterface> &pkg) const {
-    if (state_ != EServiceState::RUNNING)
+    if (mState != EServiceState::RUNNING)
         return;
 
     // Do Not Send To Self
@@ -91,7 +91,7 @@ void IPlayerAgent::SendToPlayer(const int64_t pid, const std::shared_ptr<IPackag
 }
 
 void IPlayerAgent::PostToPlayer(const int64_t pid, const std::function<void(IServiceBase *)> &task) const {
-    if (state_ != EServiceState::RUNNING)
+    if (mState != EServiceState::RUNNING)
         return;
 
     // Do Not Send To Self
@@ -105,7 +105,7 @@ void IPlayerAgent::PostToPlayer(const int64_t pid, const std::function<void(ISer
 }
 
 void IPlayerAgent::SendToClient(const std::shared_ptr<IPackageInterface> &pkg) const {
-    if (state_ != EServiceState::RUNNING)
+    if (mState != EServiceState::RUNNING)
         return;
 
     if (pkg == nullptr)
@@ -117,7 +117,7 @@ void IPlayerAgent::SendToClient(const std::shared_ptr<IPackageInterface> &pkg) c
         pkg->SetSource(PLAYER_AGENT_ID);
         pkg->SetTarget(CLIENT_TARGET_ID);
 
-        network->SendToClient(dynamic_cast<UAgentContext *>(context_)->GetConnectionID(), pkg);
+        network->SendToClient(dynamic_cast<UAgentContext *>(mContext)->GetConnectionID(), pkg);
     }
 }
 

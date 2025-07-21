@@ -28,153 +28,153 @@ UServiceModule *UContext::GetServiceModule() const {
 }
 
 IServiceBase::IServiceBase()
-    : context_(nullptr),
-      state_(EServiceState::CREATED) {
+    : mContext(nullptr),
+      mState(EServiceState::CREATED) {
 }
 
 void IServiceBase::SetUpContext(IContextBase *context) {
-    if (state_ != EServiceState::CREATED)
+    if (mState != EServiceState::CREATED)
         return;
-    context_ = context;
+    mContext = context;
 }
 
 int32_t IServiceBase::GetServiceID() const {
-    if (context_ == nullptr)
+    if (mContext == nullptr)
         return INVALID_SERVICE_ID;
-    return context_->GetServiceID();
+    return mContext->GetServiceID();
 }
 
 std::string IServiceBase::GetServiceName() const {
     return {};
 }
 
-std::shared_ptr<spdlog::logger> IServiceBase::CreateLogger(const std::string &name, const std::string &path) {
-    if (state_ == EServiceState::TERMINATED)
-        return nullptr;
+// std::shared_ptr<spdlog::logger> IServiceBase::CreateLogger(const std::string &name, const std::string &path) {
+//     if (state_ == EServiceState::TERMINATED)
+//         return nullptr;
+//
+//     if (loggerSet_.contains(name)) {
+//         return GetLogger(name);
+//     }
+//
+//     const auto serviceName = GetServiceName();
+//     if (serviceName.empty() || serviceName == "UNKNOWN") {
+//         SPDLOG_ERROR("{:<20} - Unknown Service Name: Service ID {}", __FUNCTION__, GetServiceID());
+//         return nullptr;
+//     }
+//
+//     const auto *config = GetModule<UConfig>();
+//     if (!config)
+//         return nullptr;
+//
+//     const auto &cfg = config->GetServerConfig();
+//     const auto rootDir = cfg["server"]["logger_dir"].as<std::string>();
+//
+//     const auto loggerPath = rootDir + "/" + serviceName + "/" + path;
+//     const auto loggerName = fmt::format("{} - {}", serviceName, name);
+//
+//     auto logger = spdlog::daily_logger_mt(loggerName, loggerPath, 2, 0);
+//     loggerSet_.insert(name);
+//
+//     return logger;
+// }
+//
+// void IServiceBase::CreateLogger(const std::map<std::string, std::string> &loggers) {
+//     if (state_ == EServiceState::TERMINATED)
+//         return;
+//
+//     const auto serviceName = GetServiceName();
+//     if (serviceName.empty() || serviceName == "UNKNOWN") {
+//         SPDLOG_ERROR("{:<20} - Unknown Service Name: Service ID {}", __FUNCTION__, GetServiceID());
+//         return;
+//     }
+//
+//     const auto *config = GetModule<UConfig>();
+//     if (!config)
+//         return;
+//
+//     const auto &cfg = config->GetServerConfig();
+//     const auto rootDir = cfg["server"]["logger_dir"].as<std::string>();
+//
+//     for (const auto &[name, path] : loggers) {
+//         if (loggerSet_.contains(name))
+//             continue;
+//
+//         auto loggerPath = rootDir;
+//
+//         loggerPath += "/";
+//         loggerPath += serviceName;
+//         loggerPath += "/";
+//         loggerPath += path;
+//
+//         const auto loggerName = fmt::format("{} - {}", serviceName, name);
+//
+//         spdlog::daily_logger_mt(loggerName, loggerPath, 2, 0);
+//         loggerSet_.insert(name);
+//     }
+// }
+//
+// std::shared_ptr<spdlog::logger> IServiceBase::GetLogger(const std::string &name) const {
+//     if (state_ == EServiceState::TERMINATED)
+//         return nullptr;
+//
+//     if (!loggerSet_.contains(name))
+//         return nullptr;
+//
+//     const auto serviceName = GetServiceName();
+//     if (serviceName.empty() || serviceName == "UNKNOWN")
+//         return nullptr;
+//
+//     const auto loggerName = fmt::format("{} - {}", serviceName, name);
+//     auto result = spdlog::get(loggerName);
+//
+//     return result;
+// }
 
-    if (loggerSet_.contains(name)) {
-        return GetLogger(name);
-    }
-
-    const auto serviceName = GetServiceName();
-    if (serviceName.empty() || serviceName == "UNKNOWN") {
-        SPDLOG_ERROR("{:<20} - Unknown Service Name: Service ID {}", __FUNCTION__, GetServiceID());
-        return nullptr;
-    }
-
-    const auto *config = GetModule<UConfig>();
-    if (!config)
-        return nullptr;
-
-    const auto &cfg = config->GetServerConfig();
-    const auto rootDir = cfg["server"]["logger_dir"].as<std::string>();
-
-    const auto loggerPath = rootDir + "/" + serviceName + "/" + path;
-    const auto loggerName = fmt::format("{} - {}", serviceName, name);
-
-    auto logger = spdlog::daily_logger_mt(loggerName, loggerPath, 2, 0);
-    loggerSet_.insert(name);
-
-    return logger;
-}
-
-void IServiceBase::CreateLogger(const std::map<std::string, std::string> &loggers) {
-    if (state_ == EServiceState::TERMINATED)
-        return;
-
-    const auto serviceName = GetServiceName();
-    if (serviceName.empty() || serviceName == "UNKNOWN") {
-        SPDLOG_ERROR("{:<20} - Unknown Service Name: Service ID {}", __FUNCTION__, GetServiceID());
-        return;
-    }
-
-    const auto *config = GetModule<UConfig>();
-    if (!config)
-        return;
-
-    const auto &cfg = config->GetServerConfig();
-    const auto rootDir = cfg["server"]["logger_dir"].as<std::string>();
-
-    for (const auto &[name, path] : loggers) {
-        if (loggerSet_.contains(name))
-            continue;
-
-        auto loggerPath = rootDir;
-
-        loggerPath += "/";
-        loggerPath += serviceName;
-        loggerPath += "/";
-        loggerPath += path;
-
-        const auto loggerName = fmt::format("{} - {}", serviceName, name);
-
-        spdlog::daily_logger_mt(loggerName, loggerPath, 2, 0);
-        loggerSet_.insert(name);
-    }
-}
-
-std::shared_ptr<spdlog::logger> IServiceBase::GetLogger(const std::string &name) const {
-    if (state_ == EServiceState::TERMINATED)
-        return nullptr;
-
-    if (!loggerSet_.contains(name))
-        return nullptr;
-
-    const auto serviceName = GetServiceName();
-    if (serviceName.empty() || serviceName == "UNKNOWN")
-        return nullptr;
-
-    const auto loggerName = fmt::format("{} - {}", serviceName, name);
-    auto result = spdlog::get(loggerName);
-
-    return result;
-}
-
-asio::io_context &IServiceBase::GetIOContext() const {
+io_context &IServiceBase::GetIOContext() const {
     // assert(context_ != nullptr);
-    return context_->GetServer()->GetIOContext();
+    return mContext->GetServer()->GetIOContext();
 }
 
 bool IServiceBase::Initial(const std::shared_ptr<IPackageInterface> &pkg) {
-    if (state_ != EServiceState::CREATED)
+    if (mState != EServiceState::CREATED)
         return false;
 
-    if (context_ == nullptr) {
+    if (mContext == nullptr) {
         SPDLOG_ERROR("{:<20} - Context Is Null", __FUNCTION__);
         return false;
     }
-    state_ = EServiceState::INITIALIZED;
+    mState = EServiceState::INITIALIZED;
     return true;
 }
 
 bool IServiceBase::Start() {
-    state_ = EServiceState::RUNNING;
+    mState = EServiceState::RUNNING;
     return true;
 }
 
 void IServiceBase::Stop() {
-    if (state_ == EServiceState::TERMINATED)
+    if (mState == EServiceState::TERMINATED)
         return;
 
-    state_ = EServiceState::TERMINATED;
+    mState = EServiceState::TERMINATED;
 
     // Release All The Loggers Created By This Service
-    if (const auto serviceName = GetServiceName(); !serviceName.empty() && serviceName != "UNKNOWN") {
-        for (const auto &val : loggerSet_) {
-            const auto loggerName = fmt::format("{} - {}", serviceName, val);
-            spdlog::drop(loggerName);
-        }
-    }
+    // if (const auto serviceName = GetServiceName(); !serviceName.empty() && serviceName != "UNKNOWN") {
+    //     for (const auto &val : loggerSet_) {
+    //         const auto loggerName = fmt::format("{} - {}", serviceName, val);
+    //         spdlog::drop(loggerName);
+    //     }
+    // }
 }
 
 std::shared_ptr<IPackageInterface> IServiceBase::BuildPackage() const {
-    if (state_ != EServiceState::RUNNING)
+    if (mState != EServiceState::RUNNING)
         return nullptr;
 
-    if (context_ == nullptr)
+    if (mContext == nullptr)
         return nullptr;
 
-    if (auto pkg = context_->BuildPackage()) {
+    if (auto pkg = mContext->BuildPackage()) {
         pkg->SetSource(GetServiceID());
         return pkg;
     }
@@ -183,7 +183,7 @@ std::shared_ptr<IPackageInterface> IServiceBase::BuildPackage() const {
 }
 
 void IServiceBase::PostPackage(const std::shared_ptr<IPackageInterface> &pkg) const {
-    if (state_ != EServiceState::RUNNING)
+    if (mState != EServiceState::RUNNING)
         return;
 
     if (pkg == nullptr)
@@ -208,7 +208,7 @@ void IServiceBase::PostPackage(const std::shared_ptr<IPackageInterface> &pkg) co
 }
 
 void IServiceBase::PostPackage(const std::string &name, const std::shared_ptr<IPackageInterface> &pkg) const {
-    if (state_ != EServiceState::RUNNING)
+    if (mState != EServiceState::RUNNING)
         return;
 
     // Do Not Post To Self
@@ -231,7 +231,7 @@ void IServiceBase::PostPackage(const std::string &name, const std::shared_ptr<IP
 }
 
 void IServiceBase::PostTask(const int32_t target, const std::function<void(IServiceBase *)> &task) const {
-    if (state_ != EServiceState::RUNNING)
+    if (mState != EServiceState::RUNNING)
         return;
 
     // Do Not Post To Self
@@ -251,7 +251,7 @@ void IServiceBase::PostTask(const int32_t target, const std::function<void(IServ
 }
 
 void IServiceBase::PostTask(const std::string &name, const std::function<void(IServiceBase *)> &task) const {
-    if (state_ != EServiceState::RUNNING)
+    if (mState != EServiceState::RUNNING)
         return;
 
     // Do Not Post To Self
@@ -271,7 +271,7 @@ void IServiceBase::PostTask(const std::string &name, const std::function<void(IS
 }
 
 void IServiceBase::SendToPlayer(const int64_t pid, const std::shared_ptr<IPackageInterface> &pkg) const {
-    if (state_ != EServiceState::RUNNING)
+    if (mState != EServiceState::RUNNING)
         return;
 
     if (pkg == nullptr)
@@ -289,7 +289,7 @@ void IServiceBase::SendToPlayer(const int64_t pid, const std::shared_ptr<IPackag
 }
 
 void IServiceBase::PostToPlayer(int64_t pid, const std::function<void(IServiceBase *)> &task) const {
-    if (state_ != EServiceState::RUNNING)
+    if (mState != EServiceState::RUNNING)
         return;
 
     if (task == nullptr)
@@ -304,7 +304,7 @@ void IServiceBase::PostToPlayer(int64_t pid, const std::function<void(IServiceBa
 }
 
 void IServiceBase::SendToClient(const int64_t pid, const std::shared_ptr<IPackageInterface> &pkg) const {
-    if (state_ != EServiceState::RUNNING)
+    if (mState != EServiceState::RUNNING)
         return;
 
     if (pkg == nullptr)
@@ -328,38 +328,38 @@ void IServiceBase::OnEvent(const std::shared_ptr<IEventInterface> &event) {
 }
 
 void IServiceBase::CloseSelf() {
-    if (state_ != EServiceState::RUNNING)
+    if (mState != EServiceState::RUNNING)
         return;
 
     SendCommand("SHUTDOWN", std::to_string(GetServiceID()), "It Is Time ToClose");
 }
 
 void IServiceBase::SendCommand(const std::string &type, const std::string &args, const std::string &comment) const {
-    if (state_ != EServiceState::RUNNING)
+    if (mState != EServiceState::RUNNING)
         return;
 
-    context_->SendCommand(type, args, comment);
+    mContext->SendCommand(type, args, comment);
 }
 
 EServiceState IServiceBase::GetState() const {
-    return state_;
+    return mState;
 }
 
 UServer *IServiceBase::GetServer() const {
-    if (context_ == nullptr)
+    if (mContext == nullptr)
         return nullptr;
-    return context_->GetServer();
+    return mContext->GetServer();
 }
 
 std::map<std::string, int32_t> IServiceBase::GetServiceList() const {
-    return context_->GetServiceList();
+    return mContext->GetServiceList();
 }
 
 int32_t IServiceBase::GetOtherServiceID(const std::string &name) const {
     // if (name.empty() || name == GetServiceName())
     //     return -11;
 
-    return context_->GetOtherServiceID(name);
+    return mContext->GetOtherServiceID(name);
 }
 
 void IServiceBase::ListenEvent(const int event) const {
@@ -407,9 +407,9 @@ void IServiceBase::CancelTimer(const FTimerHandle &handle) {
 }
 
 IModuleBase *IServiceBase::GetModule(const std::string &name) const {
-    if (context_ == nullptr)
+    if (mContext == nullptr)
         return nullptr;
-    return context_->GetModule(name);
+    return mContext->GetModule(name);
 }
 
 std::optional<nlohmann::json> IServiceBase::FindConfig(const std::string &path) const {

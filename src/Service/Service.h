@@ -132,23 +132,23 @@ public:
 
     [[nodiscard]] std::optional<nlohmann::json> FindConfig(const std::string &path) const;
 
-#pragma region Logger
-    /** Create Logger For This Service */
-    std::shared_ptr<spdlog::logger> CreateLogger(const std::string &name, const std::string &path);
-
-    void CreateLogger(const std::map<std::string, std::string> &loggers);
-
-    /** Get Logger Pointer Which Registered To This Service */
-    std::shared_ptr<spdlog::logger> GetLogger(const std::string &name) const;
-#pragma endregion
+// #pragma region Logger
+//     /** Create Logger For This Service */
+//     std::shared_ptr<spdlog::logger> CreateLogger(const std::string &name, const std::string &path);
+//
+//     void CreateLogger(const std::map<std::string, std::string> &loggers);
+//
+//     /** Get Logger Pointer Which Registered To This Service */
+//     std::shared_ptr<spdlog::logger> GetLogger(const std::string &name) const;
+// #pragma endregion
 
 protected:
-    IContextBase *context_;
+    IContextBase *mContext;
+    //
+    // /** Record That Which Logger Is For This Service */
+    // absl::flat_hash_set<std::string> loggerSet_;
 
-    /** Record That Which Logger Is For This Service */
-    absl::flat_hash_set<std::string> loggerSet_;
-
-    std::atomic<EServiceState> state_;
+    std::atomic<EServiceState> mState;
 };
 
 
@@ -202,9 +202,9 @@ inline void IServiceBase::DispatchEventT(Args &&...args) {
 
 template<CModuleType Module>
 Module *IServiceBase::GetModule() const {
-    if (context_ == nullptr)
+    if (mContext == nullptr)
         return nullptr;
-    return context_->GetModule<Module>();
+    return mContext->GetModule<Module>();
 }
 
 
