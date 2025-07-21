@@ -18,7 +18,7 @@ void UEventModule::Dispatch(const std::shared_ptr<IEventInterface> &event) const
     absl::flat_hash_set<int64_t> playerSet;
 
     {
-        std::shared_lock lock(mMutex);
+        std::shared_lock lock(mutex_);
         if (const auto iter = serviceSet_.find(event->GetEventType()); iter != serviceSet_.end()) {
             serviceSet = iter->second;
         }
@@ -52,7 +52,7 @@ void UEventModule::ListenEvent(const int event, const int32_t sid, const int64_t
     if (state_ != EModuleState::RUNNING)
         return;
 
-    std::unique_lock lock(mMutex);
+    std::unique_lock lock(mutex_);
     if (sid > 0) {
         serviceSet_[event].insert(sid);
     } else if (pid > 0) {
@@ -64,7 +64,7 @@ void UEventModule::RemoveListener(const int event, const int32_t sid, const int6
     if (state_ != EModuleState::RUNNING)
         return;
 
-    std::unique_lock lock(mMutex);
+    std::unique_lock lock(mutex_);
     if (sid > 0) {
         if (const auto iter = serviceSet_.find(event); iter != serviceSet_.end()) {
             iter->second.erase(sid);

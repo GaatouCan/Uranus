@@ -41,7 +41,7 @@ public:
 private:
     flat_hash_map<int, flat_hash_set<int32_t>> serviceSet_;
     flat_hash_map<int, flat_hash_set<int64_t>> playerSet_;
-    mutable std::shared_mutex mMutex;
+    mutable std::shared_mutex mutex_;
 };
 
 template<CEventType Type>
