@@ -64,10 +64,11 @@ private:
 
 private:
     /** Dynamic Library Handle **/
-
+#pragma region Library Handle
     flat_hash_map<std::string, FLibraryHandle *> mExtendHandleMap;
     flat_hash_map<std::string, FLibraryHandle *> mCoreHandleMap;
     mutable std::shared_mutex mHandleMutex;
+#pragma endregion
 
     /** Running Services Map **/
     flat_hash_map<int32_t, std::shared_ptr<UContext>> mServiceMap;
