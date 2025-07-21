@@ -2,11 +2,11 @@
 
 #include "Module.h"
 #include "Utils.h"
+#include "IDAllocator.h"
 
 #include <functional>
 #include <absl/container/flat_hash_map.h>
 #include <absl/container/flat_hash_set.h>
-#include <queue>
 #include <shared_mutex>
 
 
@@ -58,16 +58,11 @@ public:
     void CancelPlayerTimer(int64_t pid);
 
 private:
-    int64_t AllocateTimerID();
-    void RecycleTimerID(int64_t id);
-
     void RemoveSteadyTimer(int64_t id);
     void RemoveSystemTimer(int64_t id);
 
 private:
-    std::queue<int64_t> recycledId_;
-    int64_t nextId_;
-    mutable std::shared_mutex idMutex_;
+    UIDAllocator allocator_;
 
     absl::flat_hash_map<int64_t, FSteadyTimerNode> steadyTimerMap_;
     absl::flat_hash_map<int64_t, FSystemTimerNode> systemTimerMap_;

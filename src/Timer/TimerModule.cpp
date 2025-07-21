@@ -7,8 +7,7 @@
 #include <spdlog/spdlog.h>
 
 
-UTimerModule::UTimerModule()
-    : nextId_(1) {
+UTimerModule::UTimerModule() {
 }
 
 UTimerModule::~UTimerModule() {
@@ -16,7 +15,7 @@ UTimerModule::~UTimerModule() {
 }
 
 FTimerHandle UTimerModule::SetSteadyTimer(const int32_t sid, const int64_t pid, const ATimerTask &task, int delay, int rate) {
-    const auto id = AllocateTimerID();
+    const auto id = allocator_.AllocateConcurrent();
     if (id < 0)
         return { -1, true };
 
@@ -70,14 +69,14 @@ FTimerHandle UTimerModule::SetSteadyTimer(const int32_t sid, const int64_t pid, 
         }
 
         RemoveSteadyTimer(id);
-        RecycleTimerID(id);
+        allocator_.RecycleConcurrent(id);
     }, detached);
 
     return { id, true };
 }
 
 FTimerHandle UTimerModule::SetSystemTimer(int32_t sid, int64_t pid, const ATimerTask &task, int delay, int rate) {
-    const auto id = AllocateTimerID();
+    const auto id = allocator_.AllocateConcurrent();
     if (id < 0)
         return { -1, false };
 
@@ -131,7 +130,7 @@ FTimerHandle UTimerModule::SetSystemTimer(int32_t sid, int64_t pid, const ATimer
         }
 
         RemoveSystemTimer(id);
-        RecycleTimerID(id);
+        allocator_.RecycleConcurrent(id);
     }, detached);
 
     return { id, false };
@@ -256,31 +255,6 @@ void UTimerModule::Stop() {
     for (const auto &val : steadyTimerMap_ | std::views::values) {
         val.timer->cancel();
     }
-}
-
-int64_t UTimerModule::AllocateTimerID() {
-    if (state_ != EModuleState::RUNNING)
-        return -1;
-
-    std::unique_lock lock(idMutex_);
-
-    if (!recycledId_.empty()) {
-        const int64_t id = recycledId_.front();
-        recycledId_.pop();
-        return id;
-    }
-
-    if (nextId_ < 0) {
-        // SPDLOG_ERROR("{:<20} - Service ID Allocator Overflow", __FUNCTION__);
-        return -1;
-    }
-
-    return nextId_++;
-}
-
-void UTimerModule::RecycleTimerID(const int64_t id) {
-    std::unique_lock lock(idMutex_);
-    recycledId_.push(id);
 }
 
 void UTimerModule::RemoveSteadyTimer(const int64_t id) {
