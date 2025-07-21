@@ -16,7 +16,7 @@ ULoginHandler::~ULoginHandler() {
 void ULoginHandler::UpdateAddressList() {
 }
 
-ILoginHandler::FLoginToken ULoginHandler::ParseLoginRequest(const std::shared_ptr<IPackageBase> &pkg) {
+ILoginHandler::FLoginToken ULoginHandler::ParseLoginRequest(const std::shared_ptr<IPackageInterface> &pkg) {
     const auto pkt = std::dynamic_pointer_cast<FPacket>(pkg);
     if (pkt == nullptr)
         return {};
@@ -33,7 +33,7 @@ ILoginHandler::FLoginToken ULoginHandler::ParseLoginRequest(const std::shared_pt
     };
 }
 
-void ULoginHandler::OnLoginSuccess(const int64_t pid, const std::shared_ptr<IPackageBase> &pkg) const {
+void ULoginHandler::OnLoginSuccess(const int64_t pid, const std::shared_ptr<IPackageInterface> &pkg) const {
     const auto *service = GetServer()->GetModule<UServiceModule>();
     if (service == nullptr)
         return;
@@ -56,7 +56,7 @@ void ULoginHandler::OnLoginSuccess(const int64_t pid, const std::shared_ptr<IPac
     pkt->SetData(res.SerializeAsString());
 }
 
-void ULoginHandler::OnRepeatLogin(const int64_t pid, const std::string &addr, const std::shared_ptr<IPackageBase> &pkg) {
+void ULoginHandler::OnRepeatLogin(const int64_t pid, const std::string &addr, const std::shared_ptr<IPackageInterface> &pkg) {
     const auto pkt = std::dynamic_pointer_cast<FPacket>(pkg);
     if (pkt == nullptr)
         return;

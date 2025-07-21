@@ -8,7 +8,7 @@
 
 
 class UConnection;
-class IPackageBase;
+class IPackageInterface;
 class IRecyclerBase;
 
 using absl::flat_hash_map;
@@ -23,7 +23,7 @@ class BASE_API UNetwork final : public IModuleBase {
     DECLARE_MODULE(UNetwork)
 
 protected:
-    explicit UNetwork(UServer *server);
+    UNetwork();
 
     void Initial() override;
     void Start() override;
@@ -43,14 +43,14 @@ public:
     shared_ptr<UConnection> FindConnection(int64_t cid) const;
     void RemoveConnection(int64_t cid, int64_t pid);
 
-    void OnLoginSuccess(int64_t cid, int64_t pid, const shared_ptr<IPackageBase> &pkg) const;
-    void OnLoginFailure(int64_t cid, const shared_ptr<IPackageBase> &pkg);
+    void OnLoginSuccess(int64_t cid, int64_t pid, const shared_ptr<IPackageInterface> &pkg) const;
+    void OnLoginFailure(int64_t cid, const shared_ptr<IPackageInterface> &pkg);
 
     /** Send The Package To The Client */
-    void SendToClient(int64_t cid, const shared_ptr<IPackageBase> &pkg) const;
+    void SendToClient(int64_t cid, const shared_ptr<IPackageInterface> &pkg) const;
 
     /** Acquire One Package From The Internal Package Pool */
-    shared_ptr<IPackageBase> BuildPackage() const;
+    shared_ptr<IPackageInterface> BuildPackage() const;
 
 private:
     awaitable<void> WaitForClient(uint16_t port);

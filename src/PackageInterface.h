@@ -1,16 +1,17 @@
 ﻿#pragma once
 
-#include "RecycleInterface.h"
+#include "Common.h"
 
 #include <concepts>
 
 /**
  * Abstract Base Class Of Internal Data Exchange With The Server
  */
-class BASE_API IPackageBase : public IRecycleInterface {
+class BASE_API IPackageInterface {
 
 public:
-    IPackageBase() = default;
+    IPackageInterface() = default;
+    virtual ~IPackageInterface() = default;
 
     virtual void SetPackageID(uint32_t id) = 0;
     virtual void SetSource(int32_t source) = 0;
@@ -22,4 +23,4 @@ public:
 };
 
 template<typename T>
-concept CPackageType = std::derived_from<T, IPackageBase> && !std::is_same_v<T, IPackageBase>;
+concept CPackageType = std::derived_from<T, IPackageInterface> && !std::is_same_v<T, IPackageInterface>;

@@ -9,7 +9,7 @@
 #include <absl/container/flat_hash_set.h>
 
 
-class IPackageBase;
+class IPackageInterface;
 class UContext;
 class IServiceBase;
 class FLibraryHandle;
@@ -43,7 +43,7 @@ public:
         return "Service Module";
     }
 
-    std::shared_ptr<UContext> BootExtendService(const std::string &filename, const std::shared_ptr<IPackageBase> &pkg = nullptr);
+    std::shared_ptr<UContext> BootExtendService(const std::string &filename, const std::shared_ptr<IPackageInterface> &pkg = nullptr);
 
     void ShutdownService(int32_t id);
 

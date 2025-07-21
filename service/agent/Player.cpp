@@ -14,7 +14,7 @@ UPlayer::UPlayer()
 UPlayer::~UPlayer() {
 }
 
-bool UPlayer::Initial(const std::shared_ptr<IPackageBase> &pkg) {
+bool UPlayer::Initial(const std::shared_ptr<IPackageInterface> &pkg) {
     if (!Super::Initial(pkg))
         return false;
 
@@ -41,7 +41,7 @@ void UPlayer::Stop() {
     Super::Stop();
 }
 
-void UPlayer::OnPackage(const std::shared_ptr<IPackageBase> &pkg) {
+void UPlayer::OnPackage(const std::shared_ptr<IPackageInterface> &pkg) {
     if (const auto pkt = std::dynamic_pointer_cast<FPacket>(pkg)) {
         mRoute.OnReceivePacket(pkt);
     }

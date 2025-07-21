@@ -31,7 +31,7 @@ ATcpSocket &UConnection::GetSocket() {
     return mSocket;
 }
 
-TConcurrentChannel<void(std::error_code, shared_ptr<IPackageBase>)> &UConnection::GetChannel() {
+TConcurrentChannel<void(std::error_code, shared_ptr<IPackageInterface>)> &UConnection::GetChannel() {
     return mChannel;
 }
 
@@ -83,7 +83,7 @@ UServer *UConnection::GetServer() const {
     return mModule->GetServer();
 }
 
-std::shared_ptr<IPackageBase> UConnection::BuildPackage() const {
+std::shared_ptr<IPackageInterface> UConnection::BuildPackage() const {
     return mModule->BuildPackage();
 }
 
@@ -102,7 +102,7 @@ int64_t UConnection::GetPlayerID() const {
     return mPlayerID;
 }
 
-void UConnection::SendPackage(const std::shared_ptr<IPackageBase> &pkg) {
+void UConnection::SendPackage(const std::shared_ptr<IPackageInterface> &pkg) {
     if (pkg == nullptr)
         return;
 

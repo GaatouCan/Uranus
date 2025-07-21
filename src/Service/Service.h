@@ -11,7 +11,7 @@
 
 
 class UServiceModule;
-class IPackageBase;
+class IPackageInterface;
 struct FTimerHandle;
 
 
@@ -53,21 +53,21 @@ public:
 
     [[nodiscard]] io_context &GetIOContext() const;
 
-    virtual bool Initial(const std::shared_ptr<IPackageBase> &pkg);
+    virtual bool Initial(const std::shared_ptr<IPackageInterface> &pkg);
     virtual bool Start();
     virtual void Stop();
 
     [[nodiscard]] EServiceState GetState() const;
 
     /// Get An Unused Package From Package Pool
-    std::shared_ptr<IPackageBase> BuildPackage() const;
+    std::shared_ptr<IPackageInterface> BuildPackage() const;
 
 #pragma region Package
     /// Send To Other Service Use Target In Package
-    void PostPackage(const std::shared_ptr<IPackageBase> &pkg) const;
+    void PostPackage(const std::shared_ptr<IPackageInterface> &pkg) const;
 
     /// Send To Other Service Use Service Name
-    void PostPackage(const std::string &name, const std::shared_ptr<IPackageBase> &pkg) const;
+    void PostPackage(const std::string &name, const std::shared_ptr<IPackageInterface> &pkg) const;
 #pragma endregion
 
 #pragma region Task
@@ -84,7 +84,7 @@ public:
 #pragma endregion
 
 #pragma region ToPlayer
-    virtual void SendToPlayer(int64_t pid, const std::shared_ptr<IPackageBase> &pkg) const;
+    virtual void SendToPlayer(int64_t pid, const std::shared_ptr<IPackageInterface> &pkg) const;
     virtual void PostToPlayer(int64_t pid, const std::function<void(IServiceBase *)> &task) const;
 
     template<class Type, class Callback, class... Args>
@@ -92,9 +92,9 @@ public:
     void PostToPlayerT(int64_t pid, Callback &&func, Args &&... args);
 #pragma endregion
 
-    virtual void SendToClient(int64_t pid, const std::shared_ptr<IPackageBase> &pkg) const;
+    virtual void SendToClient(int64_t pid, const std::shared_ptr<IPackageInterface> &pkg) const;
 
-    virtual void OnPackage(const std::shared_ptr<IPackageBase> &pkg);
+    virtual void OnPackage(const std::shared_ptr<IPackageInterface> &pkg);
     virtual void OnEvent(const std::shared_ptr<IEventParam> &event);
 
     virtual void CloseSelf();

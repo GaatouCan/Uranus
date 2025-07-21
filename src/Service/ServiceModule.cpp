@@ -1,6 +1,6 @@
 #include "ServiceModule.h"
 #include "Service.h"
-#include "Package.h"
+#include "PackageInterface.h"
 #include "LibraryHandle.h"
 #include "Config/Config.h"
 
@@ -184,7 +184,7 @@ void UServiceModule::Stop() {
     SPDLOG_INFO("Free All Service Library Successfully");
 }
 
-std::shared_ptr<UContext> UServiceModule::BootExtendService(const std::string &filename, const std::shared_ptr<IPackageBase> &pkg) {
+std::shared_ptr<UContext> UServiceModule::BootExtendService(const std::string &filename, const std::shared_ptr<IPackageInterface> &pkg) {
     if (State != EModuleState::RUNNING)
         return nullptr;
 

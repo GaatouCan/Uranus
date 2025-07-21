@@ -10,9 +10,8 @@
 #include <spdlog/spdlog.h>
 
 
-UNetwork::UNetwork(UServer *server)
-    : Super(server),
-      mAcceptor(mIOContext),
+UNetwork::UNetwork()
+    : mAcceptor(mIOContext),
       mPool(nullptr) {
 }
 
@@ -150,7 +149,7 @@ void UNetwork::RemoveConnection(const int64_t cid, const int64_t pid) {
     }
 }
 
-void UNetwork::OnLoginSuccess(const int64_t cid, const int64_t pid, const shared_ptr<IPackageBase> &pkg) const {
+void UNetwork::OnLoginSuccess(const int64_t cid, const int64_t pid, const shared_ptr<IPackageInterface> &pkg) const {
     if (State != EModuleState::RUNNING)
         return;
 
@@ -170,7 +169,7 @@ void UNetwork::OnLoginSuccess(const int64_t cid, const int64_t pid, const shared
     conn->SendPackage(pkg);
 }
 
-void UNetwork::OnLoginFailure(const int64_t cid, const shared_ptr<IPackageBase> &pkg) {
+void UNetwork::OnLoginFailure(const int64_t cid, const shared_ptr<IPackageInterface> &pkg) {
     if (State != EModuleState::RUNNING)
         return;
 
@@ -190,7 +189,7 @@ void UNetwork::OnLoginFailure(const int64_t cid, const shared_ptr<IPackageBase> 
     conn->Disconnect();
 }
 
-void UNetwork::SendToClient(const int64_t cid, const shared_ptr<IPackageBase> &pkg) const {
+void UNetwork::SendToClient(const int64_t cid, const shared_ptr<IPackageInterface> &pkg) const {
     if (State != EModuleState::RUNNING)
         return;
 
@@ -202,9 +201,9 @@ void UNetwork::SendToClient(const int64_t cid, const shared_ptr<IPackageBase> &p
     }
 }
 
-std::shared_ptr<IPackageBase> UNetwork::BuildPackage() const {
+std::shared_ptr<IPackageInterface> UNetwork::BuildPackage() const {
     if (State != EModuleState::RUNNING)
         return nullptr;
 
-    return std::dynamic_pointer_cast<IPackageBase>(mPool->Acquire());
+    return std::dynamic_pointer_cast<IPackageInterface>(mPool->Acquire());
 }

@@ -4,7 +4,7 @@
 #include "Event/EventModule.h"
 #include "Config/Config.h"
 #include "Timer/TimerModule.h"
-#include "Package.h"
+#include "PackageInterface.h"
 
 #include <spdlog/sinks/daily_file_sink.h>
 
@@ -135,7 +135,7 @@ asio::io_context &IServiceBase::GetIOContext() const {
     return mContext->GetServer()->GetIOContext();
 }
 
-bool IServiceBase::Initial(const std::shared_ptr<IPackageBase> &pkg) {
+bool IServiceBase::Initial(const std::shared_ptr<IPackageInterface> &pkg) {
     if (mState != EServiceState::CREATED)
         return false;
 
@@ -167,7 +167,7 @@ void IServiceBase::Stop() {
     }
 }
 
-std::shared_ptr<IPackageBase> IServiceBase::BuildPackage() const {
+std::shared_ptr<IPackageInterface> IServiceBase::BuildPackage() const {
     if (mState != EServiceState::RUNNING)
         return nullptr;
 
@@ -182,7 +182,7 @@ std::shared_ptr<IPackageBase> IServiceBase::BuildPackage() const {
     return nullptr;
 }
 
-void IServiceBase::PostPackage(const std::shared_ptr<IPackageBase> &pkg) const {
+void IServiceBase::PostPackage(const std::shared_ptr<IPackageInterface> &pkg) const {
     if (mState != EServiceState::RUNNING)
         return;
 
@@ -207,7 +207,7 @@ void IServiceBase::PostPackage(const std::shared_ptr<IPackageBase> &pkg) const {
     }
 }
 
-void IServiceBase::PostPackage(const std::string &name, const std::shared_ptr<IPackageBase> &pkg) const {
+void IServiceBase::PostPackage(const std::string &name, const std::shared_ptr<IPackageInterface> &pkg) const {
     if (mState != EServiceState::RUNNING)
         return;
 
@@ -270,7 +270,7 @@ void IServiceBase::PostTask(const std::string &name, const std::function<void(IS
     }
 }
 
-void IServiceBase::SendToPlayer(const int64_t pid, const std::shared_ptr<IPackageBase> &pkg) const {
+void IServiceBase::SendToPlayer(const int64_t pid, const std::shared_ptr<IPackageInterface> &pkg) const {
     if (mState != EServiceState::RUNNING)
         return;
 
@@ -303,7 +303,7 @@ void IServiceBase::PostToPlayer(int64_t pid, const std::function<void(IServiceBa
     }
 }
 
-void IServiceBase::SendToClient(const int64_t pid, const std::shared_ptr<IPackageBase> &pkg) const {
+void IServiceBase::SendToClient(const int64_t pid, const std::shared_ptr<IPackageInterface> &pkg) const {
     if (mState != EServiceState::RUNNING)
         return;
 
@@ -321,7 +321,7 @@ void IServiceBase::SendToClient(const int64_t pid, const std::shared_ptr<IPackag
     }
 }
 
-void IServiceBase::OnPackage(const std::shared_ptr<IPackageBase> &pkg) {
+void IServiceBase::OnPackage(const std::shared_ptr<IPackageInterface> &pkg) {
 }
 
 void IServiceBase::OnEvent(const std::shared_ptr<IEventParam> &event) {

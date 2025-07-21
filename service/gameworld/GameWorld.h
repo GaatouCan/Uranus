@@ -23,7 +23,7 @@ public:
         return "Game World";
     }
 
-    bool Initial(const std::shared_ptr<IPackageBase> &pkg) override;
+    bool Initial(const std::shared_ptr<IPackageInterface> &pkg) override;
     bool Start() override;
     void Stop() override;
 
@@ -54,7 +54,7 @@ public:
         return iter == mManagerMap.end() ? nullptr : dynamic_cast<Type *>(iter->second.get());
     }
 
-    void OnPackage(const std::shared_ptr<IPackageBase> &pkg) override;
+    void OnPackage(const std::shared_ptr<IPackageInterface> &pkg) override;
 
 private:
     UProtoRoute mRoute;

@@ -8,7 +8,7 @@
 #endif
 
 /**
- * The Base Class Of Recyclable Object,
+ * The Interface Of Recyclable Object,
  * The Element Managed By Recycler
  */
 class BASE_API IRecycleInterface {

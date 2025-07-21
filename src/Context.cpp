@@ -1,6 +1,6 @@
 #include "Context.h"
 #include "Recycler.h"
-#include "Package.h"
+#include "PackageInterface.h"
 #include "Service/LibraryHandle.h"
 #include "Service/ServiceModule.h"
 #include "Service/Service.h"
@@ -27,7 +27,7 @@ IContextBase::UPackageNode::UPackageNode(IServiceBase *service)
       mPackage(nullptr) {
 }
 
-void IContextBase::UPackageNode::SetPackage(const shared_ptr<IPackageBase> &pkg) {
+void IContextBase::UPackageNode::SetPackage(const shared_ptr<IPackageInterface> &pkg) {
     mPackage = pkg;
 }
 
@@ -160,7 +160,7 @@ awaitable<void> IContextBase::ProcessChannel() {
 }
 
 
-bool IContextBase::Initial(const std::shared_ptr<IPackageBase> &pkg) {
+bool IContextBase::Initial(const std::shared_ptr<IPackageInterface> &pkg) {
     if (mState != EContextState::CREATED)
         return false;
 
@@ -310,7 +310,7 @@ UServer *IContextBase::GetServer() const {
     return mModule->GetServer();
 }
 
-void IContextBase::PushPackage(const std::shared_ptr<IPackageBase> &pkg) {
+void IContextBase::PushPackage(const std::shared_ptr<IPackageInterface> &pkg) {
     // Could Receive Package After Initialized And Before Waiting
     if (mState < EContextState::INITIALIZED || mState >= EContextState::WAITING)
         return;
@@ -373,12 +373,12 @@ void IContextBase::SendCommand(const std::string &type, const std::string &args,
 }
 
 
-std::shared_ptr<IPackageBase> IContextBase::BuildPackage() const {
+std::shared_ptr<IPackageInterface> IContextBase::BuildPackage() const {
     if (mState != EContextState::IDLE || mState != EContextState::RUNNING)
         return nullptr;
 
     if (const auto pkg = mPool->Acquire())
-        return std::dynamic_pointer_cast<IPackageBase>(pkg);
+        return std::dynamic_pointer_cast<IPackageInterface>(pkg);
 
     return nullptr;
 }

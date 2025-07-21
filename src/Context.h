@@ -10,7 +10,7 @@ class IServiceBase;
 class IModuleBase;
 class IEventParam;
 class UServer;
-class IPackageBase;
+class IPackageInterface;
 class FLibraryHandle;
 
 
@@ -57,13 +57,13 @@ class BASE_API IContextBase : public std::enable_shared_from_this<IContextBase> 
      */
     class BASE_API UPackageNode final : public INodeBase {
 
-        shared_ptr<IPackageBase> mPackage;
+        shared_ptr<IPackageInterface> mPackage;
 
     public:
         explicit UPackageNode(IServiceBase *service);
         ~UPackageNode() override = default;
 
-        void SetPackage(const shared_ptr<IPackageBase> &pkg);
+        void SetPackage(const shared_ptr<IPackageInterface> &pkg);
         void Execute() override;
     };
 
@@ -142,7 +142,7 @@ public:
     [[nodiscard]] virtual int32_t GetServiceID() const = 0;
 
     /** Create The Service Ant Initial It, And Other Resource It Needs */
-    virtual bool Initial(const shared_ptr<IPackageBase> &pkg);
+    virtual bool Initial(const shared_ptr<IPackageInterface> &pkg);
 
     /** Shutdown And Delete The Service, Release The Resource */
     virtual int Shutdown(bool bForce, int second, const std::function<void(IContextBase *)> &cb);
@@ -155,14 +155,14 @@ public:
     [[nodiscard]] EContextState GetState() const;
     [[nodiscard]] UServer *GetServer() const;
 
-    void PushPackage(const shared_ptr<IPackageBase> &pkg);
+    void PushPackage(const shared_ptr<IPackageInterface> &pkg);
     void PushTask(const std::function<void(IServiceBase *)> &task);
     void PushEvent(const shared_ptr<IEventParam> &event);
 
     void SendCommand(const std::string &type, const std::string &args, const std::string &comment = "") const;
 
     /** Acquire One Package From Internal Package Pool */
-    shared_ptr<IPackageBase> BuildPackage() const;
+    shared_ptr<IPackageInterface> BuildPackage() const;
 
     [[nodiscard]] std::map<std::string, int32_t> GetServiceList() const;
     [[nodiscard]] int32_t GetOtherServiceID(const std::string &name) const;

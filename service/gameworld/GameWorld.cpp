@@ -9,7 +9,7 @@ UGameWorld::UGameWorld() {
 UGameWorld::~UGameWorld() {
 }
 
-bool UGameWorld::Initial(const std::shared_ptr<IPackageBase> &pkg) {
+bool UGameWorld::Initial(const std::shared_ptr<IPackageInterface> &pkg) {
     if (!Super::Initial(pkg))
         return false;
 
@@ -46,7 +46,7 @@ void UGameWorld::Stop() {
     }
 }
 
-void UGameWorld::OnPackage(const std::shared_ptr<IPackageBase> &pkg) {
+void UGameWorld::OnPackage(const std::shared_ptr<IPackageInterface> &pkg) {
     const auto pkt = std::dynamic_pointer_cast<FPacket>(pkg);
     if (pkt == nullptr)
         return;

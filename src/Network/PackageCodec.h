@@ -1,6 +1,6 @@
 ﻿#pragma once
 
-#include "Package.h"
+#include "PackageInterface.h"
 #include "Types.h"
 
 
@@ -14,8 +14,8 @@ public:
 
     DISABLE_COPY_MOVE(IPackageCodecBase)
 
-    virtual awaitable<bool> Encode(const std::shared_ptr<IPackageBase> &pkg) = 0;
-    virtual awaitable<bool> Decode(const std::shared_ptr<IPackageBase> &pkg) = 0;
+    virtual awaitable<bool> Encode(const std::shared_ptr<IPackageInterface> &pkg) = 0;
+    virtual awaitable<bool> Decode(const std::shared_ptr<IPackageInterface> &pkg) = 0;
 
     [[nodiscard]] ATcpSocket &GetSocket() const;
 
@@ -36,7 +36,7 @@ public:
 
     ~TPackageCodec() override = default;
 
-    awaitable<bool> Encode(const std::shared_ptr<IPackageBase> &pkg) override {
+    awaitable<bool> Encode(const std::shared_ptr<IPackageInterface> &pkg) override {
         if (auto temp = std::dynamic_pointer_cast<Type>(pkg); temp != nullptr) {
             const auto ret = co_await this->EncodeT(temp);
             co_return ret;
@@ -44,7 +44,7 @@ public:
         co_return false;
     }
 
-    awaitable<bool> Decode(const std::shared_ptr<IPackageBase> &pkg) override {
+    awaitable<bool> Decode(const std::shared_ptr<IPackageInterface> &pkg) override {
         if (auto temp = std::dynamic_pointer_cast<Type>(pkg); temp != nullptr) {
             const auto ret = co_await this->DecodeT(temp);
             co_return ret;
