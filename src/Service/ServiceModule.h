@@ -57,7 +57,7 @@ public:
     void UnloadLibrary(const std::string &filename, bool bCore = false);
 
 private:
-    FServiceInfo GetContextInfo(int32_t id) const;
+    FServiceInfo GetServiceInfo(int32_t id) const;
     FLibraryHandle *FindServiceHandle(const std::string &path, bool bCore = false) const;
 
     bool OnServiceShutdown(const std::string &filename, int32_t sid, bool bCore = false);

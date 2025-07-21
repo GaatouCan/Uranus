@@ -254,7 +254,7 @@ void UServiceModule::ShutdownService(const int32_t id) {
         return;
 
     std::shared_ptr<UContext> context;
-    const auto info = GetContextInfo(id);
+    const auto info = GetServiceInfo(id);
 
     if (info.id == INVALID_SERVICE_ID) {
         SPDLOG_ERROR("{:<20} - Can't Find Service[{}]", __FUNCTION__, id);
@@ -454,7 +454,7 @@ void UServiceModule::UnloadLibrary(const std::string &filename, const bool bCore
     }
 }
 
-UServiceModule::FServiceInfo UServiceModule::GetContextInfo(int32_t id) const {
+UServiceModule::FServiceInfo UServiceModule::GetServiceInfo(int32_t id) const {
     if (GetState() != EModuleState::RUNNING)
         return {};
 
