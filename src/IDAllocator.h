@@ -1,40 +1,19 @@
 #pragma once
 
+#include "Common.h"
+
 #include <queue>
 #include <atomic>
 #include <mutex>
 
-template<bool bConcurrent>
-class TIDAllocator {
+class BASE_API UIDAllocator {
 
 public:
-    int64_t Allocate() {
-        if constexpr (bConcurrent) {
-            std::unique_lock lock(mutex_);
-            if (!queue_.empty()) {
-                const auto result = queue_.front();
-                queue_.pop();
-                return result;
-            }
-        } else {
-            if (!queue_.empty()) {
-                const auto result = queue_.front();
-                queue_.pop();
-                return result;
-            }
-        }
+    int64_t Allocate();
+    int64_t AllocateConcurrent();
 
-        return next_++;
-    }
-
-    void Recycle(const int64_t id) {
-        if constexpr (bConcurrent) {
-            std::unique_lock lock(mutex_);
-            queue_.push(id);
-            return;
-        }
-        queue_.push(id);
-    }
+    void Recycle(int64_t id);
+    void RecycleConcurrent(int64_t id);
 
 private:
     std::queue<int64_t> queue_;
