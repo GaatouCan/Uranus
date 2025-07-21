@@ -18,7 +18,7 @@ public:
             }
         } else {
             if (!queue_.empty()) {
-                auto result = queue_.front();
+                const auto result = queue_.front();
                 queue_.pop();
                 return result;
             }
