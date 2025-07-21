@@ -34,8 +34,8 @@ class BASE_API FPacket final : public IPackageInterface, public IRecycleInterfac
         size_t length;
     };
 
-    FHeader mHeader;
-    FByteArray mPayload;
+    FHeader header_;
+    FByteArray payload_;
 
 protected:
     void OnCreate() override;

@@ -8,15 +8,15 @@
 inline constexpr int PACKET_MAGIC = 20250514;
 
 FPacket::FPacket()
-    : mHeader() {
-    memset(&mHeader, 0, sizeof(mHeader));
+    : header_() {
+    memset(&header_, 0, sizeof(header_));
 }
 
 FPacket::~FPacket() = default;
 
 bool FPacket::IsUnused() const {
     // As Same As Assigned In Initial() Method
-    return mHeader.id == (MINIMUM_PACKAGE_ID - 1);
+    return header_.id == (MINIMUM_PACKAGE_ID - 1);
 }
 
 void FPacket::OnCreate() {
@@ -24,17 +24,17 @@ void FPacket::OnCreate() {
 }
 
 void FPacket::Initial() {
-    mHeader.id = MINIMUM_PACKAGE_ID - 1;
-    mHeader.source = -1;
-    mHeader.target = -1;
+    header_.id = MINIMUM_PACKAGE_ID - 1;
+    header_.source = -1;
+    header_.target = -1;
 }
 
 bool FPacket::CopyFrom(IRecycleInterface *other) {
     if (IRecycleInterface::CopyFrom(other)) {
         if (const auto temp = dynamic_cast<FPacket *>(other); temp != nullptr) {
-            memcpy(&mHeader, &temp->mHeader, sizeof(mHeader));
-            mPayload = temp->mPayload;
-            mHeader.length = temp->mHeader.length;
+            memcpy(&header_, &temp->header_, sizeof(header_));
+            payload_ = temp->payload_;
+            header_.length = temp->header_.length;
             return true;
         }
     }
@@ -44,9 +44,9 @@ bool FPacket::CopyFrom(IRecycleInterface *other) {
 bool FPacket::CopyFrom(const std::shared_ptr<IRecycleInterface> &other) {
     if (IRecycleInterface::CopyFrom(other)) {
         if (const auto temp = std::dynamic_pointer_cast<FPacket>(other); temp != nullptr) {
-            memcpy(&mHeader, &temp->mHeader, sizeof(mHeader));
-            mPayload = temp->mPayload;
-            mHeader.length = temp->mHeader.length;
+            memcpy(&header_, &temp->header_, sizeof(header_));
+            payload_ = temp->payload_;
+            header_.length = temp->header_.length;
             return true;
         }
     }
@@ -54,24 +54,24 @@ bool FPacket::CopyFrom(const std::shared_ptr<IRecycleInterface> &other) {
 }
 
 void FPacket::Reset() {
-    mHeader.id = 0;
-    mPayload.Reset();
+    header_.id = 0;
+    payload_.Reset();
 }
 
 bool FPacket::IsAvailable() const {
     if (IsUnused())
         return true;
 
-    return mHeader.id >= MINIMUM_PACKAGE_ID && mHeader.id <= MAXIMUM_PACKAGE_ID;
+    return header_.id >= MINIMUM_PACKAGE_ID && header_.id <= MAXIMUM_PACKAGE_ID;
 }
 
 void FPacket::SetPackageID(const uint32_t id) {
-    mHeader.id = id;
+    header_.id = id;
 }
 
 FPacket &FPacket::SetData(const std::string_view str) {
-    mHeader.length = str.size();
-    mPayload.FromString(str);
+    header_.length = str.size();
+    payload_.FromString(str);
     return *this;
 }
 
@@ -80,46 +80,46 @@ FPacket &FPacket::SetData(const std::stringstream &ss) {
 }
 
 FPacket &FPacket::SetMagic(const uint32_t magic) {
-    mHeader.magic = magic;
+    header_.magic = magic;
     return *this;
 }
 
 uint32_t FPacket::GetMagic() const {
-    return mHeader.magic;
+    return header_.magic;
 }
 
 uint32_t FPacket::GetPackageID() const {
-    return mHeader.id;
+    return header_.id;
 }
 
 size_t FPacket::GetPayloadLength() const {
-    return mPayload.Size();
+    return payload_.Size();
 }
 
 void FPacket::SetSource(const int32_t source) {
-    mHeader.source = source;
+    header_.source = source;
 }
 
 int32_t FPacket::GetSource() const {
-    return mHeader.source;
+    return header_.source;
 }
 
 void FPacket::SetTarget(const int32_t target) {
-    mHeader.target = target;
+    header_.target = target;
 }
 
 int32_t FPacket::GetTarget() const {
-    return mHeader.target;
+    return header_.target;
 }
 
 std::string FPacket::ToString() const {
-    return mPayload.ToString();
+    return payload_.ToString();
 }
 
 const FByteArray &FPacket::Bytes() const {
-    return mPayload;
+    return payload_;
 }
 
 std::vector<std::byte> &FPacket::RawRef() {
-    return mPayload.RawRef();
+    return payload_.RawRef();
 }

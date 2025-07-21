@@ -40,10 +40,10 @@ private:
     void OnLoginSuccess(int64_t cid, int64_t pid);
 
 private:
-    std::unique_ptr<ILoginHandler> mHandler;
+    std::unique_ptr<ILoginHandler> handler_;
 
-    absl::flat_hash_map<int64_t, std::chrono::system_clock::time_point> mLoginMap;
-    mutable std::mutex mMutex;
+    absl::flat_hash_map<int64_t, std::chrono::system_clock::time_point> loginMap_;
+    mutable std::mutex mutex_;
 };
 
 template<class Type, class ... Args>
@@ -52,5 +52,5 @@ inline void ULoginAuth::SetLoginHandler(Args &&...args) {
     if (state_ != EModuleState::CREATED)
         return;
 
-    mHandler = std::unique_ptr<ILoginHandler>(new Type(this, std::forward<Args>(args)...));
+    handler_ = std::unique_ptr<ILoginHandler>(new Type(this, std::forward<Args>(args)...));
 }

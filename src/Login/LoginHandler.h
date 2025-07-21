@@ -40,5 +40,5 @@ public:
     [[nodiscard]] UServer *GetServer() const;
 
 private:
-    ULoginAuth *mLoginAuth;
+    ULoginAuth *loginAuth_;
 };

@@ -2,12 +2,12 @@
 #include "LoginAuth.h"
 
 ILoginHandler::ILoginHandler(ULoginAuth *module)
-    : mLoginAuth(module) {
+    : loginAuth_(module) {
 }
 
 ILoginHandler::~ILoginHandler() {
 }
 
 UServer *ILoginHandler::GetServer() const {
-    return mLoginAuth->GetServer();
+    return loginAuth_->GetServer();
 }

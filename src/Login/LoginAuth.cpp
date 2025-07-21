@@ -46,16 +46,16 @@ bool ULoginAuth::VerifyAddress(const asio::ip::tcp::endpoint &endpoint) {
 void ULoginAuth::OnPlayerLogin(const int64_t cid, const std::shared_ptr<IPackageInterface> &pkg) {
     if (state_ != EModuleState::RUNNING)
         return; {
-        std::unique_lock lock(mMutex);
-        if (const auto iter = mLoginMap.find(cid); iter != mLoginMap.end()) {
+        std::unique_lock lock(mutex_);
+        if (const auto iter = loginMap_.find(cid); iter != loginMap_.end()) {
             if (std::chrono::system_clock::now() - iter->second < std::chrono::seconds(1))
                 return;
         }
 
-        mLoginMap[cid] = std::chrono::system_clock::now();
+        loginMap_[cid] = std::chrono::system_clock::now();
     }
 
-    const auto [token, pid] = mHandler->ParseLoginRequest(pkg);
+    const auto [token, pid] = handler_->ParseLoginRequest(pkg);
     if (token.empty() || pid == 0) {
         SPDLOG_WARN("{:<20} - fd[{}] Parse Login Request Failed.", __FUNCTION__, cid);
         return;
@@ -76,7 +76,7 @@ void ULoginAuth::OnPlayerLogin(const int64_t cid, const std::shared_ptr<IPackage
 
         const auto response = network->BuildPackage();
 
-        mHandler->OnRepeatLogin(pid, addr, response);
+        handler_->OnRepeatLogin(pid, addr, response);
 
         response->SetSource(SERVER_SOURCE_ID);
         response->SetTarget(CLIENT_TARGET_ID);
@@ -91,8 +91,8 @@ void ULoginAuth::OnPlayerLogin(const int64_t cid, const std::shared_ptr<IPackage
 }
 
 void ULoginAuth::OnLoginSuccess(const int64_t cid, const int64_t pid) { {
-        std::unique_lock lock(mMutex);
-        mLoginMap.erase(cid);
+        std::unique_lock lock(mutex_);
+        loginMap_.erase(cid);
     }
 
     const auto *network = GetServer()->GetModule<UNetwork>();
@@ -105,7 +105,7 @@ void ULoginAuth::OnLoginSuccess(const int64_t cid, const int64_t pid) { {
     // Send Login Success Response To Client
     const auto response = network->BuildPackage();
 
-    mHandler->OnLoginSuccess(pid, response);
+    handler_->OnLoginSuccess(pid, response);
 
     response->SetSource(SERVER_SOURCE_ID);
     response->SetTarget(CLIENT_TARGET_ID);

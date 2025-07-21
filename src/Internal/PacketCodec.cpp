@@ -17,22 +17,22 @@ UPacketCodec::UPacketCodec(ATcpSocket &socket)
 awaitable<bool> UPacketCodec::EncodeT(const std::shared_ptr<FPacket> &pkt) {
     FPacket::FHeader header{};
 
-    header.magic = htonl(pkt->mHeader.magic);
-    header.id = htonl(pkt->mHeader.id);
+    header.magic = htonl(pkt->header_.magic);
+    header.id = htonl(pkt->header_.id);
 
-    header.source = static_cast<int32_t>(htonl(pkt->mHeader.source));
-    header.target = static_cast<int32_t>(htonl(pkt->mHeader.target));
+    header.source = static_cast<int32_t>(htonl(pkt->header_.source));
+    header.target = static_cast<int32_t>(htonl(pkt->header_.target));
 
 #if defined(_WIN32) || defined(_WIN64)
-    header.length = htonll(pkt->mHeader.length);
+    header.length = htonll(pkt->header_.length);
 #else
     header.length = htobe64(pkt->header_.length);
 #endif
 
-    if (pkt->mHeader.length > 0) {
+    if (pkt->header_.length > 0) {
         const auto buffers = {
             asio::buffer(&header, FPacket::PACKAGE_HEADER_SIZE),
-            asio::buffer(pkt->RawRef(), pkt->mHeader.length)
+            asio::buffer(pkt->RawRef(), pkt->header_.length)
         };
 
         const auto [ec, len] = co_await async_write(GetSocket(), buffers);
@@ -66,7 +66,7 @@ awaitable<bool> UPacketCodec::EncodeT(const std::shared_ptr<FPacket> &pkt) {
 }
 
 awaitable<bool> UPacketCodec::DecodeT(const std::shared_ptr<FPacket> &pkt) {
-    const auto [ec, len] = co_await async_read(GetSocket(), asio::buffer(&pkt->mHeader, FPacket::PACKAGE_HEADER_SIZE));
+    const auto [ec, len] = co_await async_read(GetSocket(), asio::buffer(&pkt->header_, FPacket::PACKAGE_HEADER_SIZE));
 
     if (ec) {
         SPDLOG_WARN("{:<20} - {}", __FUNCTION__, ec.message());
@@ -78,22 +78,22 @@ awaitable<bool> UPacketCodec::DecodeT(const std::shared_ptr<FPacket> &pkt) {
         co_return false;
     }
 
-    pkt->mHeader.magic = ntohl(pkt->mHeader.magic);
-    pkt->mHeader.id = ntohl(pkt->mHeader.id);
+    pkt->header_.magic = ntohl(pkt->header_.magic);
+    pkt->header_.id = ntohl(pkt->header_.id);
 
-    pkt->mHeader.source = static_cast<int32_t>(ntohl(pkt->mHeader.source));
-    pkt->mHeader.target = static_cast<int32_t>(ntohl(pkt->mHeader.target));
+    pkt->header_.source = static_cast<int32_t>(ntohl(pkt->header_.source));
+    pkt->header_.target = static_cast<int32_t>(ntohl(pkt->header_.target));
 
 #if defined(_WIN32) || defined(_WIN64)
-    pkt->mHeader.length = ntohll(pkt->mHeader.length);
+    pkt->header_.length = ntohll(pkt->header_.length);
 #else
     pkt->header_.length = be64toh(pkt->header_.length);
 #endif
 
-    if (pkt->mHeader.length == 0)
+    if (pkt->header_.length == 0)
         co_return true;
 
-    pkt->mPayload.Reserve(pkt->mHeader.length);
+    pkt->payload_.Reserve(pkt->header_.length);
 
     const auto [payload_ec, payload_length] = co_await async_read(GetSocket(), asio::buffer(pkt->RawRef()));
 
@@ -103,7 +103,7 @@ awaitable<bool> UPacketCodec::DecodeT(const std::shared_ptr<FPacket> &pkt) {
     }
 
     if (payload_length == 0) {
-        SPDLOG_WARN("{:<20} - Packet Payload Length Equal Zero But Header 's Length Is [{}]", __FUNCTION__, pkt->mHeader.length);
+        SPDLOG_WARN("{:<20} - Packet Payload Length Equal Zero But Header 's Length Is [{}]", __FUNCTION__, pkt->header_.length);
         co_return false;
     }
 

@@ -29,10 +29,10 @@ void UGateway::OnPlayerLogin(const int64_t pid, const int64_t cid) {
     agent->SetConnectionID(cid);
 
     {
-        std::unique_lock lock(mMutex);
+        std::unique_lock lock(mutex_);
 
-        mPlayerMap[pid] = agent;
-        mCidToPid[cid] = pid;
+        playerMap_[pid] = agent;
+        connectionMapping_[cid] = pid;
     }
 
     agent->Initial(nullptr);
@@ -48,19 +48,19 @@ void UGateway::OnPlayerLogout(const int64_t pid) {
     std::shared_ptr<UAgentContext> agent;
 
     {
-        std::unique_lock lock(mMutex);
+        std::unique_lock lock(mutex_);
 
-        const auto iter = mPlayerMap.find(pid);
-        if (iter == mPlayerMap.end())
+        const auto iter = playerMap_.find(pid);
+        if (iter == playerMap_.end())
             return;
 
         agent = iter->second;
-        mPlayerMap.erase(iter);
+        playerMap_.erase(iter);
 
         if (agent == nullptr)
             return;
 
-        mCidToPid.erase(agent->GetConnectionID());
+        connectionMapping_.erase(agent->GetConnectionID());
     }
 
     SPDLOG_INFO("{:<20} - Player[{}] Logout", __FUNCTION__, agent->GetPlayerID());
@@ -71,10 +71,10 @@ int64_t UGateway::GetConnectionID(const int64_t pid) const {
     if (state_ != EModuleState::RUNNING)
         return -1;
 
-    std::shared_lock lock(mMutex);
+    std::shared_lock lock(mutex_);
 
-    const auto iter = mPlayerMap.find(pid);
-    if (iter == mPlayerMap.end())
+    const auto iter = playerMap_.find(pid);
+    if (iter == playerMap_.end())
         return 0;
 
     if (const auto agent = iter->second) {
@@ -88,9 +88,9 @@ std::shared_ptr<UAgentContext> UGateway::FindPlayerAgent(const int64_t pid) cons
     if (state_ != EModuleState::RUNNING)
         return nullptr;
 
-    std::shared_lock lock(mMutex);
-    const auto iter = mPlayerMap.find(pid);
-    return iter == mPlayerMap.end() ? nullptr : iter->second;
+    std::shared_lock lock(mutex_);
+    const auto iter = playerMap_.find(pid);
+    return iter == playerMap_.end() ? nullptr : iter->second;
 }
 
 void UGateway::Initial() {
@@ -122,7 +122,7 @@ void UGateway::Stop() {
 
     state_ = EModuleState::STOPPED;
 
-    for (const auto &agent : mPlayerMap | std::views::values) {
+    for (const auto &agent : playerMap_ | std::views::values) {
         agent->Shutdown(false, 0, nullptr);
     }
 
