@@ -8,12 +8,12 @@
  */
 class BASE_API FLibraryHandle final {
 
-    AModuleHandle mHandle;
+    AModuleHandle handle_;
 
-    void *mCreator;
-    void *mDestroyer;
+    void *creator_;
+    void *destroyer_;
 
-    std::string mPath;
+    std::string path_;
 
 public:
     FLibraryHandle();
@@ -31,12 +31,12 @@ public:
 
     template<typename FuncType>
     FuncType GetCreatorT() const {
-        return reinterpret_cast<FuncType>(mCreator);
+        return reinterpret_cast<FuncType>(creator_);
     }
 
     template<typename FuncType>
     FuncType GetDestroyerT() const {
-        return reinterpret_cast<FuncType>(mDestroyer);
+        return reinterpret_cast<FuncType>(destroyer_);
     }
 };
 

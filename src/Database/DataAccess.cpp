@@ -3,9 +3,8 @@
 
 #include <spdlog/spdlog.h>
 
-UDataAccess::UDataAccess(UServer *server)
-    : Super(server),
-      nextNodeIndex_(0) {
+UDataAccess::UDataAccess()
+    : nextNodeIndex_(0) {
 }
 
 void UDataAccess::Initial() {

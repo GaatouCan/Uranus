@@ -17,7 +17,7 @@ struct FTimerHandle;
 
 class BASE_API UContext final : public IContextBase {
 
-    int32_t mServiceID;
+    int32_t serviceId_;
 
 public:
     UContext();

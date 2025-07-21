@@ -4,9 +4,9 @@
 
 
 FLibraryHandle::FLibraryHandle()
-    : mHandle(nullptr),
-      mCreator(nullptr),
-      mDestroyer(nullptr) {
+    : handle_(nullptr),
+      creator_(nullptr),
+      destroyer_(nullptr) {
 }
 
 FLibraryHandle::~FLibraryHandle() {
@@ -14,28 +14,28 @@ FLibraryHandle::~FLibraryHandle() {
 }
 
 void FLibraryHandle::Reset() {
-    mHandle = nullptr;
-    mCreator = nullptr;
-    mDestroyer = nullptr;
-    mPath.clear();
+    handle_ = nullptr;
+    creator_ = nullptr;
+    destroyer_ = nullptr;
+    path_.clear();
 }
 
 bool FLibraryHandle::LoadFrom(const std::string &path) {
 #if defined(_WIN32) || defined(_WIN64)
-    mHandle = LoadLibrary(path.data());
+    handle_ = LoadLibrary(path.data());
 
-    if (mHandle == nullptr) {
+    if (handle_ == nullptr) {
         SPDLOG_ERROR("{:<20} - Failed To Load Library From[{}]", __FUNCTION__, path);
         Reset();
         return false;
     }
 
-    mCreator = GetProcAddress(mHandle, "CreateInstance");
-    mDestroyer = GetProcAddress(mHandle, "DestroyInstance");
+    creator_ = GetProcAddress(handle_, "CreateInstance");
+    destroyer_ = GetProcAddress(handle_, "DestroyInstance");
 
-    if (mCreator == nullptr || mDestroyer == nullptr) {
+    if (creator_ == nullptr || destroyer_ == nullptr) {
         SPDLOG_ERROR("{:<20} - Cannot Find Creator Or Destroyer From Library[{}]", __FUNCTION__, path);
-        FreeLibrary(mHandle);
+        FreeLibrary(handle_);
         Reset();
         return false;
     }
@@ -61,34 +61,34 @@ bool FLibraryHandle::LoadFrom(const std::string &path) {
 
 #endif
 
-    mPath = path;
-    SPDLOG_INFO("{:<20} - Successfully Loaded Dynamic Library From[{}]", __FUNCTION__, mPath);
+    path_ = path;
+    SPDLOG_INFO("{:<20} - Successfully Loaded Dynamic Library From[{}]", __FUNCTION__, path_);
 
     return true;
 }
 
 void FLibraryHandle::Unload() {
-    if (mHandle == nullptr)
+    if (handle_ == nullptr)
         return;
 
 #if defined(_WIN32) || defined(_WIN64)
-    FreeLibrary(mHandle);
+    FreeLibrary(handle_);
 #else
     dlclose(handle);
 #endif
 
-    SPDLOG_INFO("{:<20} - Successfully Released Dynamic Library[{}]", __FUNCTION__, mPath);
+    SPDLOG_INFO("{:<20} - Successfully Released Dynamic Library[{}]", __FUNCTION__, path_);
     Reset();
 }
 
 void *FLibraryHandle::GetCreator() const {
-    return mCreator;
+    return creator_;
 }
 
 void *FLibraryHandle::GetDestroyer() const {
-    return mDestroyer;
+    return destroyer_;
 }
 
 std::string FLibraryHandle::GetPath() const {
-    return mPath;
+    return path_;
 }

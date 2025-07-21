@@ -10,17 +10,17 @@
 
 
 UContext::UContext()
-    : mServiceID(INVALID_SERVICE_ID) {
+    : serviceId_(INVALID_SERVICE_ID) {
 }
 
 void UContext::SetServiceID(const int32_t sid) {
     if (GetState() != EContextState::CREATED)
         return;
-    mServiceID = sid;
+    serviceId_ = sid;
 }
 
 int32_t UContext::GetServiceID() const {
-    return mServiceID;
+    return serviceId_;
 }
 
 UServiceModule *UContext::GetServiceModule() const {

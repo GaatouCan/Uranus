@@ -22,7 +22,7 @@ class BASE_API UServiceModule final : public IModuleBase {
 
     DECLARE_MODULE(UServiceModule)
 
-    struct FContextInfo {
+    struct FServiceInfo {
         int32_t id = INVALID_SERVICE_ID;
         std::string filename;
         std::string name;
@@ -57,7 +57,7 @@ public:
     void UnloadLibrary(const std::string &filename, bool bCore = false);
 
 private:
-    FContextInfo GetContextInfo(int32_t id) const;
+    FServiceInfo GetContextInfo(int32_t id) const;
     FLibraryHandle *FindServiceHandle(const std::string &path, bool bCore = false) const;
 
     int32_t AllocateServiceID();
@@ -68,26 +68,26 @@ private:
 private:
     /** Dynamic Library Handle **/
 
-    flat_hash_map<std::string, FLibraryHandle *> mExtendHandleMap;
-    flat_hash_map<std::string, FLibraryHandle *> mCoreHandleMap;
-    mutable std::shared_mutex mHandleMutex;
+    flat_hash_map<std::string, FLibraryHandle *> extendHandleMap_;
+    flat_hash_map<std::string, FLibraryHandle *> coreHandleMap_;
+    mutable std::shared_mutex handleMutex_;
 
     /** Running Services Map **/
-    flat_hash_map<int32_t, std::shared_ptr<UContext>> mServiceMap;
-    mutable std::shared_mutex mServiceMutex;
+    flat_hash_map<int32_t, std::shared_ptr<UContext>> serviceMap_;
+    mutable std::shared_mutex serviceMutex_;
 
     /** Service Name To Service ID Mapping **/
-    flat_hash_map<std::string, FContextInfo> mContextInfoMap;
-    mutable std::shared_mutex mNameMutex;
+    flat_hash_map<std::string, FServiceInfo> serviceInfoMap_;
+    mutable std::shared_mutex infoMutex_;
 
     /** Service ID Set With Same Library Filename **/
-    flat_hash_map<std::string, flat_hash_set<int32_t>> mFilenameToServiceID;
-    mutable std::shared_mutex mFileNameMutex;
+    flat_hash_map<std::string, flat_hash_set<int32_t>> filenameMapping_;
+    mutable std::shared_mutex fileNameMutex_;
 
 
     /** Service ID Management **/
 
-    std::queue<int32_t> mRecycledID;
-    int32_t mNextID;
-    mutable std::shared_mutex mIDMutex;
+    std::queue<int32_t> recycledId_;
+    int32_t nextId_;
+    mutable std::shared_mutex idMutex_;
 };

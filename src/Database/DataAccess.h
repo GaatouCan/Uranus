@@ -22,7 +22,7 @@ class BASE_API UDataAccess final : public IModuleBase {
     };
 
 protected:
-    explicit UDataAccess(UServer *server);
+    UDataAccess();
 
     void Initial() override;
     void Stop() override;
