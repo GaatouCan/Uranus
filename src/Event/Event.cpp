@@ -1,4 +1,4 @@
-#include "EventInterface.h"
+#include "Event.h"
 
 int UDefaultEvent::GetEventType() const {
     return 1001;

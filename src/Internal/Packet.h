@@ -1,8 +1,8 @@
 #pragma once
 
 
-#include "PackageInterface.h"
-#include "RecycleInterface.h"
+#include "Package.h"
+#include "Recycle.h"
 #include "ByteArray.h"
 
 #include <sstream>

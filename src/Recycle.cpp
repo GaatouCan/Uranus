@@ -1,4 +1,4 @@
-#include "RecycleInterface.h"
+#include "Recycle.h"
 
 bool IRecycleInterface::CopyFrom(IRecycleInterface *other) {
     if (other != nullptr && other != this) {

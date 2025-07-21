@@ -1,6 +1,6 @@
 ﻿#pragma once
 
-#include "RecycleInterface.h"
+#include "Recycle.h"
 #include "Types.h"
 
 #include <queue>
@@ -15,16 +15,16 @@
 class BASE_API IRecyclerBase : public std::enable_shared_from_this<IRecyclerBase> {
 
     /** asio::io_context Reference For Shrink Timer */
-    io_context &ctx_;
+    io_context &mContext;
 
     /** Internal Container */
-    std::queue<unique_ptr<IRecycleInterface>> queue_;
-    mutable std::shared_mutex mutex_;
+    std::queue<unique_ptr<IRecycleInterface>> mQueue;
+    mutable std::shared_mutex mMutex;
 
-    std::atomic_int64_t usage_;
+    std::atomic_int64_t mUsage;
 
     /** Shrink Timer */
-    shared_ptr<ASteadyTimer> timer_;
+    shared_ptr<ASteadyTimer> mShrinkTimer;
 
     /** Expand Flag */
     std::atomic_bool bExpanding;

@@ -8,9 +8,9 @@
 
 
 UMonitor::UMonitor()
-    : mGuard(asio::make_work_guard(mIOContext)),
+    : mGuard(asio::make_work_guard(mContext)),
 #ifdef URANUS_WATCHDOG
-      mLoopTimer(mIOContext),
+      mLoopTimer(mContext),
 #endif
       bHandling(false) {
 }
@@ -24,38 +24,38 @@ UMonitor::~UMonitor() {
 }
 
 void UMonitor::Initial() {
-    if (state_ != EModuleState::CREATED)
+    if (mState != EModuleState::CREATED)
         return;
 
     mThread = std::thread([this] {
         SPDLOG_INFO("Monitor Run In Thread[{}]", utils::ThreadIDToInt(std::this_thread::get_id()));
 
-        asio::signal_set signals(mIOContext, SIGINT, SIGTERM);
+        asio::signal_set signals(mContext, SIGINT, SIGTERM);
         signals.async_wait([this](auto, auto) {
             Stop();
         });
-        mIOContext.run();
+        mContext.run();
     });
 
-    state_ = EModuleState::INITIALIZED;
+    mState = EModuleState::INITIALIZED;
 }
 
 void UMonitor::Start() {
-    if (state_ != EModuleState::INITIALIZED)
+    if (mState != EModuleState::INITIALIZED)
         return;
 
 #ifdef URANUS_WATCHDOG
-    co_spawn(mIOContext, WatchdogLooping(), detached);
+    co_spawn(mContext, WatchdogLooping(), detached);
 #endif
 
-    state_ = EModuleState::RUNNING;
+    mState = EModuleState::RUNNING;
 }
 
 void UMonitor::Stop() {
-    if (state_ == EModuleState::STOPPED)
+    if (mState == EModuleState::STOPPED)
         return;
 
-    state_ = EModuleState::STOPPED;
+    mState = EModuleState::STOPPED;
 
     mGuard.reset();
 
@@ -63,8 +63,8 @@ void UMonitor::Stop() {
     mLoopTimer.cancel();
 #endif
 
-    if (!mIOContext.stopped()) {
-        mIOContext.stop();
+    if (!mContext.stopped()) {
+        mContext.stop();
     }
 }
 
@@ -80,15 +80,15 @@ void UMonitor::OnCommand(const std::string &sender, const std::string &type, con
     const auto bEmpty = mCommandQueue.IsEmpty();
     mCommandQueue.PushBack(node);
 
-    if (bEmpty && !bHandling && state_ == EModuleState::RUNNING) {
+    if (bEmpty && !bHandling && mState == EModuleState::RUNNING) {
         bHandling = true;
-        co_spawn(mIOContext, ScheduleCommand(), detached);
+        co_spawn(mContext, ScheduleCommand(), detached);
     }
 }
 
 #ifdef URANUS_WATCHDOG
 void UMonitor::RegisterWatchdog(const std::weak_ptr<FWatchdog> &watchdog) {
-    if (state_ != EModuleState::INITIALIZED || state_ != EModuleState::RUNNING)
+    if (mState != EModuleState::INITIALIZED || mState != EModuleState::RUNNING)
         return;
 
     if (watchdog.expired())
@@ -157,7 +157,7 @@ awaitable<void> UMonitor::WatchdogLooping() {
     };
 
     try {
-        while (state_ == EModuleState::RUNNING) {
+        while (mState == EModuleState::RUNNING) {
             mLoopTimer.expires_after(std::chrono::seconds(LOOPING_RATE));
             if (const auto [ec] = co_await mLoopTimer.async_wait(); ec) {
                 SPDLOG_DEBUG("{:<20} - Timer Cancel, Looping Exit.", __FUNCTION__);
@@ -194,23 +194,23 @@ awaitable<void> UMonitor::WatchdogLooping() {
 #endif
 
 awaitable<void> UMonitor::ScheduleCommand() {
-    if (state_ != EModuleState::RUNNING)
+    if (mState != EModuleState::RUNNING)
         co_return;
 
     std::queue<FCommandNode> queue;
     mCommandQueue.SwapTo(queue);
 
-    while (!queue.empty() && state_ == EModuleState::RUNNING) {
+    while (!queue.empty() && mState == EModuleState::RUNNING) {
         auto node = queue.front();
         queue.pop();
 
-        if (state_ == EModuleState::RUNNING) {
+        if (mState == EModuleState::RUNNING) {
             HandleCommand(node);
         }
     }
 
-    if (!mCommandQueue.IsEmpty() && state_ == EModuleState::RUNNING) {
-        co_spawn(mIOContext, ScheduleCommand(), detached);
+    if (!mCommandQueue.IsEmpty() && mState == EModuleState::RUNNING) {
+        co_spawn(mContext, ScheduleCommand(), detached);
     } else {
         bHandling = false;
     }

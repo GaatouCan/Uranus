@@ -40,7 +40,7 @@ public:
 
     template<typename Callable>
     void PushQuery(const AQueryArray &vec, Callable &&cb) {
-        if (state_ != EModuleState::RUNNING)
+        if (mState != EModuleState::RUNNING)
             return;
 
         if (sessionList_.empty())
@@ -57,7 +57,7 @@ public:
         auto init = [this](asio::completion_handler_for<void(AQueryResultPointer)> auto handle, const AQueryArray &query) {
             auto work = asio::make_work_guard(handle);
 
-            if (state_ != EModuleState::RUNNING) {
+            if (mState != EModuleState::RUNNING) {
                 auto alloc = asio::get_associated_allocator(handle, asio::recycling_allocator<void>());
                 asio::dispatch(work.get_executor(), asio::bind_allocator(alloc, [handle = std::move(handle)]() mutable {
                     std::move(handle)(nullptr);

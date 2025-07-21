@@ -50,8 +50,8 @@ public:
 private:
     FLibraryHandle *mLibrary;
 
-    flat_hash_map<int64_t, int64_t> connectionMapping_;
-    flat_hash_map<int64_t, std::shared_ptr<UAgentContext>> playerMap_;
+    flat_hash_map<int64_t, int64_t> mConnToPlayer;
+    flat_hash_map<int64_t, std::shared_ptr<UAgentContext>> mPlayerMap;
 
-    mutable std::shared_mutex mutex_;
+    mutable std::shared_mutex mMutex;
 };

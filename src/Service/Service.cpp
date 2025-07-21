@@ -4,7 +4,7 @@
 #include "Event/EventModule.h"
 #include "Config/Config.h"
 #include "Timer/TimerModule.h"
-#include "PackageInterface.h"
+#include "Package.h"
 
 #include <spdlog/sinks/daily_file_sink.h>
 

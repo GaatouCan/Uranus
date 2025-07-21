@@ -62,17 +62,17 @@ private:
     void RemoveSystemTimer(int64_t id);
 
 private:
-    UIDAllocator allocator_;
+    TIDAllocator<int64_t, true> mAllocator;
 
-    absl::flat_hash_map<int64_t, FSteadyTimerNode> steadyTimerMap_;
-    absl::flat_hash_map<int64_t, FSystemTimerNode> systemTimerMap_;
+    absl::flat_hash_map<int64_t, FSteadyTimerNode> mSteadyTimerMap;
+    absl::flat_hash_map<int64_t, FSystemTimerNode> mSystemTimerMap;
 
-    AServiceToTimerMap serviceToSteadyTimer_;
-    AServiceToTimerMap serviceToSystemTimer_;
+    AServiceToTimerMap mServiceToSteadyTimer;
+    AServiceToTimerMap mServiceToSystemTimer;
 
-    APlayerToTimerMap playerToSteadyTimer_;
-    APlayerToTimerMap playerToSystemTimer_;
+    APlayerToTimerMap mPlayerToSteadyTimer;
+    APlayerToTimerMap mPlayerToSystemTimer;
 
-    mutable std::shared_mutex timerMutex_;
+    mutable std::shared_mutex mTimerMutex;
 };
 

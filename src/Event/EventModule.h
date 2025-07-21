@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Module.h"
-#include "EventInterface.h"
+#include "Event.h"
 
 #include <absl/container/flat_hash_map.h>
 #include <absl/container/flat_hash_set.h>
@@ -28,7 +28,7 @@ public:
     }
 
     template<CEventType Type>
-    std::shared_ptr<Type> CreateEventParam() const;
+    std::shared_ptr<Type> CreateEvent() const;
 
     void Dispatch(const std::shared_ptr<IEventInterface> &event) const;
 
@@ -39,14 +39,14 @@ public:
     void RemoveListener(int event, int32_t sid, int64_t pid = -1);
 
 private:
-    flat_hash_map<int, flat_hash_set<int32_t>> serviceSet_;
-    flat_hash_map<int, flat_hash_set<int64_t>> playerSet_;
-    mutable std::shared_mutex mutex_;
+    flat_hash_map<int, flat_hash_set<int32_t>> mServiceListener;
+    flat_hash_map<int, flat_hash_set<int64_t>> mPlayerListener;
+    mutable std::shared_mutex mListenerMutex;
 };
 
 template<CEventType Type>
-inline std::shared_ptr<Type> UEventModule::CreateEventParam() const {
-    if (state_ != EModuleState::RUNNING)
+inline std::shared_ptr<Type> UEventModule::CreateEvent() const {
+    if (mState != EModuleState::RUNNING)
         return nullptr;
 
     auto result = std::make_shared<Type>();
@@ -55,7 +55,7 @@ inline std::shared_ptr<Type> UEventModule::CreateEventParam() const {
 
 template<CEventType Type, class ... Args>
 inline void UEventModule::DispatchT(Args &&...args) {
-    if (state_ != EModuleState::RUNNING)
+    if (mState != EModuleState::RUNNING)
         return;
 
     auto res = std::make_shared<Type>(std::forward<Args>(args)...);

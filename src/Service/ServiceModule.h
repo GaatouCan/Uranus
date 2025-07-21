@@ -1,8 +1,8 @@
 #pragma once
 
 #include "Module.h"
+#include "IDAllocator.h"
 
-#include <queue>
 #include <shared_mutex>
 #include <memory>
 #include <absl/container/flat_hash_map.h>
@@ -60,34 +60,27 @@ private:
     FServiceInfo GetContextInfo(int32_t id) const;
     FLibraryHandle *FindServiceHandle(const std::string &path, bool bCore = false) const;
 
-    int32_t AllocateServiceID();
-    void RecycleServiceID(int32_t id);
-
     bool OnServiceShutdown(const std::string &filename, int32_t sid, bool bCore = false);
 
 private:
     /** Dynamic Library Handle **/
 
-    flat_hash_map<std::string, FLibraryHandle *> extendHandleMap_;
-    flat_hash_map<std::string, FLibraryHandle *> coreHandleMap_;
-    mutable std::shared_mutex handleMutex_;
+    flat_hash_map<std::string, FLibraryHandle *> mExtendHandleMap;
+    flat_hash_map<std::string, FLibraryHandle *> mCoreHandleMap;
+    mutable std::shared_mutex mHandleMutex;
 
     /** Running Services Map **/
-    flat_hash_map<int32_t, std::shared_ptr<UContext>> serviceMap_;
-    mutable std::shared_mutex serviceMutex_;
+    flat_hash_map<int32_t, std::shared_ptr<UContext>> mServiceMap;
+    mutable std::shared_mutex mServiceMutex;
 
     /** Service Name To Service ID Mapping **/
-    flat_hash_map<std::string, FServiceInfo> serviceInfoMap_;
-    mutable std::shared_mutex infoMutex_;
+    flat_hash_map<std::string, FServiceInfo> mServiceInfoMap;
+    mutable std::shared_mutex mInfoMutex;
 
     /** Service ID Set With Same Library Filename **/
-    flat_hash_map<std::string, flat_hash_set<int32_t>> filenameMapping_;
-    mutable std::shared_mutex fileNameMutex_;
-
+    flat_hash_map<std::string, flat_hash_set<int32_t>> mFilenameMapping;
+    mutable std::shared_mutex mFileNameMutex;
 
     /** Service ID Management **/
-
-    std::queue<int32_t> recycledId_;
-    int32_t nextId_;
-    mutable std::shared_mutex idMutex_;
+    TIDAllocator<int32_t, true> mAllocator;
 };

@@ -2,10 +2,10 @@
 
 #include "Common.h"
 
-class BASE_API IDataAsset {
+class BASE_API IDataAssetInterface {
 
 public:
-    virtual ~IDataAsset() = default;
+    virtual ~IDataAssetInterface() = default;
 
     void LoadSynchronous();
 };

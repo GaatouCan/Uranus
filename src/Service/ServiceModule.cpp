@@ -1,14 +1,13 @@
 #include "ServiceModule.h"
 #include "Service.h"
-#include "PackageInterface.h"
+#include "Package.h"
 #include "LibraryHandle.h"
 #include "Config/Config.h"
 
 #include <spdlog/spdlog.h>
 
 
-UServiceModule::UServiceModule()
-    : nextId_(1) {
+UServiceModule::UServiceModule() {
 }
 
 UServiceModule::~UServiceModule() {
@@ -16,7 +15,7 @@ UServiceModule::~UServiceModule() {
 }
 
 void UServiceModule::Initial() {
-    if (state_ != EModuleState::CREATED)
+    if (mState != EModuleState::CREATED)
         return;
 
     const auto *configModule = GetServer()->GetModule<UConfig>();
@@ -70,7 +69,7 @@ void UServiceModule::Initial() {
 
     for (const auto &[filename, path] : coreMap) {
         if (auto node = new FLibraryHandle(); node->LoadFrom(path.string())) {
-            coreHandleMap_[filename] = node;
+            mCoreHandleMap[filename] = node;
             SPDLOG_INFO("\tLoaded Core Service Library From[{}]", path.string());
         }
     }
@@ -111,15 +110,15 @@ void UServiceModule::Initial() {
 
     for (const auto &[filename, path] : extendMap) {
         if (auto *node = new FLibraryHandle(); node->LoadFrom(path.string())) {
-            extendHandleMap_[filename] = node;
+            mExtendHandleMap[filename] = node;
             SPDLOG_INFO("\tLoaded Extend Service Library From[{}]", path.string());
         }
     }
 
     // Begin Initial Core Service
 
-    for (const auto &[filename, node] : coreHandleMap_) {
-        const int32_t sid = nextId_++;
+    for (const auto &[filename, node] : mCoreHandleMap) {
+        const int32_t sid = mAllocator.Allocate();
         const auto context = std::make_shared<UContext>();
 
         context->SetUpModule(this);
@@ -129,9 +128,9 @@ void UServiceModule::Initial() {
         if (context->Initial(nullptr)) {
             const auto name = context->GetServiceName();
 
-            serviceMap_[sid] = context;
-            filenameMapping_[filename].insert(sid);
-            serviceInfoMap_[name] = {sid, filename, name, true};
+            mServiceMap[sid] = context;
+            mFilenameMapping[filename].insert(sid);
+            mServiceInfoMap[name] = {sid, filename, name, true};
 
             SPDLOG_INFO("Initialized Service[{}]", name);
         } else {
@@ -141,14 +140,14 @@ void UServiceModule::Initial() {
         }
     }
 
-    state_ = EModuleState::INITIALIZED;
+    mState = EModuleState::INITIALIZED;
 }
 
 void UServiceModule::Start() {
-    if (state_ != EModuleState::INITIALIZED)
+    if (mState != EModuleState::INITIALIZED)
         return;
 
-    for (const auto &context: serviceMap_ | std::views::values) {
+    for (const auto &context: mServiceMap | std::views::values) {
         if (context->BootService()) {
             SPDLOG_INFO("Starting Core Service[{}]...", context->GetServiceName());
         } else {
@@ -158,25 +157,25 @@ void UServiceModule::Start() {
         }
     }
 
-    state_ = EModuleState::RUNNING;
+    mState = EModuleState::RUNNING;
 }
 
 void UServiceModule::Stop() {
-    if (state_ == EModuleState::STOPPED)
+    if (mState == EModuleState::STOPPED)
         return;
 
-    state_ = EModuleState::STOPPED;
+    mState = EModuleState::STOPPED;
 
     SPDLOG_INFO("Unloading All Service...");
-    for (const auto &context : serviceMap_ | std::views::values) {
+    for (const auto &context : mServiceMap | std::views::values) {
         context->ForceShutdown();
     }
 
-    for (const auto &node : coreHandleMap_ | std::views::values) {
+    for (const auto &node : mCoreHandleMap | std::views::values) {
         delete node;
     }
 
-    for (const auto &node : extendHandleMap_ | std::views::values) {
+    for (const auto &node : mExtendHandleMap | std::views::values) {
         delete node;
     }
 
@@ -184,7 +183,7 @@ void UServiceModule::Stop() {
 }
 
 std::shared_ptr<UContext> UServiceModule::BootExtendService(const std::string &filename, const std::shared_ptr<IPackageInterface> &pkg) {
-    if (state_ != EModuleState::RUNNING)
+    if (mState != EModuleState::RUNNING)
         return nullptr;
 
     const auto handle = FindServiceHandle(filename);
@@ -193,7 +192,7 @@ std::shared_ptr<UContext> UServiceModule::BootExtendService(const std::string &f
         return nullptr;
     }
 
-    const int32_t sid = AllocateServiceID();
+    const int32_t sid = mAllocator.AllocateT();
     if (sid < 0)
         return nullptr;
 
@@ -207,7 +206,7 @@ std::shared_ptr<UContext> UServiceModule::BootExtendService(const std::string &f
         SPDLOG_ERROR("{:<20} - Failed To Initial Service[{}]", __FUNCTION__, filename);
 
         context->ForceShutdown();
-        RecycleServiceID(sid);
+        mAllocator.RecycleT(sid);
 
         return nullptr;
     }
@@ -216,8 +215,8 @@ std::shared_ptr<UContext> UServiceModule::BootExtendService(const std::string &f
     bool bSuccess = true;
 
     {
-        std::shared_lock lock(infoMutex_);
-        if (serviceInfoMap_.contains(context->GetServiceName())) {
+        std::shared_lock lock(mInfoMutex);
+        if (mServiceInfoMap.contains(context->GetServiceName())) {
             SPDLOG_WARN("{:<20} - Service[{}] Has Already Exist.", __FUNCTION__, context->GetServiceName());
             bSuccess = false;
         }
@@ -229,11 +228,11 @@ std::shared_ptr<UContext> UServiceModule::BootExtendService(const std::string &f
             {
                 const auto name = context->GetServiceName();
 
-                std::scoped_lock lock(serviceMutex_, fileNameMutex_, infoMutex_);
+                std::scoped_lock lock(mServiceMutex, mFileNameMutex, mInfoMutex);
 
-                serviceMap_[sid] = context;
-                filenameMapping_[filename].insert(sid);
-                serviceInfoMap_[name] = {sid, filename, name, false};
+                mServiceMap[sid] = context;
+                mFilenameMapping[filename].insert(sid);
+                mServiceInfoMap[name] = {sid, filename, name, false};
             }
 
             SPDLOG_INFO("{:<20} - Boot Extend Service[{}] Successfully", __FUNCTION__, context->GetServiceName());
@@ -245,13 +244,13 @@ std::shared_ptr<UContext> UServiceModule::BootExtendService(const std::string &f
 
     // If Not Unique, Service Force To Shut Down And Recycle The Service ID
     context->ForceShutdown();
-    RecycleServiceID(sid);
+    mAllocator.RecycleT(sid);
 
     return nullptr;
 }
 
 void UServiceModule::ShutdownService(const int32_t id) {
-    if (state_ != EModuleState::RUNNING)
+    if (mState != EModuleState::RUNNING)
         return;
 
     std::shared_ptr<UContext> context;
@@ -266,25 +265,25 @@ void UServiceModule::ShutdownService(const int32_t id) {
         // TODO
     } else {
         {
-            std::scoped_lock lock(serviceMutex_, infoMutex_);
-            if (const auto &iter = serviceMap_.find(id); iter != serviceMap_.end()) {
+            std::scoped_lock lock(mServiceMutex, mInfoMutex);
+            if (const auto &iter = mServiceMap.find(id); iter != mServiceMap.end()) {
                 context = iter->second;
-                serviceMap_.erase(iter);
+                mServiceMap.erase(iter);
             }
 
-            serviceInfoMap_.erase(info.name);
+            mServiceInfoMap.erase(info.name);
         }
 
         if (context == nullptr) {
-            RecycleServiceID(id);
+            mAllocator.RecycleT(id);
             return;
         }
 
         auto func = [this, id, filename = info.filename](IContextBase *) {
-            if (state_ != EModuleState::RUNNING)
+            if (mState != EModuleState::RUNNING)
                 return;
             OnServiceShutdown(filename, id, false);
-            RecycleServiceID(id);
+            mAllocator.RecycleT(id);
         };
 
         context->Shutdown(false, 5, func);
@@ -292,57 +291,57 @@ void UServiceModule::ShutdownService(const int32_t id) {
 }
 
 std::shared_ptr<UContext> UServiceModule::FindService(const int32_t id) const {
-    if (state_ != EModuleState::RUNNING)
+    if (mState != EModuleState::RUNNING)
         return nullptr;
 
-    std::shared_lock lock(serviceMutex_);
-    const auto iter = serviceMap_.find(id);
-    return iter != serviceMap_.end() ? iter->second : nullptr;
+    std::shared_lock lock(mServiceMutex);
+    const auto iter = mServiceMap.find(id);
+    return iter != mServiceMap.end() ? iter->second : nullptr;
 }
 
 std::shared_ptr<UContext> UServiceModule::FindService(const std::string &name) const {
-    if (state_ != EModuleState::RUNNING)
+    if (mState != EModuleState::RUNNING)
         return nullptr;
 
     int32_t sid;
 
     {
-        std::shared_lock lock(infoMutex_);
-        const auto nameIter = serviceInfoMap_.find(name);
-        if (nameIter == serviceInfoMap_.end())
+        std::shared_lock lock(mInfoMutex);
+        const auto nameIter = mServiceInfoMap.find(name);
+        if (nameIter == mServiceInfoMap.end())
             return nullptr;
 
         sid = nameIter->second.id;
     }
 
-    std::shared_lock lock(serviceMutex_);
-    const auto iter = serviceMap_.find(sid);
-    return iter != serviceMap_.end() ? iter->second : nullptr;
+    std::shared_lock lock(mServiceMutex);
+    const auto iter = mServiceMap.find(sid);
+    return iter != mServiceMap.end() ? iter->second : nullptr;
 }
 
 std::map<std::string, int32_t> UServiceModule::GetServiceList() const {
-    if (state_ != EModuleState::RUNNING)
+    if (mState != EModuleState::RUNNING)
         return {};
 
-    std::shared_lock lock(infoMutex_);
+    std::shared_lock lock(mInfoMutex);
     std::map<std::string, int32_t> result;
-    for (const auto &[fst, snd] : serviceInfoMap_) {
+    for (const auto &[fst, snd] : mServiceInfoMap) {
         result.emplace(fst, snd.id);
     }
     return result;
 }
 
 int32_t UServiceModule::GetServiceID(const std::string &name) const {
-    if (state_ != EModuleState::INITIALIZED || state_ != EModuleState::RUNNING)
+    if (mState != EModuleState::INITIALIZED || mState != EModuleState::RUNNING)
         return -10;
 
-    std::shared_lock lock(infoMutex_);
-    const auto nameIter = serviceInfoMap_.find(name);
-    return nameIter != serviceInfoMap_.end() ? nameIter->second.id : -10;
+    std::shared_lock lock(mInfoMutex);
+    const auto nameIter = mServiceInfoMap.find(name);
+    return nameIter != mServiceInfoMap.end() ? nameIter->second.id : -10;
 }
 
 void UServiceModule::LoadLibraryFrom(const std::string &filename, const bool bCore) {
-    if (state_ != EModuleState::RUNNING)
+    if (mState != EModuleState::RUNNING)
         return;
 
 #ifdef __linux__
@@ -352,8 +351,8 @@ void UServiceModule::LoadLibraryFrom(const std::string &filename, const bool bCo
     if (bCore) {
         // TODO:
     } else {
-        std::unique_lock lock(handleMutex_);
-        if (extendHandleMap_.contains(filename)) {
+        std::unique_lock lock(mHandleMutex);
+        if (mExtendHandleMap.contains(filename)) {
             SPDLOG_INFO("{:<20} - Library[{}] Has Already Exist.", __FUNCTION__, filename);
             return;
         }
@@ -369,14 +368,14 @@ void UServiceModule::LoadLibraryFrom(const std::string &filename, const bool bCo
 #endif
 
         if (const auto node = new FLibraryHandle(); node->LoadFrom(path.string())) {
-            extendHandleMap_[filename] = node;
+            mExtendHandleMap[filename] = node;
             SPDLOG_INFO("{:<20} - Successfully Loaded Extend Library From[{}]", __FUNCTION__, filename);
         }
     }
 }
 
 void UServiceModule::UnloadLibrary(const std::string &filename, const bool bCore) {
-    if (state_ != EModuleState::RUNNING)
+    if (mState != EModuleState::RUNNING)
         return;
 
     if (bCore) {
@@ -384,8 +383,8 @@ void UServiceModule::UnloadLibrary(const std::string &filename, const bool bCore
     } else {
         // Check If It Is Extend Library Path
         {
-            std::shared_lock lock(handleMutex_);
-            if (!extendHandleMap_.contains(filename)) {
+            std::shared_lock lock(mHandleMutex);
+            if (!mExtendHandleMap.contains(filename)) {
                 SPDLOG_WARN("{:<20} - [{}] Is An Invalid Extend Service Library Filename", __FUNCTION__, filename);
                 return;
             }
@@ -398,8 +397,8 @@ void UServiceModule::UnloadLibrary(const std::string &filename, const bool bCore
 
         // Get All Services Need To Shut Down
         {
-            std::unique_lock lock(fileNameMutex_);
-            if (const auto iter = filenameMapping_.find(filename); iter != filenameMapping_.end()) {
+            std::unique_lock lock(mFileNameMutex);
+            if (const auto iter = mFilenameMapping.find(filename); iter != mFilenameMapping.end()) {
                 del = iter->second;
             }
         }
@@ -408,26 +407,26 @@ void UServiceModule::UnloadLibrary(const std::string &filename, const bool bCore
             std::shared_ptr<UContext> context;
 
             {
-                std::scoped_lock lock(serviceMutex_, infoMutex_);
-                if (const auto iter = serviceMap_.find(sid); iter != serviceMap_.end()) {
+                std::scoped_lock lock(mServiceMutex, mInfoMutex);
+                if (const auto iter = mServiceMap.find(sid); iter != mServiceMap.end()) {
                     context = iter->second;
-                    serviceMap_.erase(iter);
-                    serviceInfoMap_.erase(context->GetServiceName());
+                    mServiceMap.erase(iter);
+                    mServiceInfoMap.erase(context->GetServiceName());
                 }
             }
 
             auto func = [this, filename, sid](IContextBase *ptr) {
-                if (state_ != EModuleState::RUNNING)
+                if (mState != EModuleState::RUNNING)
                     return;
 
                 const bool bCanDelete = OnServiceShutdown(filename, sid, false);
-                RecycleServiceID(sid);
+                mAllocator.RecycleT(sid);
 
                 if (bCanDelete) {
-                    std::unique_lock lock(handleMutex_);
-                    if (const auto iter = extendHandleMap_.find(filename); iter != extendHandleMap_.end()) {
+                    std::unique_lock lock(mHandleMutex);
+                    if (const auto iter = mExtendHandleMap.find(filename); iter != mExtendHandleMap.end()) {
                         delete iter->second;
-                        extendHandleMap_.erase(iter);
+                        mExtendHandleMap.erase(iter);
                     }
                     SPDLOG_INFO("Free Service Library[{}] Successfully", filename);
                 }
@@ -463,42 +462,20 @@ UServiceModule::FServiceInfo UServiceModule::GetContextInfo(int32_t id) const {
     if (context == nullptr)
         return {};
 
-    std::shared_lock lock(infoMutex_);
-    const auto iter = serviceInfoMap_.find(context->GetServiceName());
-    return iter == serviceInfoMap_.end() ? FServiceInfo{} : iter->second;
+    std::shared_lock lock(mInfoMutex);
+    const auto iter = mServiceInfoMap.find(context->GetServiceName());
+    return iter == mServiceInfoMap.end() ? FServiceInfo{} : iter->second;
 }
 
 FLibraryHandle *UServiceModule::FindServiceHandle(const std::string &path, const bool bCore) const {
-    std::shared_lock lock(handleMutex_);
+    std::shared_lock lock(mHandleMutex);
     if (bCore) {
-        const auto iter = coreHandleMap_.find(path);
-        return iter != coreHandleMap_.end() ? iter->second : nullptr;
+        const auto iter = mCoreHandleMap.find(path);
+        return iter != mCoreHandleMap.end() ? iter->second : nullptr;
     }
 
-    const auto iter = extendHandleMap_.find(path);
-    return iter != extendHandleMap_.end() ? iter->second : nullptr;
-}
-
-int32_t UServiceModule::AllocateServiceID() {
-    std::unique_lock lock(idMutex_);
-
-    if (!recycledId_.empty()) {
-        const int32_t id = recycledId_.front();
-        recycledId_.pop();
-        return id;
-    }
-
-    if (nextId_ < 0) {
-        SPDLOG_ERROR("{:<20} - Service ID Allocator Overflow", __FUNCTION__);
-        return -1;
-    }
-
-    return nextId_++;
-}
-
-void UServiceModule::RecycleServiceID(const int32_t id) {
-    std::unique_lock lock(idMutex_);
-    recycledId_.push(id);
+    const auto iter = mExtendHandleMap.find(path);
+    return iter != mExtendHandleMap.end() ? iter->second : nullptr;
 }
 
 bool UServiceModule::OnServiceShutdown(const std::string &filename, const int32_t sid, const bool bCore) {
@@ -509,15 +486,15 @@ bool UServiceModule::OnServiceShutdown(const std::string &filename, const int32_
         // TODO
         return true;
     } else {
-        std::unique_lock lock(fileNameMutex_);
-        if (const auto iter = filenameMapping_.find(filename); iter != filenameMapping_.end()) {
+        std::unique_lock lock(mFileNameMutex);
+        if (const auto iter = mFilenameMapping.find(filename); iter != mFilenameMapping.end()) {
             iter->second.erase(sid);
 
             if (!iter->second.empty()) {
                 return false;
             }
 
-            filenameMapping_.erase(iter);
+            mFilenameMapping.erase(iter);
             return true;
         }
         return true;

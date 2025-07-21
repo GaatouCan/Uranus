@@ -60,7 +60,7 @@ private:
     void OnShutdownService(int32_t sid) const;
 
 private:
-    asio::io_context mIOContext;
+    io_context mContext;
     asio::executor_work_guard<asio::io_context::executor_type> mGuard;
 
     std::thread mThread;

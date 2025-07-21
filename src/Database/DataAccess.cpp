@@ -8,7 +8,7 @@ UDataAccess::UDataAccess()
 }
 
 void UDataAccess::Initial() {
-    if (state_ != EModuleState::CREATED)
+    if (mState != EModuleState::CREATED)
         return;
 
     sessionList_ = std::vector<FSessionNode>(1);
@@ -22,9 +22,9 @@ void UDataAccess::Initial() {
         node.session = std::make_unique<mysqlx::Session>(host, port, user, passwd);
         node.queue = std::make_unique<ADBTaskQueue>();
         node.thread = std::make_unique<std::thread>([this, &node]() {
-            while (node.queue->IsRunning() && state_ == EModuleState::RUNNING) {
+            while (node.queue->IsRunning() && mState == EModuleState::RUNNING) {
                 node.queue->Wait();
-                if (!node.queue->IsRunning() || state_ != EModuleState::RUNNING)
+                if (!node.queue->IsRunning() || mState != EModuleState::RUNNING)
                     break;
 
                 try {
@@ -41,14 +41,14 @@ void UDataAccess::Initial() {
         });
     }
 
-    state_ = EModuleState::INITIALIZED;
+    mState = EModuleState::INITIALIZED;
 }
 
 void UDataAccess::Stop() {
-    if (state_ == EModuleState::STOPPED)
+    if (mState == EModuleState::STOPPED)
         return;
 
-    state_ = EModuleState::STOPPED;
+    mState = EModuleState::STOPPED;
 
     for (const auto &[th, sess, queue]: sessionList_) {
         if (queue)
@@ -64,7 +64,7 @@ UDataAccess::~UDataAccess() {
 }
 
 void UDataAccess::PushTransaction(const ATransaction &tans) {
-    if (state_ != EModuleState::RUNNING)
+    if (mState != EModuleState::RUNNING)
         return;
 
     if (sessionList_.empty()) {

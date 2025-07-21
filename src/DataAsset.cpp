@@ -1,5 +1,5 @@
 #include "DataAsset.h"
 
-void IDataAsset::LoadSynchronous() {
+void IDataAssetInterface::LoadSynchronous() {
     // TODO
 }

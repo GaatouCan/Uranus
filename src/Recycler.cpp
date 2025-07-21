@@ -7,23 +7,23 @@
 
 
 IRecyclerBase::IRecyclerBase(io_context &ctx)
-    : ctx_(ctx),
-      usage_(-1),
-      timer_(nullptr),
+    : mContext(ctx),
+      mUsage(-1),
+      mShrinkTimer(nullptr),
       bExpanding(false) {
 
     static_assert(RECYCLER_SHRINK_RATE > RECYCLER_SHRINK_THRESHOLD);
 }
 
 IRecyclerBase::~IRecyclerBase() {
-    if (timer_ != nullptr) {
-        timer_->cancel();
+    if (mShrinkTimer != nullptr) {
+        mShrinkTimer->cancel();
     }
 }
 
 std::shared_ptr<IRecycleInterface> IRecyclerBase::Acquire() {
     // Not Initialized
-    if (usage_ < 0)
+    if (mUsage < 0)
         return nullptr;
 
     // Custom Deleter Of The Smart Pointer
@@ -35,41 +35,41 @@ std::shared_ptr<IRecycleInterface> IRecyclerBase::Acquire() {
         }
     };
 
-    IRecycleInterface *elem = nullptr;
+    IRecycleInterface *pObject = nullptr;
 
     // Pop The Front From The Queue If It Is Not Empty
     {
-        std::unique_lock lock(mutex_);
-        if (!queue_.empty()) {
-            auto ptr = std::move(queue_.front());
-            queue_.pop();
+        std::unique_lock lock(mMutex);
+        if (!mQueue.empty()) {
+            auto ptr = std::move(mQueue.front());
+            mQueue.pop();
 
-            elem = ptr.release();
+            pObject = ptr.release();
 
             SPDLOG_TRACE("{:<20} - Recycler[{:p}] - Acquire Recyclable[{:p}] From Queue",
-                __FUNCTION__, static_cast<void *>(this), static_cast<void *>(elem));
+                __FUNCTION__, static_cast<void *>(this), static_cast<void *>(pObject));
         }
     }
 
     // Not Available Element In The Queue, Create New One And Return The New
-    if (elem == nullptr) {
-        elem = Create();
-        elem->OnCreate();
+    if (pObject == nullptr) {
+        pObject = Create();
+        pObject->OnCreate();
 
         SPDLOG_TRACE("{:<20} - Recycler[{:p}] - Acquire New Recyclable[{:p}]",
-            __FUNCTION__, static_cast<void *>(this), static_cast<void *>(elem));
+            __FUNCTION__, static_cast<void *>(this), static_cast<void *>(pObject));
     }
 
-    elem->Initial();
-    ++usage_;
+    pObject->Initial();
+    ++mUsage;
 
     if (!bExpanding) {
-        std::shared_lock lock(mutex_);
+        std::shared_lock lock(mMutex);
 
         // Check If It Needs To Expand
-        if (static_cast<float>(usage_.load()) >= std::ceil(static_cast<float>(queue_.size() + usage_.load()) * RECYCLER_EXPAND_THRESHOLD)) {
+        if (static_cast<float>(mUsage.load()) >= std::ceil(static_cast<float>(mQueue.size() + mUsage.load()) * RECYCLER_EXPAND_THRESHOLD)) {
             bExpanding = true;
-            co_spawn(ctx_, [weak = weak_from_this()]() -> awaitable<void> {
+            co_spawn(mContext, [weak = weak_from_this()]() -> awaitable<void> {
                 if (const auto self = weak.lock()) {
                     self->Expand();
                 }
@@ -78,34 +78,34 @@ std::shared_ptr<IRecycleInterface> IRecyclerBase::Acquire() {
         }
     }
 
-    return { elem, deleter };
+    return { pObject, deleter };
 }
 
 size_t IRecyclerBase::GetUsage() const {
-    if (usage_ < 0)
+    if (mUsage < 0)
         return 0;
-    return usage_;
+    return mUsage;
 }
 
 size_t IRecyclerBase::GetIdle() const {
-    if (usage_ < 0)
+    if (mUsage < 0)
         return 0;
 
-    std::shared_lock lock(mutex_);
-    return queue_.size();
+    std::shared_lock lock(mMutex);
+    return mQueue.size();
 }
 
 size_t IRecyclerBase::GetCapacity() const {
-    if (usage_ < 0)
+    if (mUsage < 0)
         return 0;
 
-    std::shared_lock lock(mutex_);
-    return queue_.size() + usage_.load();
+    std::shared_lock lock(mMutex);
+    return mQueue.size() + mUsage.load();
 }
 
 void IRecyclerBase::Shrink() {
     if (bExpanding) {
-        timer_.reset();
+        mShrinkTimer.reset();
         return;
     }
 
@@ -113,18 +113,18 @@ void IRecyclerBase::Shrink() {
 
     // Check If It Needs To Shrink
     {
-        std::shared_lock lock(mutex_);
+        std::shared_lock lock(mMutex);
 
         // Recycler Total Capacity
-        const size_t total = queue_.size() + usage_.load();
+        const size_t total = mQueue.size() + mUsage.load();
 
         // Usage Less Than Shrink Threshold
-        if (static_cast<float>(usage_.load()) < std::ceil(static_cast<float>(total) * RECYCLER_SHRINK_THRESHOLD)) {
+        if (static_cast<float>(mUsage.load()) < std::ceil(static_cast<float>(total) * RECYCLER_SHRINK_THRESHOLD)) {
             num = static_cast<size_t>(std::floor(static_cast<float>(total) * RECYCLER_SHRINK_RATE));
 
             const auto rest = total - num;
             if (rest <= 0) {
-                timer_.reset();
+                mShrinkTimer.reset();
                 return;
             }
 
@@ -138,44 +138,44 @@ void IRecyclerBase::Shrink() {
         SPDLOG_TRACE("{:<20} - Recycler[{:p}] Need To Release {} Elements",
             __FUNCTION__, static_cast<void *>(this), num);
 
-        std::unique_lock lock(mutex_);
+        std::unique_lock lock(mMutex);
 
-        while (num-- > 0 && !queue_.empty()) {
-            const auto elem = std::move(queue_.front());
-            queue_.pop();
+        while (num-- > 0 && !mQueue.empty()) {
+            const auto elem = std::move(mQueue.front());
+            mQueue.pop();
         }
 
         SPDLOG_TRACE("{:<20} - Recycler[{:p}] Shrink Finished",
             __FUNCTION__, static_cast<void *>(this));
     }
 
-    timer_.reset();
+    mShrinkTimer.reset();
 }
 
 void IRecyclerBase::Recycle(IRecycleInterface *elem) {
-    if (usage_ < 0) {
+    if (mUsage < 0) {
         delete elem;
         return;
     }
 
     elem->Reset();
-    --usage_;
+    --mUsage;
 
     {
-        std::unique_lock lock(mutex_);
-        queue_.emplace(elem);
+        std::unique_lock lock(mMutex);
+        mQueue.emplace(elem);
 
         SPDLOG_TRACE("{:<20} - Recycler[{:p}] - Recycle Recyclable[{:p}] To Queue",
             __FUNCTION__, static_cast<void *>(this), static_cast<void *>(elem));
     }
 
-    if (timer_ != nullptr || bExpanding)
+    if (mShrinkTimer != nullptr || bExpanding)
         return;
 
     // Do Shrink Later
-    timer_ = make_shared<ASteadyTimer>(ctx_);
+    mShrinkTimer = make_shared<ASteadyTimer>(mContext);
 
-    co_spawn(ctx_, [weak = weak_from_this(), timer = timer_]() mutable -> awaitable<void> {
+    co_spawn(mContext, [weak = weak_from_this(), timer = mShrinkTimer]() mutable -> awaitable<void> {
         timer->expires_after(std::chrono::seconds(RECYCLER_SHRINK_DELAY));
 
         // If Shrink Timer Be Canceled, It Will Not Shrink
@@ -189,8 +189,8 @@ void IRecyclerBase::Recycle(IRecycleInterface *elem) {
 
 void IRecyclerBase::Expand() {
     // Cancel The Shrink Timer
-    if (timer_ != nullptr) {
-        timer_->cancel();
+    if (mShrinkTimer != nullptr) {
+        mShrinkTimer->cancel();
     }
 
     size_t num = 0;
@@ -198,8 +198,8 @@ void IRecyclerBase::Expand() {
 
     // Calculate How Many New Elements Need To Be Created
     {
-        std::shared_lock lock(mutex_);
-        const size_t total = queue_.size() + usage_.load();
+        std::shared_lock lock(mMutex);
+        const size_t total = mQueue.size() + mUsage.load();
         num = static_cast<size_t>(static_cast<float>(total) * RECYCLER_EXPAND_RATE);
     }
 
@@ -211,9 +211,9 @@ void IRecyclerBase::Expand() {
     }
 
     if (!elems.empty()) {
-        std::unique_lock lock(mutex_);
+        std::unique_lock lock(mMutex);
         for (const auto &elem : elems) {
-            queue_.emplace(elem);
+            mQueue.emplace(elem);
         }
     }
 
@@ -221,15 +221,15 @@ void IRecyclerBase::Expand() {
 }
 
 void IRecyclerBase::Initial(const size_t capacity) {
-    if (usage_ >= 0)
+    if (mUsage >= 0)
         return;
 
     for (size_t count = 0; count < capacity; count++) {
         auto *elem = Create();
         elem->OnCreate();
 
-        queue_.emplace(elem);
+        mQueue.emplace(elem);
     }
-    usage_ = 0;
+    mUsage = 0;
     SPDLOG_TRACE("{:<20} - Recycler[{:p}] - Capacity[{}]", __FUNCTION__, static_cast<void *>(this), capacity);
 }

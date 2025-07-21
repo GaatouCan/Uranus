@@ -15,26 +15,26 @@ UTimerModule::~UTimerModule() {
 }
 
 FTimerHandle UTimerModule::SetSteadyTimer(const int32_t sid, const int64_t pid, const ATimerTask &task, int delay, int rate) {
-    const auto id = allocator_.AllocateConcurrent();
+    const auto id = mAllocator.AllocateT();
     if (id < 0)
         return { -1, true };
 
     {
-        std::unique_lock lock(timerMutex_);
+        std::unique_lock lock(mTimerMutex);
 
-        if (steadyTimerMap_.contains(id))
+        if (mSteadyTimerMap.contains(id))
             return { -2, true };
 
         FSteadyTimerNode node { sid, pid, make_shared<ASteadyTimer>(GetServer()->GetIOContext()) };
-        steadyTimerMap_.emplace(id, std::move(node));
+        mSteadyTimerMap.emplace(id, std::move(node));
 
         if (sid > 0)
-            serviceToSteadyTimer_[sid].emplace(id);
+            mServiceToSteadyTimer[sid].emplace(id);
         else
-            playerToSteadyTimer_[pid].emplace(id);
+            mPlayerToSteadyTimer[pid].emplace(id);
     }
 
-    co_spawn(GetServer()->GetIOContext(), [this, timer = steadyTimerMap_[id].timer, id, sid, pid, delay, rate, task]() -> awaitable<void> {
+    co_spawn(GetServer()->GetIOContext(), [this, timer = mSteadyTimerMap[id].timer, id, sid, pid, delay, rate, task]() -> awaitable<void> {
         try {
             auto point = std::chrono::steady_clock::now() + std::chrono::milliseconds(delay * 100);
 
@@ -63,39 +63,39 @@ FTimerHandle UTimerModule::SetSteadyTimer(const int32_t sid, const int64_t pid, 
                     }
                 }
 
-            } while (rate > 0 && state_ == EModuleState::RUNNING);
+            } while (rate > 0 && mState == EModuleState::RUNNING);
         } catch (const std::exception &e) {
             SPDLOG_ERROR("{:<20} - Exception: {}", "UTimerModule::SetTimer", e.what());
         }
 
         RemoveSteadyTimer(id);
-        allocator_.RecycleConcurrent(id);
+        mAllocator.RecycleT(id);
     }, detached);
 
     return { id, true };
 }
 
 FTimerHandle UTimerModule::SetSystemTimer(int32_t sid, int64_t pid, const ATimerTask &task, int delay, int rate) {
-    const auto id = allocator_.AllocateConcurrent();
+    const auto id = mAllocator.AllocateT();
     if (id < 0)
         return { -1, false };
 
     {
-        std::unique_lock lock(timerMutex_);
+        std::unique_lock lock(mTimerMutex);
 
-        if (steadyTimerMap_.contains(id))
+        if (mSteadyTimerMap.contains(id))
             return { -2,  true };
 
         FSystemTimerNode node { sid, pid, make_shared<ASystemTimer>(GetServer()->GetIOContext()) };
-        systemTimerMap_.emplace(id, std::move(node));
+        mSystemTimerMap.emplace(id, std::move(node));
 
         if (sid > 0)
-            serviceToSystemTimer_[sid].emplace(id);
+            mServiceToSystemTimer[sid].emplace(id);
         else
-            playerToSystemTimer_[pid].emplace(id);
+            mPlayerToSystemTimer[pid].emplace(id);
     }
 
-    co_spawn(GetServer()->GetIOContext(), [this, timer = systemTimerMap_[id].timer, id, sid, pid, delay, rate, task]() -> awaitable<void> {
+    co_spawn(GetServer()->GetIOContext(), [this, timer = mSystemTimerMap[id].timer, id, sid, pid, delay, rate, task]() -> awaitable<void> {
         try {
             auto point = std::chrono::system_clock::now() + std::chrono::milliseconds(delay * 100);
 
@@ -124,173 +124,173 @@ FTimerHandle UTimerModule::SetSystemTimer(int32_t sid, int64_t pid, const ATimer
                     }
                 }
 
-            } while (rate > 0 && state_ == EModuleState::RUNNING);
+            } while (rate > 0 && mState == EModuleState::RUNNING);
         } catch (const std::exception &e) {
             SPDLOG_ERROR("{:<20} - Exception: {}", "UTimerModule::SetTimer", e.what());
         }
 
         RemoveSystemTimer(id);
-        allocator_.RecycleConcurrent(id);
+        mAllocator.RecycleT(id);
     }, detached);
 
     return { id, false };
 }
 
 void UTimerModule::CancelTimer(const FTimerHandle &handle) {
-    if (state_ != EModuleState::RUNNING)
+    if (mState != EModuleState::RUNNING)
         return;
 
-    std::unique_lock lock(timerMutex_);
+    std::unique_lock lock(mTimerMutex);
     if (handle.bSteady) {
-        const auto iter = steadyTimerMap_.find(handle.id);
-        if (iter == steadyTimerMap_.end())
+        const auto iter = mSteadyTimerMap.find(handle.id);
+        if (iter == mSteadyTimerMap.end())
             return;
 
         iter->second.timer->cancel();
 
         if (iter->second.sid > 0) {
-            if (const auto it = serviceToSteadyTimer_.find(iter->second.sid); it != serviceToSteadyTimer_.end())
+            if (const auto it = mServiceToSteadyTimer.find(iter->second.sid); it != mServiceToSteadyTimer.end())
                 it->second.erase(handle.id);
         } else {
-            if (const auto it = playerToSteadyTimer_.find(iter->second.pid); it != playerToSteadyTimer_.end())
+            if (const auto it = mPlayerToSteadyTimer.find(iter->second.pid); it != mPlayerToSteadyTimer.end())
                 it->second.erase(handle.id);
         }
 
-        steadyTimerMap_.erase(iter);
+        mSteadyTimerMap.erase(iter);
     } else {
-        const auto iter = systemTimerMap_.find(handle.id);
-        if (iter == systemTimerMap_.end())
+        const auto iter = mSystemTimerMap.find(handle.id);
+        if (iter == mSystemTimerMap.end())
             return;
 
         iter->second.timer->cancel();
 
         if (iter->second.sid > 0) {
-            if (const auto it = serviceToSystemTimer_.find(iter->second.sid); it != serviceToSystemTimer_.end())
+            if (const auto it = mServiceToSystemTimer.find(iter->second.sid); it != mServiceToSystemTimer.end())
                 it->second.erase(handle.id);
         } else {
-            if (const auto it = playerToSystemTimer_.find(iter->second.pid); it != playerToSystemTimer_.end())
+            if (const auto it = mPlayerToSystemTimer.find(iter->second.pid); it != mPlayerToSystemTimer.end())
                 it->second.erase(handle.id);
         }
 
-        systemTimerMap_.erase(iter);
+        mSystemTimerMap.erase(iter);
     }
 }
 
 void UTimerModule::CancelServiceTimer(const int32_t sid) {
-    if (state_ != EModuleState::RUNNING)
+    if (mState != EModuleState::RUNNING)
         return;
 
-    std::unique_lock lock(timerMutex_);
+    std::unique_lock lock(mTimerMutex);
 
     // Clean Steady Timers
-    const auto steadyIter = serviceToSteadyTimer_.find(sid);
-    if (steadyIter == serviceToSteadyTimer_.end())
+    const auto steadyIter = mServiceToSteadyTimer.find(sid);
+    if (steadyIter == mServiceToSteadyTimer.end())
         return;
 
     for (const auto tid : steadyIter->second) {
-        const auto timerIter = steadyTimerMap_.find(tid);
-        if (timerIter == steadyTimerMap_.end())
+        const auto timerIter = mSteadyTimerMap.find(tid);
+        if (timerIter == mSteadyTimerMap.end())
             continue;
 
         timerIter->second.timer->cancel();
-        steadyTimerMap_.erase(tid);
+        mSteadyTimerMap.erase(tid);
     }
 
     // Clean System Timers
-    const auto systemIter = serviceToSystemTimer_.find(sid);
-    if (systemIter == serviceToSystemTimer_.end())
+    const auto systemIter = mServiceToSystemTimer.find(sid);
+    if (systemIter == mServiceToSystemTimer.end())
         return;
 
     for (const auto tid : systemIter->second) {
-        const auto timerIter = systemTimerMap_.find(tid);
-        if (timerIter == systemTimerMap_.end())
+        const auto timerIter = mSystemTimerMap.find(tid);
+        if (timerIter == mSystemTimerMap.end())
             continue;
 
         timerIter->second.timer->cancel();
-        systemTimerMap_.erase(tid);
+        mSystemTimerMap.erase(tid);
     }
 }
 
 void UTimerModule::CancelPlayerTimer(const int64_t pid) {
-    if (state_ != EModuleState::RUNNING)
+    if (mState != EModuleState::RUNNING)
         return;
 
-    std::unique_lock lock(timerMutex_);
+    std::unique_lock lock(mTimerMutex);
 
     // Clean Steady Timers
-    const auto steadyIter = playerToSteadyTimer_.find(pid);
-    if (steadyIter == playerToSteadyTimer_.end())
+    const auto steadyIter = mPlayerToSteadyTimer.find(pid);
+    if (steadyIter == mPlayerToSteadyTimer.end())
         return;
 
     for (const auto tid : steadyIter->second) {
-        const auto timerIter = steadyTimerMap_.find(tid);
-        if (timerIter == steadyTimerMap_.end())
+        const auto timerIter = mSteadyTimerMap.find(tid);
+        if (timerIter == mSteadyTimerMap.end())
             continue;
 
         timerIter->second.timer->cancel();
-        steadyTimerMap_.erase(tid);
+        mSteadyTimerMap.erase(tid);
     }
 
     // Clean System Timers
-    const auto systemIter = playerToSystemTimer_.find(pid);
-    if (systemIter == playerToSystemTimer_.end())
+    const auto systemIter = mPlayerToSystemTimer.find(pid);
+    if (systemIter == mPlayerToSystemTimer.end())
         return;
 
     for (const auto tid : systemIter->second) {
-        const auto timerIter = systemTimerMap_.find(tid);
-        if (timerIter == systemTimerMap_.end())
+        const auto timerIter = mSystemTimerMap.find(tid);
+        if (timerIter == mSystemTimerMap.end())
             continue;
 
         timerIter->second.timer->cancel();
-        systemTimerMap_.erase(tid);
+        mSystemTimerMap.erase(tid);
     }
 }
 
 void UTimerModule::Stop() {
-    if (state_ == EModuleState::STOPPED)
+    if (mState == EModuleState::STOPPED)
         return;
 
-    state_ = EModuleState::STOPPED;
+    mState = EModuleState::STOPPED;
 
-    for (const auto &val : steadyTimerMap_ | std::views::values) {
+    for (const auto &val : mSteadyTimerMap | std::views::values) {
         val.timer->cancel();
     }
 }
 
 void UTimerModule::RemoveSteadyTimer(const int64_t id) {
-    std::unique_lock lock(timerMutex_);
-    const auto iter = steadyTimerMap_.find(id);
-    if (iter == steadyTimerMap_.end())
+    std::unique_lock lock(mTimerMutex);
+    const auto iter = mSteadyTimerMap.find(id);
+    if (iter == mSteadyTimerMap.end())
         return;
 
     if (iter->second.sid > 0) {
-        if (const auto it = serviceToSteadyTimer_.find(iter->second.sid); it != serviceToSteadyTimer_.end()) {
+        if (const auto it = mServiceToSteadyTimer.find(iter->second.sid); it != mServiceToSteadyTimer.end()) {
             it->second.erase(id);
         }
     } else {
-        if (const auto it = playerToSteadyTimer_.find(iter->second.pid); it != playerToSteadyTimer_.end()) {
+        if (const auto it = mPlayerToSteadyTimer.find(iter->second.pid); it != mPlayerToSteadyTimer.end()) {
             it->second.erase(id);
         }
     }
 
-    steadyTimerMap_.erase(iter);
+    mSteadyTimerMap.erase(iter);
 }
 
 void UTimerModule::RemoveSystemTimer(int64_t id) {
-    std::unique_lock lock(timerMutex_);
-    const auto iter = systemTimerMap_.find(id);
-    if (iter == systemTimerMap_.end())
+    std::unique_lock lock(mTimerMutex);
+    const auto iter = mSystemTimerMap.find(id);
+    if (iter == mSystemTimerMap.end())
         return;
 
     if (iter->second.sid > 0) {
-        if (const auto it = serviceToSystemTimer_.find(iter->second.sid); it != serviceToSystemTimer_.end()) {
+        if (const auto it = mServiceToSystemTimer.find(iter->second.sid); it != mServiceToSystemTimer.end()) {
             it->second.erase(id);
         }
     } else {
-        if (const auto it = playerToSystemTimer_.find(iter->second.pid); it != playerToSystemTimer_.end()) {
+        if (const auto it = mPlayerToSystemTimer.find(iter->second.pid); it != mPlayerToSystemTimer.end()) {
             it->second.erase(id);
         }
     }
 
-    systemTimerMap_.erase(iter);
+    mSystemTimerMap.erase(iter);
 }

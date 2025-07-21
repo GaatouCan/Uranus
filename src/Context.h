@@ -102,29 +102,29 @@ class BASE_API IContextBase : public std::enable_shared_from_this<IContextBase> 
     using AContextChannel = DefaultToken::as_default_on_t<asio::experimental::concurrent_channel<void(std::error_code, shared_ptr<INodeBase>)>>;
 
     /** The Owner Module */
-    IModuleBase *module_;
+    IModuleBase *mOwner;
 
     /** The Owned Service */
-    IServiceBase *service_;
+    IServiceBase *mService;
 
     /** Loaded Library With Creator And Destroyer Of Service */
-    FLibraryHandle *handle_;
+    FLibraryHandle *mHandle;
 
     /** Internal Package Pool */
-    shared_ptr<IRecyclerBase> pool_;
+    shared_ptr<IRecyclerBase> mPackegePool;
 
     /** Internal Node Channel */
-    unique_ptr<AContextChannel> channel_;
+    unique_ptr<AContextChannel> mChannel;
 
     /** When Timeout, Force Shut Down This Context */
-    unique_ptr<ASteadyTimer> shutdownTimer_;
+    unique_ptr<ASteadyTimer> mShutdownTimer;
 
     /** Invoked While This Context Stopped */
-    std::function<void(IContextBase *)> shutdownCallback_;
+    std::function<void(IContextBase *)> mShutdownCallback;
 
 protected:
     /** Current Context State */
-    std::atomic<EContextState> state_;
+    std::atomic<EContextState> mState;
 
 public:
     IContextBase();

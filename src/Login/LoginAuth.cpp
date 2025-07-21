@@ -1,6 +1,6 @@
 #include "LoginAuth.h"
 #include "Server.h"
-#include "PackageInterface.h"
+#include "Package.h"
 #include "Gateway/Gateway.h"
 #include "Network/Network.h"
 #include "Network/Connection.h"
@@ -16,26 +16,26 @@ ULoginAuth::~ULoginAuth() {
 }
 
 void ULoginAuth::Initial() {
-    if (state_ != EModuleState::CREATED)
+    if (mState != EModuleState::CREATED)
         return;
 
     GetServer()->GetServerHandler()->InitLoginAuth(this);
 
-    state_ = EModuleState::INITIALIZED;
+    mState = EModuleState::INITIALIZED;
 }
 
 void ULoginAuth::Start() {
-    if (state_ != EModuleState::INITIALIZED)
+    if (mState != EModuleState::INITIALIZED)
         return;
 
-    state_ = EModuleState::RUNNING;
+    mState = EModuleState::RUNNING;
 }
 
 void ULoginAuth::Stop() {
-    if (state_ == EModuleState::STOPPED)
+    if (mState == EModuleState::STOPPED)
         return;
 
-    state_ = EModuleState::STOPPED;
+    mState = EModuleState::STOPPED;
 }
 
 bool ULoginAuth::VerifyAddress(const asio::ip::tcp::endpoint &endpoint) {
@@ -44,18 +44,18 @@ bool ULoginAuth::VerifyAddress(const asio::ip::tcp::endpoint &endpoint) {
 }
 
 void ULoginAuth::OnPlayerLogin(const int64_t cid, const std::shared_ptr<IPackageInterface> &pkg) {
-    if (state_ != EModuleState::RUNNING)
+    if (mState != EModuleState::RUNNING)
         return; {
-        std::unique_lock lock(mutex_);
-        if (const auto iter = loginMap_.find(cid); iter != loginMap_.end()) {
-            if (std::chrono::system_clock::now() - iter->second < std::chrono::seconds(1))
+        std::unique_lock lock(mMutex);
+        if (const auto iter = mRecentLoginMap.find(cid); iter != mRecentLoginMap.end()) {
+            if (std::chrono::steady_clock::now() - iter->second < std::chrono::seconds(1))
                 return;
         }
 
-        loginMap_[cid] = std::chrono::system_clock::now();
+        mRecentLoginMap[cid] = std::chrono::steady_clock::now();
     }
 
-    const auto [token, pid] = handler_->ParseLoginRequest(pkg);
+    const auto [token, pid] = mLoginHandler->ParseLoginRequest(pkg);
     if (token.empty() || pid == 0) {
         SPDLOG_WARN("{:<20} - fd[{}] Parse Login Request Failed.", __FUNCTION__, cid);
         return;
@@ -76,7 +76,7 @@ void ULoginAuth::OnPlayerLogin(const int64_t cid, const std::shared_ptr<IPackage
 
         const auto response = network->BuildPackage();
 
-        handler_->OnRepeatLogin(pid, addr, response);
+        mLoginHandler->OnRepeatLogin(pid, addr, response);
 
         response->SetSource(SERVER_SOURCE_ID);
         response->SetTarget(CLIENT_TARGET_ID);
@@ -91,8 +91,8 @@ void ULoginAuth::OnPlayerLogin(const int64_t cid, const std::shared_ptr<IPackage
 }
 
 void ULoginAuth::OnLoginSuccess(const int64_t cid, const int64_t pid) { {
-        std::unique_lock lock(mutex_);
-        loginMap_.erase(cid);
+        std::unique_lock lock(mMutex);
+        mRecentLoginMap.erase(cid);
     }
 
     const auto *network = GetServer()->GetModule<UNetwork>();
@@ -105,7 +105,7 @@ void ULoginAuth::OnLoginSuccess(const int64_t cid, const int64_t pid) { {
     // Send Login Success Response To Client
     const auto response = network->BuildPackage();
 
-    handler_->OnLoginSuccess(pid, response);
+    mLoginHandler->OnLoginSuccess(pid, response);
 
     response->SetSource(SERVER_SOURCE_ID);
     response->SetTarget(CLIENT_TARGET_ID);

@@ -26,14 +26,14 @@ const YAML::Node &UConfig::GetServerConfig() const {
 }
 
 int UConfig::GetServerID() const {
-    if (state_ >= EModuleState::INITIALIZED)
+    if (mState >= EModuleState::INITIALIZED)
         return mConfig["server"]["id"].as<int>();
 
     return -1;
 }
 
 void UConfig::Initial() {
-    if (state_ != EModuleState::CREATED)
+    if (mState != EModuleState::CREATED)
         return;
 
     SPDLOG_INFO("Using Server Configuration File: {}.", mYAMLPath + SERVER_CONFIG_FILE);
@@ -81,7 +81,7 @@ void UConfig::Initial() {
     });
 
     SPDLOG_INFO("JSON Files Loaded Successfully.");
-    state_ = EModuleState::INITIALIZED;
+    mState = EModuleState::INITIALIZED;
 }
 
 std::optional<nlohmann::json> UConfig::Find(const std::string &path) const {

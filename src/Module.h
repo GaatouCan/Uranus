@@ -23,7 +23,7 @@ class BASE_API IModuleBase {
 protected:
     IModuleBase();
 
-    void SetUpServer(UServer *server);
+    void SetUpModule(UServer *server);
 
     virtual void Initial();
     virtual void Start();
@@ -41,11 +41,11 @@ public:
 
 private:
     /** The Owner Server Pointer */
-    UServer *server_;
+    UServer *mServer;
 
 protected:
     /** Module Current State */
-    std::atomic<EModuleState> state_;
+    std::atomic<EModuleState> mState;
 };
 
 template<typename T>

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Context.h"
-#include "Event/EventInterface.h"
+#include "Event/Event.h"
 
 #include <functional>
 #include <memory>

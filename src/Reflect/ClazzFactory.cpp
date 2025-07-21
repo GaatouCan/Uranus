@@ -5,10 +5,10 @@ UClazzFactory::UClazzFactory() {
 }
 
 void UClazzFactory::Initial() {
-    if (state_ != EModuleState::CREATED)
+    if (mState != EModuleState::CREATED)
         return;
 
-    state_ = EModuleState::INITIALIZED;
+    mState = EModuleState::INITIALIZED;
 }
 
 UClazzFactory::~UClazzFactory() {
@@ -26,7 +26,7 @@ void UClazzFactory::RemoveClazz(const std::string &name) {
 }
 
 void UClazzFactory::RegisterClazz(UClazz *clazz) {
-    if (state_ >= EModuleState::RUNNING)
+    if (mState >= EModuleState::RUNNING)
         return;
 
     if (clazz == nullptr)

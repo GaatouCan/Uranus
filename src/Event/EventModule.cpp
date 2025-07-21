@@ -11,18 +11,18 @@ UEventModule::UEventModule() {
 }
 
 void UEventModule::Dispatch(const std::shared_ptr<IEventInterface> &event) const {
-    if (state_ != EModuleState::RUNNING)
+    if (mState != EModuleState::RUNNING)
         return;
 
     absl::flat_hash_set<int32_t> serviceSet;
     absl::flat_hash_set<int64_t> playerSet;
 
     {
-        std::shared_lock lock(mutex_);
-        if (const auto iter = serviceSet_.find(event->GetEventType()); iter != serviceSet_.end()) {
+        std::shared_lock lock(mListenerMutex);
+        if (const auto iter = mServiceListener.find(event->GetEventType()); iter != mServiceListener.end()) {
             serviceSet = iter->second;
         }
-        if (const auto iter = playerSet_.find(event->GetEventType()); iter != playerSet_.end()) {
+        if (const auto iter = mPlayerListener.find(event->GetEventType()); iter != mPlayerListener.end()) {
             playerSet = iter->second;
         }
     }
@@ -49,28 +49,28 @@ void UEventModule::Dispatch(const std::shared_ptr<IEventInterface> &event) const
 }
 
 void UEventModule::ListenEvent(const int event, const int32_t sid, const int64_t pid) {
-    if (state_ != EModuleState::RUNNING)
+    if (mState != EModuleState::RUNNING)
         return;
 
-    std::unique_lock lock(mutex_);
+    std::unique_lock lock(mListenerMutex);
     if (sid > 0) {
-        serviceSet_[event].insert(sid);
+        mServiceListener[event].insert(sid);
     } else if (pid > 0) {
-        playerSet_[event].insert(pid);
+        mPlayerListener[event].insert(pid);
     }
 }
 
 void UEventModule::RemoveListener(const int event, const int32_t sid, const int64_t pid) {
-    if (state_ != EModuleState::RUNNING)
+    if (mState != EModuleState::RUNNING)
         return;
 
-    std::unique_lock lock(mutex_);
+    std::unique_lock lock(mListenerMutex);
     if (sid > 0) {
-        if (const auto iter = serviceSet_.find(event); iter != serviceSet_.end()) {
+        if (const auto iter = mServiceListener.find(event); iter != mServiceListener.end()) {
             iter->second.erase(sid);
         }
     } else if (pid > 0) {
-        if (const auto iter = playerSet_.find(event); iter != playerSet_.end()) {
+        if (const auto iter = mPlayerListener.find(event); iter != mPlayerListener.end()) {
             iter->second.erase(pid);
         }
     }

@@ -1,7 +1,7 @@
 #include "PlayerAgent.h"
 #include "Gateway.h"
 #include "Server.h"
-#include "PackageInterface.h"
+#include "Package.h"
 #include "Timer/TimerModule.h"
 #include "Monitor/Monitor.h"
 #include "Network/Network.h"
@@ -37,7 +37,7 @@ int64_t UAgentContext::GetConnectionID() const {
 }
 
 void UAgentContext::OnHeartBeat(const std::shared_ptr<IPackageInterface> &pkg) const {
-    if (state_ != EContextState::IDLE && state_ != EContextState::RUNNING)
+    if (mState != EContextState::IDLE && mState != EContextState::RUNNING)
         return;
 
     if (pkg == nullptr)
