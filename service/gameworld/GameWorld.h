@@ -29,7 +29,7 @@ public:
 
     template<CManagerType Type, class ... Args>
     Type *CreateManager(Args &&... args) {
-        if (mState != EServiceState::CREATED)
+        if (state_ != EServiceState::CREATED)
             return nullptr;
 
         if (mManagerMap.contains(typeid(Type))) {
@@ -47,7 +47,7 @@ public:
 
     template<CManagerType Type>
     Type *GetManager() {
-        if (mState == EServiceState::TERMINATED)
+        if (state_ == EServiceState::TERMINATED)
             return nullptr;
 
         const auto iter = mManagerMap.find(typeid(Type));

@@ -143,12 +143,12 @@ public:
 #pragma endregion
 
 protected:
-    IContextBase *mContext;
+    IContextBase *context_;
 
     /** Record That Which Logger Is For This Service */
-    absl::flat_hash_set<std::string> mLoggerSet;
+    absl::flat_hash_set<std::string> loggerSet_;
 
-    std::atomic<EServiceState> mState;
+    std::atomic<EServiceState> state_;
 };
 
 
@@ -202,9 +202,9 @@ inline void IServiceBase::DispatchEventT(Args &&...args) {
 
 template<CModuleType Module>
 Module *IServiceBase::GetModule() const {
-    if (mContext == nullptr)
+    if (context_ == nullptr)
         return nullptr;
-    return mContext->GetModule<Module>();
+    return context_->GetModule<Module>();
 }
 
 
