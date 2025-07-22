@@ -27,11 +27,11 @@ std::shared_ptr<IRecycleInterface> IRecyclerBase::Acquire() {
         return nullptr;
 
     // Custom Deleter Of The Smart Pointer
-    auto deleter = [weak = weak_from_this()](IRecycleInterface *elem) {
+    auto deleter = [weak = weak_from_this()](IRecycleInterface *pElem) {
         if (const auto self = weak.lock()) {
-            self->Recycle(elem);
+            self->Recycle(pElem);
         } else {
-            delete elem;
+            delete pElem;
         }
     };
 
@@ -152,21 +152,21 @@ void IRecyclerBase::Shrink() {
     mShrinkTimer.reset();
 }
 
-void IRecyclerBase::Recycle(IRecycleInterface *elem) {
+void IRecyclerBase::Recycle(IRecycleInterface *pElem) {
     if (mUsage < 0) {
-        delete elem;
+        delete pElem;
         return;
     }
 
-    elem->Reset();
+    pElem->Reset();
     --mUsage;
 
     {
         std::unique_lock lock(mMutex);
-        mQueue.emplace(elem);
+        mQueue.emplace(pElem);
 
         SPDLOG_TRACE("{:<20} - Recycler[{:p}] - Recycle Recyclable[{:p}] To Queue",
-            __FUNCTION__, static_cast<void *>(this), static_cast<void *>(elem));
+            __FUNCTION__, static_cast<void *>(this), static_cast<void *>(pElem));
     }
 
     if (mShrinkTimer != nullptr || bExpanding)
@@ -204,16 +204,16 @@ void IRecyclerBase::Expand() {
     }
 
     while (num-- > 0) {
-        auto *elem = Create();
-        elem->OnCreate();
+        auto *pElem = Create();
+        pElem->OnCreate();
 
-        elems.emplace_back(elem);
+        elems.emplace_back(pElem);
     }
 
     if (!elems.empty()) {
         std::unique_lock lock(mMutex);
-        for (const auto &elem : elems) {
-            mQueue.emplace(elem);
+        for (const auto &pElem : elems) {
+            mQueue.emplace(pElem);
         }
     }
 
@@ -225,10 +225,10 @@ void IRecyclerBase::Initial(const size_t capacity) {
         return;
 
     for (size_t count = 0; count < capacity; count++) {
-        auto *elem = Create();
-        elem->OnCreate();
+        auto *pElem = Create();
+        pElem->OnCreate();
 
-        mQueue.emplace(elem);
+        mQueue.emplace(pElem);
     }
     mUsage = 0;
     SPDLOG_TRACE("{:<20} - Recycler[{:p}] - Capacity[{}]", __FUNCTION__, static_cast<void *>(this), capacity);

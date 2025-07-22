@@ -58,7 +58,7 @@ public:
     [[nodiscard]] size_t GetCapacity() const;
 
 private:
-    void Recycle(IRecycleInterface *elem);
+    void Recycle(IRecycleInterface *pElem);
 
     void Expand();
     void Shrink();

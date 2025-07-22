@@ -21,7 +21,7 @@ void UGateway::OnPlayerLogin(const int64_t pid, const int64_t cid) {
     if (mState != EModuleState::RUNNING)
         return;
 
-    const auto agent = std::make_shared<UAgentContext>();
+    const auto agent = make_shared<UAgentContext>();
 
     agent->SetUpModule(this);
     agent->SetUpHandle(mLibrary);
@@ -45,7 +45,7 @@ void UGateway::OnPlayerLogout(const int64_t pid) {
     if (mState != EModuleState::RUNNING)
         return;
 
-    std::shared_ptr<UAgentContext> agent;
+    shared_ptr<UAgentContext> agent;
 
     {
         std::unique_lock lock(mMutex);
