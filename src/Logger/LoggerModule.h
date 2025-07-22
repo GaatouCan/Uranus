@@ -21,7 +21,7 @@ public:
         return "Logger Module";
     }
 
-    void TryCreateLogger(const std::string &name, const std::string &path);
+    void TryCreateLogger(const std::string &name);
     void TryDestroyLogger(const std::string &name);
 
     [[nodiscard]] int GetLoggerUseCount(const std::string &name) const;

@@ -132,15 +132,7 @@ public:
 
     [[nodiscard]] std::optional<nlohmann::json> FindConfig(const std::string &path) const;
 
-// #pragma region Logger
-//     /** Create Logger For This Service */
-//     std::shared_ptr<spdlog::logger> CreateLogger(const std::string &name, const std::string &path);
-//
-//     void CreateLogger(const std::map<std::string, std::string> &loggers);
-//
-//     /** Get Logger Pointer Which Registered To This Service */
-//     std::shared_ptr<spdlog::logger> GetLogger(const std::string &name) const;
-// #pragma endregion
+    void TryCreateLogger(const std::string &name) const;
 
 protected:
     IContextBase *mContext;

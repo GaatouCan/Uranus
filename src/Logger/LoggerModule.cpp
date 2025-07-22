@@ -18,7 +18,7 @@ void ULoggerModule::Stop() {
     }
 }
 
-void ULoggerModule::TryCreateLogger(const std::string &name, const std::string &path) {
+void ULoggerModule::TryCreateLogger(const std::string &name) {
     if (mState >= EModuleState::STOPPED)
         return;
 
@@ -30,7 +30,7 @@ void ULoggerModule::TryCreateLogger(const std::string &name, const std::string &
         const auto &cfg = config->GetServerConfig();
 
         const auto rootDir = cfg["server"]["logger_dir"].as<std::string>();
-        const auto loggerPath = rootDir + "/" + path;
+        const auto loggerPath = rootDir + "/" + name;
 
         auto logger = spdlog::daily_logger_mt(name, loggerPath, 2, 0);
     }

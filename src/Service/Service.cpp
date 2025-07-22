@@ -4,6 +4,7 @@
 #include "Event/EventModule.h"
 #include "Config/Config.h"
 #include "Timer/TimerModule.h"
+#include "Logger/LoggerModule.h"
 #include "Package.h"
 
 #include <spdlog/sinks/daily_file_sink.h>
@@ -48,88 +49,6 @@ std::string IServiceBase::GetServiceName() const {
     return {};
 }
 
-// std::shared_ptr<spdlog::logger> IServiceBase::CreateLogger(const std::string &name, const std::string &path) {
-//     if (state_ == EServiceState::TERMINATED)
-//         return nullptr;
-//
-//     if (loggerSet_.contains(name)) {
-//         return GetLogger(name);
-//     }
-//
-//     const auto serviceName = GetServiceName();
-//     if (serviceName.empty() || serviceName == "UNKNOWN") {
-//         SPDLOG_ERROR("{:<20} - Unknown Service Name: Service ID {}", __FUNCTION__, GetServiceID());
-//         return nullptr;
-//     }
-//
-//     const auto *config = GetModule<UConfig>();
-//     if (!config)
-//         return nullptr;
-//
-//     const auto &cfg = config->GetServerConfig();
-//     const auto rootDir = cfg["server"]["logger_dir"].as<std::string>();
-//
-//     const auto loggerPath = rootDir + "/" + serviceName + "/" + path;
-//     const auto loggerName = fmt::format("{} - {}", serviceName, name);
-//
-//     auto logger = spdlog::daily_logger_mt(loggerName, loggerPath, 2, 0);
-//     loggerSet_.insert(name);
-//
-//     return logger;
-// }
-//
-// void IServiceBase::CreateLogger(const std::map<std::string, std::string> &loggers) {
-//     if (state_ == EServiceState::TERMINATED)
-//         return;
-//
-//     const auto serviceName = GetServiceName();
-//     if (serviceName.empty() || serviceName == "UNKNOWN") {
-//         SPDLOG_ERROR("{:<20} - Unknown Service Name: Service ID {}", __FUNCTION__, GetServiceID());
-//         return;
-//     }
-//
-//     const auto *config = GetModule<UConfig>();
-//     if (!config)
-//         return;
-//
-//     const auto &cfg = config->GetServerConfig();
-//     const auto rootDir = cfg["server"]["logger_dir"].as<std::string>();
-//
-//     for (const auto &[name, path] : loggers) {
-//         if (loggerSet_.contains(name))
-//             continue;
-//
-//         auto loggerPath = rootDir;
-//
-//         loggerPath += "/";
-//         loggerPath += serviceName;
-//         loggerPath += "/";
-//         loggerPath += path;
-//
-//         const auto loggerName = fmt::format("{} - {}", serviceName, name);
-//
-//         spdlog::daily_logger_mt(loggerName, loggerPath, 2, 0);
-//         loggerSet_.insert(name);
-//     }
-// }
-//
-// std::shared_ptr<spdlog::logger> IServiceBase::GetLogger(const std::string &name) const {
-//     if (state_ == EServiceState::TERMINATED)
-//         return nullptr;
-//
-//     if (!loggerSet_.contains(name))
-//         return nullptr;
-//
-//     const auto serviceName = GetServiceName();
-//     if (serviceName.empty() || serviceName == "UNKNOWN")
-//         return nullptr;
-//
-//     const auto loggerName = fmt::format("{} - {}", serviceName, name);
-//     auto result = spdlog::get(loggerName);
-//
-//     return result;
-// }
-
 io_context &IServiceBase::GetIOContext() const {
     // assert(context_ != nullptr);
     return mContext->GetServer()->GetIOContext();
@@ -157,14 +76,6 @@ void IServiceBase::Stop() {
         return;
 
     mState = EServiceState::TERMINATED;
-
-    // Release All The Loggers Created By This Service
-    // if (const auto serviceName = GetServiceName(); !serviceName.empty() && serviceName != "UNKNOWN") {
-    //     for (const auto &val : loggerSet_) {
-    //         const auto loggerName = fmt::format("{} - {}", serviceName, val);
-    //         spdlog::drop(loggerName);
-    //     }
-    // }
 }
 
 std::shared_ptr<IPackageInterface> IServiceBase::BuildPackage() const {
@@ -417,4 +328,15 @@ std::optional<nlohmann::json> IServiceBase::FindConfig(const std::string &path) 
         return config->Find(path);
     }
     return std::nullopt;
+}
+
+void IServiceBase::TryCreateLogger(const std::string &name) const {
+    if (mState <= EServiceState::CREATED || mState >= EServiceState::TERMINATED)
+        return;
+
+    auto *loggerModule = GetModule<ULoggerModule>();
+    if (loggerModule == nullptr)
+        return;
+
+    loggerModule->TryCreateLogger(name);
 }
