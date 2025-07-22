@@ -95,7 +95,8 @@ awaitable<void> UNetwork::WaitForClient(uint16_t port) {
                     }
                 }
 
-                const auto conn = make_shared<UConnection>(this, std::move(socket));
+                const auto conn = make_shared<UConnection>(std::move(socket));
+                conn->SetUpModule(this);
 
                 if (const auto id = conn->GetConnectionID(); id > 0) {
                     std::unique_lock lock(mMutex);

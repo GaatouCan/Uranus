@@ -12,8 +12,8 @@ using namespace asio::experimental::awaitable_operators;
 using namespace std::literals::chrono_literals;
 
 
-UConnection::UConnection(UNetwork *module, ATcpSocket socket)
-    : mModule(module),
+UConnection::UConnection(ATcpSocket socket)
+    : mModule(nullptr),
       mSocket(std::move(socket)),
       mCodec(nullptr),
       mChannel(mSocket.get_executor(), 1024),
@@ -26,6 +26,10 @@ UConnection::UConnection(UNetwork *module, ATcpSocket socket)
 
 UConnection::~UConnection() {
     Disconnect();
+}
+
+void UConnection::SetUpModule(UNetwork *module) {
+    mModule = module;
 }
 
 ATcpSocket &UConnection::GetSocket() {

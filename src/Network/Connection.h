@@ -27,10 +27,12 @@ class BASE_API UConnection final : public std::enable_shared_from_this<UConnecti
 public:
     UConnection() = delete;
 
-    UConnection(UNetwork *module, ATcpSocket socket);
+    explicit UConnection(ATcpSocket socket);
     ~UConnection();
 
     DISABLE_COPY_MOVE(UConnection)
+
+    void SetUpModule(UNetwork *module);
 
     [[nodiscard]] ATcpSocket &GetSocket();
     [[nodiscard]] APackageChannel &GetChannel();
