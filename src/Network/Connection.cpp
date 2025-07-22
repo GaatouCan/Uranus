@@ -13,15 +13,15 @@ using namespace std::literals::chrono_literals;
 
 
 UConnection::UConnection(UNetwork *module, ATcpSocket socket)
-    : module_(module),
-      socket_(std::move(socket)),
-      codec_(nullptr),
-      channel_(socket_.get_executor(), 1024),
-      watchdog_(socket_.get_executor()),
-      expiration_(std::chrono::seconds(30)),
-      playerId_(-1) {
-    id_ = static_cast<int64_t>(socket_.native_handle());
-    socket_.set_option(asio::ip::tcp::socket::keep_alive(true));
+    : mModule(module),
+      mSocket(std::move(socket)),
+      mCodec(nullptr),
+      mChannel(mSocket.get_executor(), 1024),
+      mWatchdog(mSocket.get_executor()),
+      mExpiration(std::chrono::seconds(30)),
+      mPlayerID(-1) {
+    mId = static_cast<int64_t>(mSocket.native_handle());
+    mSocket.set_option(asio::ip::tcp::socket::keep_alive(true));
 }
 
 UConnection::~UConnection() {
@@ -29,30 +29,30 @@ UConnection::~UConnection() {
 }
 
 ATcpSocket &UConnection::GetSocket() {
-    return socket_;
+    return mSocket;
 }
 
 TConcurrentChannel<void(std::error_code, shared_ptr<IPackageInterface>)> &UConnection::GetChannel() {
-    return channel_;
+    return mChannel;
 }
 
 void UConnection::SetExpireSecond(const int sec) {
-    expiration_ = std::chrono::seconds(sec);
+    mExpiration = std::chrono::seconds(sec);
 }
 
 void UConnection::SetPlayerID(const int64_t id) {
-    if (playerId_ > 0)
+    if (mPlayerID > 0)
         return;
 
-    playerId_ = id;
+    mPlayerID = id;
 }
 
 void UConnection::ConnectToClient() {
-    assert(codec_ != nullptr);
+    assert(mCodec != nullptr);
 
-    receiveTime_ = std::chrono::steady_clock::now();
+    mReceiveTime = std::chrono::steady_clock::now();
 
-    co_spawn(socket_.get_executor(), [self = shared_from_this()]() -> awaitable<void> {
+    co_spawn(mSocket.get_executor(), [self = shared_from_this()]() -> awaitable<void> {
         co_await (
             self->ReadPackage() ||
             self->WritePackage() ||
@@ -62,64 +62,64 @@ void UConnection::ConnectToClient() {
 }
 
 void UConnection::Disconnect() {
-    if (!socket_.is_open())
+    if (!mSocket.is_open())
         return;
 
-    socket_.close();
-    watchdog_.cancel();
-    socket_.close();
+    mSocket.close();
+    mWatchdog.cancel();
+    mSocket.close();
 
-    module_->RemoveConnection(id_, playerId_);
+    mModule->RemoveConnection(mId, mPlayerID);
 
-    if (playerId_ > 0) {
-        playerId_ = -1;
+    if (mPlayerID > 0) {
+        mPlayerID = -1;
     }
 }
 
 UNetwork *UConnection::GetNetworkModule() const {
-    return module_;
+    return mModule;
 }
 
 UServer *UConnection::GetServer() const {
-    return module_->GetServer();
+    return mModule->GetServer();
 }
 
 std::shared_ptr<IPackageInterface> UConnection::BuildPackage() const {
-    return module_->BuildPackage();
+    return mModule->BuildPackage();
 }
 
 asio::ip::address UConnection::RemoteAddress() const {
-    if (socket_.is_open()) {
-        return socket_.remote_endpoint().address();
+    if (mSocket.is_open()) {
+        return mSocket.remote_endpoint().address();
     }
     return {};
 }
 
 int64_t UConnection::GetConnectionID() const {
-    return id_;
+    return mId;
 }
 
 int64_t UConnection::GetPlayerID() const {
-    return playerId_;
+    return mPlayerID;
 }
 
 void UConnection::SendPackage(const std::shared_ptr<IPackageInterface> &pkg) {
     if (pkg == nullptr)
         return;
 
-    co_spawn(socket_.get_executor(), [self = shared_from_this(), pkg]() -> awaitable<void> {
-        co_await self->channel_.async_send(std::error_code{}, pkg);
+    co_spawn(mSocket.get_executor(), [self = shared_from_this(), pkg]() -> awaitable<void> {
+        co_await self->mChannel.async_send(std::error_code{}, pkg);
     }, detached);
 }
 
 awaitable<void> UConnection::WritePackage() {
     try {
-        while (socket_.is_open()) {
-            const auto [ec, pkg] = co_await channel_.async_receive();
+        while (mSocket.is_open()) {
+            const auto [ec, pkg] = co_await mChannel.async_receive();
             if (ec || pkg == nullptr)
                 co_return;
 
-            if (const auto ret = co_await codec_->Encode(pkg); !ret) {
+            if (const auto ret = co_await mCodec->Encode(pkg); !ret) {
                 SPDLOG_WARN("{:<20} - Failed To Write Package", __FUNCTION__);
                 Disconnect();
                 break;
@@ -135,12 +135,12 @@ awaitable<void> UConnection::WritePackage() {
 
 awaitable<void> UConnection::ReadPackage() {
     try {
-        while (socket_.is_open()) {
+        while (mSocket.is_open()) {
             const auto pkg = BuildPackage();
             if (pkg == nullptr)
                 co_return;
 
-            if (const auto ret = co_await codec_->Decode(pkg); !ret) {
+            if (const auto ret = co_await mCodec->Decode(pkg); !ret) {
                 SPDLOG_WARN("{:<20} - Failed To Read Package", __FUNCTION__);
                 Disconnect();
                 break;
@@ -149,13 +149,13 @@ awaitable<void> UConnection::ReadPackage() {
             const auto now = std::chrono::steady_clock::now();
 
             // Run The Login Branch
-            if (playerId_ < 0) {
+            if (mPlayerID < 0) {
                 // Do Not Try Login Too Frequently
-                if (now - receiveTime_ > std::chrono::seconds(3)) {
-                    --playerId_;
+                if (now - mReceiveTime > std::chrono::seconds(3)) {
+                    --mPlayerID;
 
                     // Try Login Failed 3 Times Then Disconnect This
-                    if (playerId_ < -3) {
+                    if (mPlayerID < -3) {
                         SPDLOG_WARN("{:<20} - Connection[{}] Try Login Too Many Times", __FUNCTION__, RemoteAddress().to_string());
                         Disconnect();
                         break;
@@ -163,22 +163,22 @@ awaitable<void> UConnection::ReadPackage() {
 
                     // Handle Login Logic
                     if (auto *login = GetServer()->GetModule<ULoginAuth>(); login != nullptr) {
-                        login->OnPlayerLogin(id_, pkg);
+                        login->OnPlayerLogin(mId, pkg);
                     }
                 }
 
-                receiveTime_ = now;
+                mReceiveTime = now;
                 continue;
             }
 
             // Update Receive Time Point For Watchdog
-            receiveTime_ = now;
+            mReceiveTime = now;
 
             if (const auto *gateway = GetServer()->GetModule<UGateway>(); gateway != nullptr) {
                 if (pkg->GetPackageID() == 1001) {
-                    gateway->OnHeartBeat(playerId_, pkg);
+                    gateway->OnHeartBeat(mPlayerID, pkg);
                 } else {
-                    gateway->OnClientPackage(playerId_, pkg);
+                    gateway->OnClientPackage(mPlayerID, pkg);
                 }
             }
         }
@@ -189,7 +189,7 @@ awaitable<void> UConnection::ReadPackage() {
 }
 
 awaitable<void> UConnection::Watchdog() {
-    if (expiration_ == ASteadyDuration::zero()) {
+    if (mExpiration == ASteadyDuration::zero()) {
         co_return;
     }
 
@@ -197,17 +197,17 @@ awaitable<void> UConnection::Watchdog() {
         ASteadyTimePoint now;
 
         do {
-            watchdog_.expires_at(receiveTime_ + expiration_);
+            mWatchdog.expires_at(mReceiveTime + mExpiration);
 
-            if (auto [ec] = co_await watchdog_.async_wait(); ec) {
+            if (auto [ec] = co_await mWatchdog.async_wait(); ec) {
                 SPDLOG_DEBUG("{:<20} - Timer Canceled.", __FUNCTION__);
                 co_return;
             }
 
             now = std::chrono::steady_clock::now();
-        } while ((receiveTime_ + expiration_) > now);
+        } while ((mReceiveTime + mExpiration) > now);
 
-        if (socket_.is_open()) {
+        if (mSocket.is_open()) {
             SPDLOG_WARN("{:<20} - Watchdog Timeout", __FUNCTION__);
             Disconnect();
         }

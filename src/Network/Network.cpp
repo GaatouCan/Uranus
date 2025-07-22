@@ -11,15 +11,15 @@
 
 
 UNetwork::UNetwork()
-    : acceptor_(ctx_),
-      pool_(nullptr) {
+    : mAcceptor(mIOContext),
+      mPackagePool(nullptr) {
 }
 
 UNetwork::~UNetwork() {
     Stop();
 
-    if (thread_.joinable()) {
-        thread_.join();
+    if (mThread.joinable()) {
+        mThread.join();
     }
 }
 
@@ -27,17 +27,17 @@ void UNetwork::Initial() {
     if (mState != EModuleState::CREATED)
         return;
 
-    pool_ = GetServer()->CreatePackagePool(ctx_);
-    pool_->Initial();
+    mPackagePool = GetServer()->CreatePackagePool(mIOContext);
+    mPackagePool->Initial();
 
-    thread_ = std::thread([this] {
+    mThread = std::thread([this] {
         SPDLOG_INFO("Network Work In Thread[{}]", utils::ThreadIDToInt(std::this_thread::get_id()));
 
-        asio::signal_set signals(ctx_, SIGINT, SIGTERM);
+        asio::signal_set signals(mIOContext, SIGINT, SIGTERM);
         signals.async_wait([this](auto, auto) {
             Stop();
         });
-        ctx_.run();
+        mIOContext.run();
     });
 
     mState = EModuleState::INITIALIZED;
@@ -52,7 +52,7 @@ void UNetwork::Start() {
         port = config->GetServerConfig()["server"]["port"].as<uint16_t>();
     }
 
-    co_spawn(ctx_, WaitForClient(port), detached);
+    co_spawn(mIOContext, WaitForClient(port), detached);
     mState = EModuleState::RUNNING;
 }
 
@@ -62,24 +62,24 @@ void UNetwork::Stop() {
 
     mState = EModuleState::STOPPED;
 
-    if (!ctx_.stopped()) {
-        ctx_.stop();
+    if (!mIOContext.stopped()) {
+        mIOContext.stop();
     }
 
-    connectionMap_.clear();
+    mConnectionMap.clear();
 }
 
 
 awaitable<void> UNetwork::WaitForClient(uint16_t port) {
     try {
-        acceptor_.open(asio::ip::tcp::v4());
-        acceptor_.bind({asio::ip::tcp::v4(), port});
-        acceptor_.listen(port);
+        mAcceptor.open(asio::ip::tcp::v4());
+        mAcceptor.bind({asio::ip::tcp::v4(), port});
+        mAcceptor.listen(port);
 
         SPDLOG_INFO("Waiting For Client To Connect - Server Port: {}", port);
 
         while (mState == EModuleState::RUNNING) {
-            auto [ec, socket] = co_await acceptor_.async_accept();
+            auto [ec, socket] = co_await mAcceptor.async_accept();
 
             if (ec) {
                 SPDLOG_ERROR("{:<20} - {}", __FUNCTION__, ec.message());
@@ -98,8 +98,8 @@ awaitable<void> UNetwork::WaitForClient(uint16_t port) {
                 const auto conn = make_shared<UConnection>(this, std::move(socket));
 
                 if (const auto id = conn->GetConnectionID(); id > 0) {
-                    std::unique_lock lock(mutex_);
-                    connectionMap_[id] = conn;
+                    std::unique_lock lock(mMutex);
+                    mConnectionMap[id] = conn;
                 } else {
                     SPDLOG_WARN("{:<20} - Failed To Get Connection ID From {}",
                         __FUNCTION__, conn->RemoteAddress().to_string());
@@ -121,16 +121,16 @@ awaitable<void> UNetwork::WaitForClient(uint16_t port) {
 }
 
 io_context &UNetwork::GetIOContext() {
-    return ctx_;
+    return mIOContext;
 }
 
 shared_ptr<UConnection> UNetwork::FindConnection(const int64_t cid) const {
     if (mState != EModuleState::RUNNING)
         return nullptr;
 
-    std::shared_lock lock(mutex_);
-    const auto it = connectionMap_.find(cid);
-    return it != connectionMap_.end() ? it->second : nullptr;
+    std::shared_lock lock(mMutex);
+    const auto it = mConnectionMap.find(cid);
+    return it != mConnectionMap.end() ? it->second : nullptr;
 }
 
 void UNetwork::RemoveConnection(const int64_t cid, const int64_t pid) {
@@ -138,8 +138,8 @@ void UNetwork::RemoveConnection(const int64_t cid, const int64_t pid) {
         return;
 
     {
-        std::unique_lock lock(mutex_);
-        connectionMap_.erase(cid);
+        std::unique_lock lock(mMutex);
+        mConnectionMap.erase(cid);
     }
 
     if (pid > 0) {
@@ -155,8 +155,8 @@ void UNetwork::OnLoginSuccess(const int64_t cid, const int64_t pid, const shared
 
     shared_ptr<UConnection> conn;
     {
-        std::unique_lock lock(mutex_);
-        if (const auto it = connectionMap_.find(cid); it != connectionMap_.end()) {
+        std::unique_lock lock(mMutex);
+        if (const auto it = mConnectionMap.find(cid); it != mConnectionMap.end()) {
             conn = it->second;
         }
     }
@@ -175,8 +175,8 @@ void UNetwork::OnLoginFailure(const int64_t cid, const shared_ptr<IPackageInterf
 
     shared_ptr<UConnection> conn;
     {
-        std::unique_lock lock(mutex_);
-        if (const auto it = connectionMap_.find(cid); it != connectionMap_.end()) {
+        std::unique_lock lock(mMutex);
+        if (const auto it = mConnectionMap.find(cid); it != mConnectionMap.end()) {
             conn = it->second;
         }
     }
@@ -193,8 +193,8 @@ void UNetwork::SendToClient(const int64_t cid, const shared_ptr<IPackageInterfac
     if (mState != EModuleState::RUNNING)
         return;
 
-    std::shared_lock lock(mutex_);
-    if (const auto iter = connectionMap_.find(cid); iter != connectionMap_.end()) {
+    std::shared_lock lock(mMutex);
+    if (const auto iter = mConnectionMap.find(cid); iter != mConnectionMap.end()) {
         if (const auto conn = iter->second) {
             conn->SendPackage(pkg);
         }
@@ -205,5 +205,5 @@ std::shared_ptr<IPackageInterface> UNetwork::BuildPackage() const {
     if (mState != EModuleState::RUNNING)
         return nullptr;
 
-    return std::dynamic_pointer_cast<IPackageInterface>(pool_->Acquire());
+    return std::dynamic_pointer_cast<IPackageInterface>(mPackagePool->Acquire());
 }

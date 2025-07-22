@@ -27,5 +27,5 @@ public:
     [[nodiscard]] const nlohmann::json &GetEventParam() const;
 
 private:
-    nlohmann::json data_;
+    nlohmann::json mData;
 };
