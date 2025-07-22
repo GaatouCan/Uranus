@@ -15,25 +15,25 @@ typedef void (*AServiceDestroyer)(IServiceBase *);
 
 
 IContextBase::INodeBase::INodeBase(IServiceBase *service)
-    : service_(service) {
+    : mService(service) {
 }
 
 IServiceBase *IContextBase::INodeBase::GetService() const {
-    return service_;
+    return mService;
 }
 
 IContextBase::UPackageNode::UPackageNode(IServiceBase *service)
     : INodeBase(service),
-      package_(nullptr) {
+      mPackage(nullptr) {
 }
 
 void IContextBase::UPackageNode::SetPackage(const shared_ptr<IPackageInterface> &pkg) {
-    package_ = pkg;
+    mPackage = pkg;
 }
 
 void IContextBase::UPackageNode::Execute() {
-    if (service_ && package_) {
-        service_->OnPackage(package_);
+    if (mService && mPackage) {
+        mService->OnPackage(mPackage);
     }
 }
 
@@ -42,12 +42,12 @@ IContextBase::UTaskNode::UTaskNode(IServiceBase *service)
 }
 
 void IContextBase::UTaskNode::SetTask(const std::function<void(IServiceBase *)> &task) {
-    task_ = task;
+    mTask = task;
 }
 
 void IContextBase::UTaskNode::Execute() {
-    if (service_ && task_) {
-        std::invoke(task_, service_);
+    if (mService && mTask) {
+        std::invoke(mTask, mService);
     }
 }
 
@@ -56,12 +56,12 @@ IContextBase::UEventNode::UEventNode(IServiceBase *service)
 }
 
 void IContextBase::UEventNode::SetEventParam(const shared_ptr<IEventInterface> &event) {
-    event_ = event;
+    mEvent = event;
 }
 
 void IContextBase::UEventNode::Execute() {
-    if (service_ && event_) {
-        service_->OnEvent(event_);
+    if (mService && mEvent) {
+        mService->OnEvent(mEvent);
     }
 }
 

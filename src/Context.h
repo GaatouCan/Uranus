@@ -36,7 +36,7 @@ class BASE_API IContextBase : public std::enable_shared_from_this<IContextBase> 
     class BASE_API INodeBase {
 
     protected:
-        IServiceBase *const service_;
+        IServiceBase *const mService;
 
     public:
         INodeBase() = delete;
@@ -57,7 +57,7 @@ class BASE_API IContextBase : public std::enable_shared_from_this<IContextBase> 
      */
     class BASE_API UPackageNode final : public INodeBase {
 
-        shared_ptr<IPackageInterface> package_;
+        shared_ptr<IPackageInterface> mPackage;
 
     public:
         explicit UPackageNode(IServiceBase *service);
@@ -73,7 +73,7 @@ class BASE_API IContextBase : public std::enable_shared_from_this<IContextBase> 
      */
     class BASE_API UTaskNode final : public INodeBase {
 
-        std::function<void(IServiceBase *)> task_;
+        std::function<void(IServiceBase *)> mTask;
 
     public:
         explicit UTaskNode(IServiceBase *service);
@@ -89,7 +89,7 @@ class BASE_API IContextBase : public std::enable_shared_from_this<IContextBase> 
      */
     class BASE_API UEventNode final : public INodeBase {
 
-        shared_ptr<IEventInterface> event_;
+        shared_ptr<IEventInterface> mEvent;
 
     public:
         explicit UEventNode(IServiceBase *service);
