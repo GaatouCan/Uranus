@@ -5,9 +5,9 @@ int UDefaultEvent::GetEventType() const {
 }
 
 void UDefaultEvent::SetEventParam(const nlohmann::json &data) {
-    data_ = data;
+    mData = data;
 }
 
 const nlohmann::json &UDefaultEvent::GetEventParam() const {
-    return data_;
+    return mData;
 }
