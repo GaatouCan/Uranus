@@ -111,7 +111,7 @@ class BASE_API IContextBase : public std::enable_shared_from_this<IContextBase> 
     FLibraryHandle *mHandle;
 
     /** Internal Package Pool */
-    shared_ptr<IRecyclerBase> mPackegePool;
+    shared_ptr<IRecyclerBase> mPackagePool;
 
     /** Internal Node Channel */
     unique_ptr<AContextChannel> mChannel;

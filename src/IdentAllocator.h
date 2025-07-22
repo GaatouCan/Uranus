@@ -6,7 +6,7 @@
 
 template<class Type, bool bConcurrent>
 requires std::is_integral_v<Type>
-class TIDAllocator {
+class TIdentAllocator {
 
     struct FEmptyMutex {};
 
@@ -30,7 +30,7 @@ private:
 };
 
 template<class Type, bool bConcurrent> requires std::is_integral_v<Type>
-inline Type TIDAllocator<Type, bConcurrent>::AllocateT() {
+inline Type TIdentAllocator<Type, bConcurrent>::AllocateT() {
     if constexpr (bConcurrent) {
         std::unique_lock lock(mMutex);
         if (!mQueue.empty()) {
@@ -55,7 +55,7 @@ inline Type TIDAllocator<Type, bConcurrent>::AllocateT() {
 }
 
 template<class Type, bool bConcurrent> requires std::is_integral_v<Type>
-Type TIDAllocator<Type, bConcurrent>::Allocate() {
+Type TIdentAllocator<Type, bConcurrent>::Allocate() {
     if (!mQueue.empty()) {
         const auto res = mQueue.front();
         mQueue.pop();
@@ -69,7 +69,7 @@ Type TIDAllocator<Type, bConcurrent>::Allocate() {
 }
 
 template<class Type, bool bConcurrent> requires std::is_integral_v<Type>
-inline void TIDAllocator<Type, bConcurrent>::RecycleT(Type id) {
+inline void TIdentAllocator<Type, bConcurrent>::RecycleT(Type id) {
     if constexpr (bConcurrent) {
         std::unique_lock lock(mMutex);
         mQueue.push(id);
@@ -86,7 +86,7 @@ inline void TIDAllocator<Type, bConcurrent>::RecycleT(Type id) {
 }
 
 template<class Type, bool bConcurrent> requires std::is_integral_v<Type>
-void TIDAllocator<Type, bConcurrent>::Recycle(Type id) {
+void TIdentAllocator<Type, bConcurrent>::Recycle(Type id) {
     mQueue.push(id);
 
     --mUsage;
@@ -98,7 +98,7 @@ void TIDAllocator<Type, bConcurrent>::Recycle(Type id) {
 }
 
 template<class Type, bool bConcurrent> requires std::is_integral_v<Type>
-Type TIDAllocator<Type, bConcurrent>::GetUsage() const {
+Type TIdentAllocator<Type, bConcurrent>::GetUsage() const {
     if constexpr (bConcurrent) {
         return mUsage.load();
     }

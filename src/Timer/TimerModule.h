@@ -2,7 +2,7 @@
 
 #include "Module.h"
 #include "Utils.h"
-#include "IDAllocator.h"
+#include "IdentAllocator.h"
 
 #include <functional>
 #include <absl/container/flat_hash_map.h>
@@ -62,7 +62,7 @@ private:
     void RemoveSystemTimer(int64_t id);
 
 private:
-    TIDAllocator<int64_t, true> mAllocator;
+    TIdentAllocator<int64_t, true> mAllocator;
 
     absl::flat_hash_map<int64_t, FSteadyTimerNode> mSteadyTimerMap;
     absl::flat_hash_map<int64_t, FSystemTimerNode> mSystemTimerMap;

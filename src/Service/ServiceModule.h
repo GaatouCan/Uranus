@@ -1,7 +1,7 @@
 #pragma once
 
 #include "Module.h"
-#include "IDAllocator.h"
+#include "IdentAllocator.h"
 
 #include <shared_mutex>
 #include <memory>
@@ -83,5 +83,5 @@ private:
     mutable std::shared_mutex mFileNameMutex;
 
     /** Service ID Management **/
-    TIDAllocator<int32_t, true> mAllocator;
+    TIdentAllocator<int32_t, true> mAllocator;
 };

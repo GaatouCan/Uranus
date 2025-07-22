@@ -27,6 +27,13 @@ void UServiceModule::Initial() {
 
     const auto &config = configModule->GetServerConfig();
 
+    auto loadLibrary = [](flat_hash_map<std::string, FLibraryHandle *> &map, const std::string &filename, const std::filesystem::path& path) {
+        if (auto node = new FLibraryHandle(); node->LoadFrom(path.string())) {
+            map.emplace(filename, node);
+            // SPDLOG_INFO("\tLoaded Core Service Library From[{}]", path.string());
+        }
+    };
+
     // Find Dynamic Library From Directories
 
 #ifdef __linux__
@@ -47,12 +54,7 @@ void UServiceModule::Initial() {
             }
             const std::filesystem::path path = std::filesystem::path(CORE_SERVICE_DIRECTORY) / (linux_filename + ".so");
 #endif
-            // coreMap.emplace(filename, path);
-
-            if (auto node = new FLibraryHandle(); node->LoadFrom(path.string())) {
-                mCoreHandleMap.emplace(filename, node);
-                SPDLOG_INFO("\tLoaded Core Service Library From[{}]", path.string());
-            }
+            loadLibrary(mCoreHandleMap, filename, path);
         }
     } else {
         for (const auto &entry: std::filesystem::directory_iterator(CORE_SERVICE_DIRECTORY)) {
@@ -66,10 +68,7 @@ void UServiceModule::Initial() {
                     filename.erase(0, prefix.size());
                 }
 #endif
-                if (auto node = new FLibraryHandle(); node->LoadFrom(entry.path().string())) {
-                    mCoreHandleMap.emplace(filename, node);
-                    SPDLOG_INFO("\tLoaded Core Service Library From[{}]", entry.path().string());
-                }
+                loadLibrary(mCoreHandleMap, filename, entry.path());
             }
         }
     }
@@ -88,10 +87,7 @@ void UServiceModule::Initial() {
             }
             const std::filesystem::path path = std::filesystem::path(EXTEND_SERVICE_DIRECTORY) / (linux_filename + ".so");
 #endif
-            if (auto *node = new FLibraryHandle(); node->LoadFrom(path.string())) {
-                mExtendHandleMap.emplace(filename, node);
-                SPDLOG_INFO("\tLoaded Extend Service Library From[{}]", path.string());
-            }
+           loadLibrary(mExtendHandleMap, filename, path);
         }
     } else {
         for (const auto &entry: std::filesystem::directory_iterator(EXTEND_SERVICE_DIRECTORY)) {
@@ -106,10 +102,7 @@ void UServiceModule::Initial() {
                 }
 
 #endif
-                if (auto *node = new FLibraryHandle(); node->LoadFrom(entry.path().string())) {
-                    mExtendHandleMap.emplace(filename, node);
-                    SPDLOG_INFO("\tLoaded Extend Service Library From[{}]", entry.path().string());
-                }
+                loadLibrary(mExtendHandleMap, filename, entry.path());
             }
         }
     }

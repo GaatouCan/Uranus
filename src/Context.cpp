@@ -190,8 +190,8 @@ bool IContextBase::Initial(const std::shared_ptr<IPackageInterface> &pkg) {
     mChannel = make_unique<AContextChannel>(GetServer()->GetIOContext(), 1024);
 
     // Create Package Pool For Data Exchange
-    mPackegePool = GetServer()->CreatePackagePool(GetServer()->GetIOContext());
-    mPackegePool->Initial();
+    mPackagePool = GetServer()->CreatePackagePool(GetServer()->GetIOContext());
+    mPackagePool->Initial();
 
     // Initialize The Service With Package
     mService->SetUpContext(this);
@@ -377,7 +377,7 @@ std::shared_ptr<IPackageInterface> IContextBase::BuildPackage() const {
     if (mState != EContextState::IDLE || mState != EContextState::RUNNING)
         return nullptr;
 
-    if (const auto elem = mPackegePool->Acquire())
+    if (const auto elem = mPackagePool->Acquire())
         return std::dynamic_pointer_cast<IPackageInterface>(elem);
 
     return nullptr;
